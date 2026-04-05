@@ -649,13 +649,13 @@
                 state.form.price = post.price;
                 state.form.age = post.age;
                 state.form.type = post.type;
-                state.form.ending = post.ending;
+                state.form.ending = post.ending || "";
                 post.tags.forEach(t => state.form.tags.add(t));
             } else {
                 title.innerHTML = '<i class="ph ph-plus-circle text-[#e52828] mr-1"></i> 신규 작품 추가';
                 document.getElementById('modal-form').querySelectorAll('input[type="text"], input[type="url"]').forEach(i => i.value = '');
                 state.form.category = "소설"; state.form.price = "무료"; state.form.age = "일반";
-                state.form.type = "소설"; state.form.ending = "해피엔딩";
+                state.form.type = "소설"; state.form.ending = ""; // 기본 선택값 제거
                 document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
             }
             renderModalSelects();
@@ -670,13 +670,13 @@
                 { id: 'price', label: '결제', items: options.price },
                 { id: 'age', label: '연령', items: options.age },
                 { id: 'type', label: '형태', items: options.type },
-                { id: 'ending', label: '엔딩', items: options.ending }
+                { id: 'ending', label: '엔딩 <span class="text-[#555] font-normal text-[9px] ml-1">(선택 해제 가능)</span>', items: options.ending }
             ];
             singleContainer.innerHTML = singles.map(s => `
                 <div>
                     <p class="label-text">${s.label}</p>
                     <div class="flex flex-wrap gap-1.5">
-                        ${s.items.map(item => `<button class="filter-btn ${state.form[s.id] === item ? 'active' : ''} px-2.5 py-1 text-[10px]" onclick="state.form.${s.id}='${item}'; renderModalSelects();">${item}</button>`).join('')}
+                        ${s.items.map(item => `<button class="filter-btn ${state.form[s.id] === item ? 'active' : ''} px-2.5 py-1 text-[10px]" onclick="if('${s.id}' === 'ending' && state.form.${s.id} === '${item}') { state.form.${s.id} = ''; } else { state.form.${s.id} = '${item}'; } renderModalSelects();">${item}</button>`).join('')}
                     </div>
                 </div>
             `).join('');
@@ -854,5 +854,6 @@
     </script>
 </body>
 </html>
+
 
 

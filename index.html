@@ -291,7 +291,6 @@
             document.getElementById('custom-alert-msg').innerText = msg;
             
             modal.classList.remove('hidden');
-            // setTimeout for CSS transitions
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 box.classList.remove('scale-95');
@@ -356,7 +355,6 @@
             const cachedData = localStorage.getItem('pota_cache_v2');
             const syncStatus = document.getElementById('sync-status');
             
-            // 캐시 데이터가 있으면 먼저 화면에 그림
             if (cachedData) {
                 try {
                     state.posts = JSON.parse(cachedData);
@@ -375,6 +373,7 @@
                 if (rawData.error) throw new Error(rawData.error);
                 
                 const processedData = rawData.map(row => {
+                    // 이제 제목이나 ID가 필수로 있어야 유효한 데이터로 봅니다.
                     if (!row["제목"] && !row["ID"]) return null;
                     const allTags = [
                         row["구분"], row["결제"], row["연령"], row["형태"], row["엔딩"],
@@ -386,7 +385,8 @@
                     if (displayDate.includes('T')) displayDate = displayDate.split('T')[0];
 
                     return {
-                        id: String(row["ID"]),
+                        // 명시적으로 구글 시트의 "ID" 열 데이터를 매핑합니다.
+                        id: String(row["ID"]), 
                         title: row["제목"], author: row["작가"], url: row["URL"], date: displayDate,
                         category: row["구분"], price: row["결제"], age: row["연령"],
                         type: row["형태"], genre: row["장르"], mood: row["분위기"],
@@ -396,16 +396,12 @@
                     };
                 }).filter(Boolean);
 
-                // 데이터 갱신 확인 시 리렌더링
                 if (!cachedData || JSON.stringify(state.posts) !== JSON.stringify(processedData)) {
                     state.posts = processedData;
                     
-                    // 용량 초과 에러 방지를 위한 예외 처리
                     try {
                         localStorage.setItem('pota_cache_v2', JSON.stringify(processedData));
                     } catch (storageError) {
-                        console.warn("로컬 스토리지 저장 용량 초과. 캐시 없이 진행합니다.", storageError);
-                        // 용량 초과 시 이전 캐시라도 비워두는 것이 좋음
                         localStorage.removeItem('pota_cache_v2');
                     }
 
@@ -494,7 +490,6 @@
             container.innerHTML = html;
         }
 
-        // 스포일러 (엔딩) 보기 버튼 토글 함수
         window.revealEnding = function(btn, endingWord) {
             const parent = btn.parentElement;
             parent.innerHTML = `<span class="text-red-300 bg-[#e52828]/20 border border-red-900/50 text-[10px] px-2 py-0.5 rounded ml-1 font-bold shadow-sm inline-block animate-pulse" style="animation-iteration-count: 1;">#${endingWord}</span>`;
@@ -503,8 +498,6 @@
         function renderList() {
             const container = document.getElementById('post-list');
             const filteredData = state.posts.filter(item => {
-                
-                // 검색어 매칭
                 if (state.searchQuery) {
                     const q = state.searchQuery.toLowerCase().trim();
                     const safeTitle = String(item.title || "").toLowerCase();
@@ -517,12 +510,10 @@
                     if (!(matchTitle || matchAuthor || matchTags)) return false;
                 }
                 
-                // 단일 필터 매칭
                 if (state.filters.category !== 'all' && item.category !== state.filters.category) return false;
                 if (state.filters.price !== 'all' && item.price !== state.filters.price) return false;
                 if (state.filters.age !== 'all' && item.age !== state.filters.age) return false;
                 
-                // 다중 태그 매칭 (AND 조건)
                 if (state.filters.tags.size > 0) {
                     const hasAll = Array.from(state.filters.tags).every(t => item.tags.includes(t));
                     if (!hasAll) return false;
@@ -530,7 +521,6 @@
                 return true;
             });
 
-            // 정렬
             const sortedData = [...filteredData].sort((a, b) => {
                 const dateA = a.date || "0000-00-00";
                 const dateB = b.date || "0000-00-00";
@@ -553,7 +543,6 @@
                 const otherTags = item.tags.filter(t => ![item.category, item.price, item.age, item.type].includes(t) && !endingKeywords.includes(t));
                 let tagsHtml = otherTags.map(tag => `<span class="text-[#888] bg-[#1a1a1e] border border-[#333] text-[10px] px-1.5 py-0.5 rounded">#${tag}</span>`).join('');
 
-                // 스포일러 가리기 적용
                 let endingHtml = '';
                 if (postEnding) {
                     endingHtml = `
@@ -759,6 +748,10 @@
                 return;
             }
 
+            const isEdit = !!state.editingId;
+            const action = isEdit ? "update" : "add";
+            
+            // 시트에 전달할 데이터 구성 (ID 포함 유무는 action에 따라 앱스스크립트가 처리)
             const data = {
                 "제목": titleInput,
                 "작가": authorInput,
@@ -775,8 +768,11 @@
                 "수": Array.from(state.form.tags).filter(t => options.bottom.includes(t)).join(', ')
             };
 
-            const isEdit = !!state.editingId;
-            const action = isEdit ? "update" : "add";
+            // ID가 숫자형태라면 앱스스크립트 검색을 위해 숫자로 변환 (텍스트일수도 있으므로 안전하게 처리)
+            let sendId = state.editingId;
+            if (sendId !== null && !isNaN(Number(sendId)) && String(sendId).trim() !== "") {
+                sendId = Number(sendId);
+            }
             
             const btn = document.getElementById('submit-btn');
             const originalBtnHtml = btn.innerHTML;
@@ -787,7 +783,7 @@
                 const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ action: action, id: state.editingId, data: data })
+                    body: JSON.stringify({ action: action, id: sendId, data: data })
                 });
                 const result = await res.json();
                 if(result.success) {
@@ -811,11 +807,17 @@
             showCustomConfirm("정말 이 포스트를 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.", async (res) => {
                 if (!res) return;
                 
+                // 삭제할 때도 숫자형 ID면 변환
+                let deleteId = id;
+                if (deleteId !== null && !isNaN(Number(deleteId)) && String(deleteId).trim() !== "") {
+                    deleteId = Number(deleteId);
+                }
+                
                 try {
                     const resApi = await fetch(API_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'text/plain' },
-                        body: JSON.stringify({ action: "delete", id: id })
+                        body: JSON.stringify({ action: "delete", id: deleteId })
                     });
                     const result = await resApi.json();
                     if (result.success) { 

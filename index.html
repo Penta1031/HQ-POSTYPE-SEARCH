@@ -491,7 +491,7 @@
                 { id: 'mood', label: '키워드', items: options.mood },
                 { id: 'top', label: '공', items: options.top },
                 { id: 'bottom', label: '수', items: options.bottom },
-                { id: 'ending', label: '엔딩', items: options.ending }
+                { id: 'ending', label: '스포일러/엔딩', items: options.ending }
             ];
             multis.forEach(m => {
                 html += `
@@ -707,7 +707,7 @@
                 { id: 'price', label: '결제', items: options.price },
                 { id: 'age', label: '연령', items: options.age },
                 { id: 'type', label: '형태', items: options.type },
-                { id: 'ending', label: '엔딩 <span class="text-[#555] font-normal text-[9px] ml-1">(선택 해제 가능)</span>', items: options.ending }
+                { id: 'ending', label: '스포일러/엔딩 <span class="text-[#555] font-normal text-[9px] ml-1">(선택 해제 가능)</span>', items: options.ending }
             ];
             singleContainer.innerHTML = singles.map(s => `
                 <div>
@@ -890,6 +890,7 @@
     </script>
 </body>
 </html>
+
 
 
 

@@ -75,71 +75,120 @@
 
         <!-- 5. 필터 영역 -->
         <div id="filter-section" class="px-4 flex flex-col bg-[#161616] border-b border-[#222]" style="display: none;">
-            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
-                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">결제</div>
-                <div class="flex flex-wrap gap-1.5 flex-1">
-                    <button class="filter-btn active rounded-full px-2.5 py-1 text-[11px]" data-group="price" data-value="all">전체</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="price" data-value="무료">무료</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="price" data-value="유료">유료</button>
+            
+            <!-- 통합 필터 라인 (구분/결제/연령) -->
+            <div class="py-2 border-b border-[#2a2a2a] grid grid-cols-3 gap-2">
+                <!-- 구분 -->
+                <div>
+                    <div class="text-[10px] text-[#777] font-bold mb-1.5 px-1">구분</div>
+                    <div class="flex gap-1">
+                        <button class="filter-btn active flex-1 rounded py-0.5 text-[10px]" data-group="category" data-value="all">전체</button>
+                        <button class="filter-btn flex-1 rounded py-0.5 text-[10px]" data-group="category" data-value="소설">글</button>
+                        <button class="filter-btn flex-1 rounded py-0.5 text-[10px]" data-group="category" data-value="만화">그림</button>
+                    </div>
+                </div>
+                <!-- 결제 -->
+                <div>
+                    <div class="text-[10px] text-[#777] font-bold mb-1.5 px-1">결제</div>
+                    <div class="flex gap-1">
+                        <button class="filter-btn active flex-1 rounded py-0.5 text-[10px]" data-group="price" data-value="all">전체</button>
+                        <button class="filter-btn flex-1 rounded py-0.5 text-[10px]" data-group="price" data-value="무료">무료</button>
+                        <button class="filter-btn flex-1 rounded py-0.5 text-[10px]" data-group="price" data-value="유료">유료</button>
+                    </div>
+                </div>
+                <!-- 연령 -->
+                <div>
+                    <div class="text-[10px] text-[#777] font-bold mb-1.5 px-1">연령</div>
+                    <div class="flex gap-1">
+                        <button class="filter-btn active flex-1 rounded py-0.5 text-[10px]" data-group="age" data-value="all">전체</button>
+                        <button class="filter-btn flex-1 rounded py-0.5 text-[10px]" data-group="age" data-value="일반">일반</button>
+                        <button class="filter-btn flex-1 rounded py-0.5 text-[10px]" data-group="age" data-value="성인">성인</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
-                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">연령</div>
-                <div class="flex flex-wrap gap-1.5 flex-1">
-                    <button class="filter-btn active rounded-full px-2.5 py-1 text-[11px]" data-group="age" data-value="all">전체</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="age" data-value="일반">일반</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="age" data-value="성인">성인</button>
+            <!-- 장르 -->
+            <div class="py-1.5 border-b border-[#2a2a2a] flex gap-2 items-start">
+                <div class="text-[10px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">장르</div>
+                <div class="flex flex-wrap gap-1 flex-1">
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="리얼물">리얼물</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="리맨물">리맨물</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="장르물">장르물</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="수인물">수인물</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="조직물">조직물</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="센가물">센가물</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="알오물">알오물</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="군부물">군부물</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="육아물">육아물</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="네임버스">네임버스</button>
                 </div>
             </div>
 
-            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
-                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">장르</div>
-                <div class="flex flex-wrap gap-1.5 flex-1">
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="소설">소설</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="웹툰/만화">웹툰/만화</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="가이드버스">가이드버스</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="헌터물">헌터물</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="현대물">현대물</button>
+            <!-- 키워드 -->
+            <div class="py-1.5 border-b border-[#2a2a2a] flex gap-2 items-start">
+                <div class="text-[10px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">키워드</div>
+                <div class="flex flex-wrap gap-1 flex-1">
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="로코">로코</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="게헤">게헤</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="헤게">헤게</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="청게">청게</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="캠게">캠게</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="섹파">섹파</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="싱글대디">싱글대디</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="이별">이별</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="연예계">연예계</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="계약">계약</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="재회">재회</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="오컬트">오컬트</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="F1">F1</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="사극">사극</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="회귀">회귀</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="짭근친">짭근친</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="임출육">임출육</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="노란장판">노란장판</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="혐관">혐관</button>
                 </div>
             </div>
 
-            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
-                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">분위기</div>
-                <div class="flex flex-wrap gap-1.5 flex-1">
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="달달">달달</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="개그">개그</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="피폐">피폐</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="치유">치유</button>
+            <!-- 공 -->
+            <div class="py-1.5 border-b border-[#2a2a2a] flex gap-2 items-start">
+                <div class="text-[10px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">공</div>
+                <div class="flex flex-wrap gap-1 flex-1">
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="미남공">미남공</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="다정공">다정공</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="집착공">집착공</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="울보공">울보공</button>
                 </div>
             </div>
 
-            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
-                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">키워드</div>
-                <div class="flex flex-wrap gap-1.5 flex-1">
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="미남공">미남공</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="다정공">다정공</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="집착공">집착공</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="미인수">미인수</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="단정수">단정수</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="강수">강수</button>
+            <!-- 수 -->
+            <div class="py-1.5 border-b border-[#2a2a2a] flex gap-2 items-start">
+                <div class="text-[10px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">수</div>
+                <div class="flex flex-wrap gap-1 flex-1">
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="미인수">미인수</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="단정수">단정수</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="병약수">병약수</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="강수">강수</button>
                 </div>
             </div>
 
-            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
-                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">엔딩</div>
-                <div class="flex flex-wrap gap-1.5 flex-1">
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="해피엔딩">해피엔딩</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="새드엔딩">새드엔딩</button>
-                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="열린결말">열린결말</button>
+            <!-- 엔딩 -->
+            <div class="py-1.5 border-b border-[#2a2a2a] flex gap-2 items-start">
+                <div class="text-[10px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">엔딩</div>
+                <div class="flex flex-wrap gap-1 flex-1">
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="해피엔딩">해피엔딩</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="새드엔딩">새드엔딩</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="죽음">죽음</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="열린결말">열린결말</button>
+                    <button class="filter-btn rounded px-2 py-0.5 text-[10px]" data-group="tag" data-value="메리배드">메리배드</button>
                 </div>
             </div>
             
-            <div class="flex justify-between items-center py-3">
-                <button onclick="resetFilters()" class="text-[#888] text-[12px] flex items-center gap-1 hover:text-white transition-colors font-medium">
+            <div class="flex justify-between items-center py-2">
+                <button onclick="resetFilters()" class="text-[#888] text-[11px] flex items-center gap-1 hover:text-white transition-colors font-medium">
                     <i class="ph ph-arrow-counter-clockwise"></i> 필터 초기화
                 </button>
-                <button onclick="switchTab('list')" class="text-[#e52828] text-[12px] flex items-center gap-1 hover:brightness-110 font-bold">
+                <button onclick="switchTab('list')" class="text-[#e52828] text-[11px] flex items-center gap-1 hover:brightness-110 font-bold">
                     필터 접기 <i class="ph ph-caret-up"></i>
                 </button>
             </div>
@@ -169,6 +218,7 @@
         const state = {
             posts: [],
             searchQuery: '',
+            categoryFilter: 'all', 
             priceFilter: 'all',
             ageFilter: 'all',
             tagFilters: new Set(),
@@ -176,14 +226,11 @@
             isAdmin: false 
         };
 
-        // 쉼표(,)를 기준으로 태그를 분리하고 양끝 공백을 제거하는 함수
         function splitTags(str) {
             if (!str) return [];
-            if (Array.isArray(str)) return str.flat();
             return String(str).split(',').map(s => s.trim()).filter(Boolean);
         }
 
-        // 데이터 불러오기
         async function fetchPosts() {
             try {
                 const response = await fetch(API_URL);
@@ -194,13 +241,12 @@
                 state.posts = rawData.map(row => {
                     if (!row["제목"] && !row["ID"]) return null;
                     
-                    // 각 열의 데이터를 쉼표 기준으로 쪼개서 하나의 태그 배열로 통합
                     const allTags = [
-                        ...splitTags(row["작품형태"]),
+                        row["형태"],
                         ...splitTags(row["장르"]),
-                        ...splitTags(row["분위기"]),
-                        ...splitTags(row["공 키워드"]),
-                        ...splitTags(row["수 키워드"]),
+                        ...splitTags(row["분위기"]), 
+                        ...splitTags(row["공"]),
+                        ...splitTags(row["수"]),
                         ...splitTags(row["엔딩"])
                     ].filter(Boolean);
 
@@ -208,14 +254,15 @@
                     if (displayDate.includes('T')) displayDate = displayDate.split('T')[0];
 
                     return {
-                        id: String(row["ID"]),
+                        id: String(row["ID"] || Math.random().toString(36).substr(2, 9)),
                         title: row["제목"],
                         author: row["작가"],
                         url: row["URL"],
                         date: displayDate,
-                        price: row["결제"], 
+                        category: row["구분"], 
+                        price: row["결제"] || "무료", 
                         isAdult: String(row["연령"]).includes("성인"),
-                        type: row["작품형태"],
+                        type: row["형태"] || "소설",
                         tags: allTags
                     };
                 }).filter(Boolean);
@@ -231,7 +278,6 @@
             }
         }
 
-        // 리스트 렌더링
         function renderList() {
             const container = document.getElementById('post-list');
             
@@ -240,6 +286,8 @@
                     const q = state.searchQuery.toLowerCase();
                     if (!item.title.toLowerCase().includes(q) && !item.author.toLowerCase().includes(q)) return false;
                 }
+                
+                if (state.categoryFilter !== 'all' && item.category !== state.categoryFilter) return false;
                 if (state.priceFilter !== 'all' && item.price !== state.priceFilter) return false;
                 if (state.ageFilter === '일반' && item.isAdult) return false;
                 if (state.ageFilter === '성인' && !item.isAdult) return false;
@@ -259,11 +307,10 @@
             }
 
             container.innerHTML = filteredData.map(item => {
-                const endingKeywords = ["해피엔딩", "새드엔딩", "열린결말"];
+                const endingKeywords = ["해피엔딩", "새드엔딩", "죽음", "열린결말", "메리배드"];
                 const postEnding = item.tags.find(tag => endingKeywords.includes(tag));
                 const isRevealed = state.revealedEndings.has(item.id);
 
-                // 작품형태와 엔딩 키워드를 제외한 나머지 태그들 표시
                 const otherTags = item.tags.filter(t => t !== item.type && !endingKeywords.includes(t));
                 let tagsHtml = otherTags.map(tag => `<span class="text-[#888] bg-[#1a1a1e] border border-[#222] text-[10px] px-1.5 py-0.5 rounded">#${tag}</span>`).join('');
 
@@ -287,7 +334,7 @@
                         <div class="flex justify-between items-center mb-1">
                             <div class="flex items-center gap-1">
                                 <span class="text-[9px] text-[#e52828] border border-[#e52828]/50 px-1 py-[1px] rounded-sm font-medium bg-[#3a1616]/30">
-                                    ${item.type || '소설'}
+                                    ${item.category === '소설' ? '글' : '그림'}
                                 </span>
                                 ${item.isAdult ? '<span class="text-[9px] text-[#ef4444] border border-[#ef4444]/30 px-1 py-[1px] rounded-sm font-medium bg-[#ef4444]/10">19</span>' : ''}
                                 <span class="text-[9px] ${item.price === '무료' ? 'text-blue-400 border-blue-400/30 bg-blue-400/10' : 'text-[#888] border-[#444] bg-[#222]'} border px-1 py-[1px] rounded-sm font-medium">
@@ -316,7 +363,6 @@
             }).join('');
         }
 
-        // 관리자 기능
         function toggleAdminMode() {
             if (!state.isAdmin) {
                 const pwd = prompt("비밀번호를 입력하세요.");
@@ -340,7 +386,7 @@
             if (!confirm("포스타입에서 새 글을 수집할까요? (시간이 걸릴 수 있습니다)")) return;
             const btn = document.getElementById('fetch-btn');
             btn.disabled = true;
-            btn.innerHTML = `<i class="ph ph-spinner spinner"></i> 수집 중...`;
+            btn.innerHTML = `<i class="ph ph-spinner spinner text-sm"></i> 수집 중...`;
 
             try {
                 const res = await fetch(API_URL, {
@@ -395,7 +441,6 @@
             } catch (e) { alert(e.message); }
         }
 
-        // UI 제어
         function toggleEnding(e, id) {
             if(e) e.stopPropagation();
             if (state.revealedEndings.has(id)) state.revealedEndings.delete(id);
@@ -411,8 +456,9 @@
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const { group, value } = e.target.dataset;
-                if (group === 'price' || group === 'age') {
-                    state[group === 'price' ? 'priceFilter' : 'ageFilter'] = value;
+                if (group === 'category' || group === 'price' || group === 'age') {
+                    const stateKey = group === 'category' ? 'categoryFilter' : (group === 'price' ? 'priceFilter' : 'ageFilter');
+                    state[stateKey] = value;
                     document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
                     e.target.classList.add('active');
                 } else {
@@ -453,12 +499,13 @@
         }
 
         function resetFilters() {
+            state.categoryFilter = 'all';
             state.priceFilter = 'all';
             state.ageFilter = 'all';
             state.tagFilters.clear();
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 const { group, value } = btn.dataset;
-                if ((group === 'price' || group === 'age') && value === 'all') btn.classList.add('active');
+                if ((group === 'category' || group === 'price' || group === 'age') && value === 'all') btn.classList.add('active');
                 else btn.classList.remove('active');
             });
             renderList();

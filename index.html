@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>혚쾌 포타 검색기</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        body { -ms-overflow-style: none; scrollbar-width: none; background-color: #121212; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, sans-serif; }
+        .filter-btn { background-color: #222222; color: #aaaaaa; transition: all 0.2s ease-in-out; border: 1px solid transparent; }
+        .filter-btn.active { background-color: #e52828 !important; color: #ffffff !important; font-weight: 700; border-color: #e52828; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spinner { animation: spin 1s linear infinite; }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+
+    <div class="max-w-md mx-auto relative bg-[#121212] min-h-screen border-x border-[#222]">
+
+        <!-- 1. 최상단 배너 -->
+        <a href="#" class="block bg-[#3a1616] text-[#e52828] text-[11px] py-2 text-center font-bold flex items-center justify-center gap-1">
+            <i class="ph ph-house text-sm"></i> 메인 홈페이지로 이동
+        </a>
+
+        <!-- 2. 헤더 -->
+        <header class="px-4 py-4 flex justify-between items-center">
+            <h1 class="text-[22px] font-black tracking-tighter text-[#e52828] uppercase font-sans">
+                혚쾌 포타 검색기
+            </h1>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleAdminMode()" id="admin-btn" class="text-[#ccc] hover:text-white transition-colors">
+                    <i class="ph ph-lock-key text-xl" id="admin-icon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 3. 검색창 -->
+        <div class="px-4">
+            <div class="relative">
+                <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777] text-lg"></i>
+                <input type="text" id="search-input" placeholder="제목 · 작가명 검색" 
+                    class="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-full py-2.5 pl-10 pr-4 text-[13px] text-white placeholder-[#777] focus:outline-none focus:border-[#e52828] transition-colors">
+            </div>
+            <div class="mt-2 text-[11px] text-[#777] flex items-center gap-1.5 pl-1">
+                <i class="ph-fill ph-lightbulb text-yellow-400 text-sm"></i>
+                추천 검색: 달달, 미인공, 집착광공, 해피엔딩
+            </div>
+        </div>
+
+        <!-- 4. 탭 네비게이션 -->
+        <div class="flex border-b border-[#222] mt-3">
+            <button id="tab-list" class="flex-1 py-3 text-[14px] font-bold text-white border-b-2 border-[#e52828] flex items-center justify-center gap-1.5 transition-colors" onclick="switchTab('list')">
+                <i class="ph ph-folder-open text-lg"></i> 작품 목록
+            </button>
+            <button id="tab-filter" class="flex-1 py-3 text-[14px] font-medium text-[#777] border-b-2 border-transparent flex items-center justify-center gap-1.5 transition-colors" onclick="switchTab('filter')">
+                <i class="ph ph-faders text-lg"></i> 상세 필터
+            </button>
+        </div>
+
+        <!-- 🔴 관리자 전용 제어 패널 -->
+        <div id="admin-panel" class="hidden px-4 py-3 bg-[#3a1616]/30 border-b border-[#e52828]/30 flex justify-between items-center">
+            <span class="text-[12px] text-[#e52828] font-bold flex items-center gap-1">
+                <i class="ph-fill ph-shield-check text-sm"></i> 관리자 모드
+            </span>
+            <button onclick="fetchNewPosts()" id="fetch-btn" class="bg-[#e52828] text-white text-[11px] px-3 py-1.5 rounded font-bold hover:bg-red-600 transition-colors flex items-center gap-1">
+                <i class="ph ph-download-simple"></i> 포타 새 글 불러오기
+            </button>
+        </div>
+
+        <!-- 5. 필터 영역 -->
+        <div id="filter-section" class="px-4 flex flex-col bg-[#161616] border-b border-[#222]" style="display: none;">
+            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
+                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">결제</div>
+                <div class="flex flex-wrap gap-1.5 flex-1">
+                    <button class="filter-btn active rounded-full px-2.5 py-1 text-[11px]" data-group="price" data-value="all">전체</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="price" data-value="무료">무료</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="price" data-value="유료">유료</button>
+                </div>
+            </div>
+
+            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
+                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">연령</div>
+                <div class="flex flex-wrap gap-1.5 flex-1">
+                    <button class="filter-btn active rounded-full px-2.5 py-1 text-[11px]" data-group="age" data-value="all">전체</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="age" data-value="일반">일반</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="age" data-value="성인">성인</button>
+                </div>
+            </div>
+
+            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
+                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">장르</div>
+                <div class="flex flex-wrap gap-1.5 flex-1">
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="소설">소설</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="웹툰/만화">웹툰/만화</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="가이드버스">가이드버스</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="헌터물">헌터물</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="현대물">현대물</button>
+                </div>
+            </div>
+
+            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
+                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">분위기</div>
+                <div class="flex flex-wrap gap-1.5 flex-1">
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="달달">달달</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="개그">개그</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="피폐">피폐</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="치유">치유</button>
+                </div>
+            </div>
+
+            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
+                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">키워드</div>
+                <div class="flex flex-wrap gap-1.5 flex-1">
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="미남공">미남공</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="다정공">다정공</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="집착공">집착공</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="미인수">미인수</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="단정수">단정수</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="강수">강수</button>
+                </div>
+            </div>
+
+            <div class="py-3 border-b border-[#2a2a2a] flex gap-2 items-start">
+                <div class="text-[11px] text-[#777] font-medium w-[36px] shrink-0 pt-0.5">엔딩</div>
+                <div class="flex flex-wrap gap-1.5 flex-1">
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="해피엔딩">해피엔딩</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="새드엔딩">새드엔딩</button>
+                    <button class="filter-btn rounded-full px-2.5 py-1 text-[11px]" data-group="tag" data-value="열린결말">열린결말</button>
+                </div>
+            </div>
+            
+            <div class="flex justify-between items-center py-3">
+                <button onclick="resetFilters()" class="text-[#888] text-[12px] flex items-center gap-1 hover:text-white transition-colors font-medium">
+                    <i class="ph ph-arrow-counter-clockwise"></i> 필터 초기화
+                </button>
+                <button onclick="switchTab('list')" class="text-[#e52828] text-[12px] flex items-center gap-1 hover:brightness-110 font-bold">
+                    필터 접기 <i class="ph ph-caret-up"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 6. 리스트 카운트 -->
+        <div class="px-4 py-4 flex justify-between items-center">
+            <div class="text-[13px] text-[#999]">전체 <span id="visible-count" class="text-white font-bold">0</span>개</div>
+        </div>
+
+        <!-- 7. 포스트 리스트 -->
+        <div id="post-list" class="px-4 flex flex-col gap-4 pb-8 min-h-[300px]">
+            <div class="text-center py-20 text-[#666]">
+                <i class="ph ph-circle-notch text-3xl spinner mb-3 text-[#e52828]"></i>
+                <div class="text-sm">데이터를 불러오는 중...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ==========================================
+        // 🚨 API 연결 설정 🚨
+        // ==========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbxe2ljEEAyQADHXDGn3mQEDSB1R2Z4UiA8-C9x-OraaPVDB0EdKaaGLt6mHV4HhoxnX2w/exec";
+
+        const state = {
+            posts: [],
+            searchQuery: '',
+            priceFilter: 'all',
+            ageFilter: 'all',
+            tagFilters: new Set(),
+            revealedEndings: new Set(),
+            isAdmin: false 
+        };
+
+        // 쉼표(,)를 기준으로 태그를 분리하고 양끝 공백을 제거하는 함수
+        function splitTags(str) {
+            if (!str) return [];
+            if (Array.isArray(str)) return str.flat();
+            return String(str).split(',').map(s => s.trim()).filter(Boolean);
+        }
+
+        // 데이터 불러오기
+        async function fetchPosts() {
+            try {
+                const response = await fetch(API_URL);
+                const rawData = await response.json();
+                
+                if (rawData.error) throw new Error(rawData.error);
+                
+                state.posts = rawData.map(row => {
+                    if (!row["제목"] && !row["ID"]) return null;
+                    
+                    // 각 열의 데이터를 쉼표 기준으로 쪼개서 하나의 태그 배열로 통합
+                    const allTags = [
+                        ...splitTags(row["작품형태"]),
+                        ...splitTags(row["장르"]),
+                        ...splitTags(row["분위기"]),
+                        ...splitTags(row["공 키워드"]),
+                        ...splitTags(row["수 키워드"]),
+                        ...splitTags(row["엔딩"])
+                    ].filter(Boolean);
+
+                    let displayDate = row["발행일"] || "";
+                    if (displayDate.includes('T')) displayDate = displayDate.split('T')[0];
+
+                    return {
+                        id: String(row["ID"]),
+                        title: row["제목"],
+                        author: row["작가"],
+                        url: row["URL"],
+                        date: displayDate,
+                        price: row["결제"], 
+                        isAdult: String(row["연령"]).includes("성인"),
+                        type: row["작품형태"],
+                        tags: allTags
+                    };
+                }).filter(Boolean);
+
+                renderList(); 
+            } catch (error) {
+                document.getElementById('post-list').innerHTML = `
+                    <div class="text-center py-20 text-red-500 text-sm">
+                        <i class="ph ph-warning-circle text-3xl mb-2"></i><br>
+                        연결 오류: ${error.message}<br>배포 권한 설정을 확인해주세요.
+                    </div>
+                `;
+            }
+        }
+
+        // 리스트 렌더링
+        function renderList() {
+            const container = document.getElementById('post-list');
+            
+            const filteredData = state.posts.filter(item => {
+                if (state.searchQuery) {
+                    const q = state.searchQuery.toLowerCase();
+                    if (!item.title.toLowerCase().includes(q) && !item.author.toLowerCase().includes(q)) return false;
+                }
+                if (state.priceFilter !== 'all' && item.price !== state.priceFilter) return false;
+                if (state.ageFilter === '일반' && item.isAdult) return false;
+                if (state.ageFilter === '성인' && !item.isAdult) return false;
+                
+                if (state.tagFilters.size > 0) {
+                    const hasAll = Array.from(state.tagFilters).every(t => item.tags.includes(t));
+                    if (!hasAll) return false;
+                }
+                return true;
+            });
+
+            document.getElementById('visible-count').textContent = filteredData.length;
+
+            if (filteredData.length === 0) {
+                container.innerHTML = `<div class="text-center py-16 text-[#666] text-sm">결과가 없습니다.</div>`;
+                return;
+            }
+
+            container.innerHTML = filteredData.map(item => {
+                const endingKeywords = ["해피엔딩", "새드엔딩", "열린결말"];
+                const postEnding = item.tags.find(tag => endingKeywords.includes(tag));
+                const isRevealed = state.revealedEndings.has(item.id);
+
+                // 작품형태와 엔딩 키워드를 제외한 나머지 태그들 표시
+                const otherTags = item.tags.filter(t => t !== item.type && !endingKeywords.includes(t));
+                let tagsHtml = otherTags.map(tag => `<span class="text-[#888] bg-[#1a1a1e] border border-[#222] text-[10px] px-1.5 py-0.5 rounded">#${tag}</span>`).join('');
+
+                if (postEnding) {
+                    if (isRevealed) {
+                        tagsHtml += `<button onclick="toggleEnding(event, '${item.id}')" class="text-red-400 bg-[#3a1616]/30 border border-red-900/50 text-[10px] px-1.5 py-0.5 rounded">#${postEnding}</button>`;
+                    } else {
+                        tagsHtml += `<button onclick="toggleEnding(event, '${item.id}')" class="text-[#aaa] bg-[#222] hover:bg-white hover:text-black border border-[#444] text-[10px] px-1.5 py-0.5 rounded flex items-center gap-0.5 transition-colors"><i class="ph ph-eye text-[11px]"></i> 엔딩 확인</button>`;
+                    }
+                }
+
+                const adminButtons = state.isAdmin ? `
+                    <div class="mt-3 pt-2 border-t border-[#222] flex justify-end gap-2">
+                        <button onclick="editPost(event, '${item.id}', '${item.title}')" class="text-[#888] text-[11px] hover:text-white px-2 py-1 rounded bg-[#222]">수정</button>
+                        <button onclick="deletePost(event, '${item.id}')" class="text-red-500 text-[11px] hover:text-red-400 px-2 py-1 rounded bg-[#3a1616]/50">삭제</button>
+                    </div>
+                ` : "";
+
+                return `
+                    <div class="flex flex-col group border-b border-[#222] pb-3 relative">
+                        <div class="flex justify-between items-center mb-1">
+                            <div class="flex items-center gap-1">
+                                <span class="text-[9px] text-[#e52828] border border-[#e52828]/50 px-1 py-[1px] rounded-sm font-medium bg-[#3a1616]/30">
+                                    ${item.type || '소설'}
+                                </span>
+                                ${item.isAdult ? '<span class="text-[9px] text-[#ef4444] border border-[#ef4444]/30 px-1 py-[1px] rounded-sm font-medium bg-[#ef4444]/10">19</span>' : ''}
+                                <span class="text-[9px] ${item.price === '무료' ? 'text-blue-400 border-blue-400/30 bg-blue-400/10' : 'text-[#888] border-[#444] bg-[#222]'} border px-1 py-[1px] rounded-sm font-medium">
+                                    ${item.price}
+                                </span>
+                            </div>
+                            <span class="text-[10px] text-[#666]">
+                                ${item.date}
+                            </span>
+                        </div>
+                        
+                        <h3 class="text-[14px] font-bold leading-snug text-white group-hover:text-[#e52828] transition-colors mb-0.5 cursor-pointer" onclick="window.open('${item.url}', '_blank')">
+                            ${item.title}
+                        </h3>
+                        
+                        <div class="text-[11px] text-[#777] mb-2">
+                            <span>${item.author}</span>
+                        </div>
+
+                        <div class="flex flex-wrap gap-1 items-center mt-auto">
+                            ${tagsHtml}
+                        </div>
+                        ${adminButtons}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 관리자 기능
+        function toggleAdminMode() {
+            if (!state.isAdmin) {
+                const pwd = prompt("비밀번호를 입력하세요.");
+                if (pwd === "admin123") {
+                    state.isAdmin = true;
+                    document.getElementById('admin-icon').classList.replace('ph-lock-key', 'ph-lock-key-open');
+                    document.getElementById('admin-btn').classList.add('text-[#e52828]');
+                    document.getElementById('admin-panel').classList.remove('hidden'); 
+                    renderList();
+                } else if(pwd !== null) alert("비밀번호 오류");
+            } else {
+                state.isAdmin = false;
+                document.getElementById('admin-icon').classList.replace('ph-lock-key-open', 'ph-lock-key');
+                document.getElementById('admin-btn').classList.remove('text-[#e52828]');
+                document.getElementById('admin-panel').classList.add('hidden'); 
+                renderList();
+            }
+        }
+
+        async function fetchNewPosts() {
+            if (!confirm("포스타입에서 새 글을 수집할까요? (시간이 걸릴 수 있습니다)")) return;
+            const btn = document.getElementById('fetch-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="ph ph-spinner spinner"></i> 수집 중...`;
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: "fetch" })
+                });
+                const result = await res.json();
+                alert(result.message);
+                location.reload();
+            } catch (e) {
+                alert("오류: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="ph ph-download-simple"></i> 포타 새 글 불러오기`;
+            }
+        }
+
+        async function deletePost(e, id) {
+            e.stopPropagation();
+            if (!confirm("정말 삭제하시겠습니까?")) return;
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: "delete", id: id })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    state.posts = state.posts.filter(p => p.id !== id);
+                    renderList();
+                } else alert(result.message);
+            } catch (e) { alert(e.message); }
+        }
+
+        async function editPost(e, id, oldTitle) {
+            e.stopPropagation();
+            const newTitle = prompt("제목 수정:", oldTitle);
+            if (!newTitle || newTitle === oldTitle) return;
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: "update", id: id, data: { "제목": newTitle } })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    const post = state.posts.find(p => p.id === id);
+                    if (post) post.title = newTitle;
+                    renderList();
+                } else alert(result.message);
+            } catch (e) { alert(e.message); }
+        }
+
+        // UI 제어
+        function toggleEnding(e, id) {
+            if(e) e.stopPropagation();
+            if (state.revealedEndings.has(id)) state.revealedEndings.delete(id);
+            else state.revealedEndings.add(id);
+            renderList();
+        }
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            state.searchQuery = e.target.value;
+            renderList();
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const { group, value } = e.target.dataset;
+                if (group === 'price' || group === 'age') {
+                    state[group === 'price' ? 'priceFilter' : 'ageFilter'] = value;
+                    document.querySelectorAll(`[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                } else {
+                    if (state.tagFilters.has(value)) {
+                        state.tagFilters.delete(value);
+                        e.target.classList.remove('active');
+                    } else {
+                        state.tagFilters.add(value);
+                        e.target.classList.add('active');
+                    }
+                }
+                renderList();
+            });
+        });
+
+        function switchTab(tab) {
+            const filterSec = document.getElementById('filter-section');
+            const btnList = document.getElementById('tab-list');
+            const btnFilter = document.getElementById('tab-filter');
+
+            if (tab === 'filter') {
+                filterSec.style.display = 'flex';
+                btnList.classList.replace('font-bold', 'font-medium');
+                btnList.classList.replace('text-white', 'text-[#777]');
+                btnList.classList.replace('border-[#e52828]', 'border-transparent');
+                btnFilter.classList.replace('font-medium', 'font-bold');
+                btnFilter.classList.replace('text-[#777]', 'text-white');
+                btnFilter.classList.replace('border-transparent', 'border-[#e52828]');
+            } else {
+                filterSec.style.display = 'none';
+                btnList.classList.replace('font-medium', 'font-bold');
+                btnList.classList.replace('text-[#777]', 'text-white');
+                btnList.classList.replace('border-transparent', 'border-[#e52828]');
+                btnFilter.classList.replace('font-bold', 'font-medium');
+                btnFilter.classList.replace('text-white', 'text-[#777]');
+                btnFilter.classList.replace('border-[#e52828]', 'border-transparent');
+            }
+        }
+
+        function resetFilters() {
+            state.priceFilter = 'all';
+            state.ageFilter = 'all';
+            state.tagFilters.clear();
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                const { group, value } = btn.dataset;
+                if ((group === 'price' || group === 'age') && value === 'all') btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            renderList();
+        }
+
+        fetchPosts();
+    </script>
+</body>
+</html>

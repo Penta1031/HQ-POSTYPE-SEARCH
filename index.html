@@ -100,11 +100,7 @@
                 <input type="text" id="search-input" placeholder="제목 · 작가 · 키워드 검색" 
                     class="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-full py-2.5 pl-10 pr-4 text-[13px] text-white placeholder-[#777] focus:outline-none focus:border-[#e52828] transition-colors shadow-inner">
             </div>
-            <div class="mt-2 text-[11px] text-[#777] flex items-center justify-between pl-1">
-                <div class="flex items-center gap-1.5 line-clamp-1">
-                    <i class="ph-fill ph-lightbulb text-yellow-400 text-sm"></i>
-                    추천: 달달, 미인공, 집착광공, 해피엔딩
-                </div>
+            <div class="mt-2 text-[11px] text-[#777] flex items-center justify-end pl-1">
                 <div class="flex items-center gap-3 shrink-0 ml-2">
                     <div id="sync-status" class="text-[#555] hidden">
                         <i class="ph ph-arrows-clockwise spinner inline-block"></i> 동기화 중...
@@ -148,6 +144,8 @@
                 <button onclick="setSort('latest')" id="sort-latest" class="hover:text-white transition-colors font-bold text-white">최신순</button>
                 <div class="w-[1px] h-2.5 bg-[#333]"></div>
                 <button onclick="setSort('oldest')" id="sort-oldest" class="hover:text-white transition-colors">과거순</button>
+                <div class="w-[1px] h-2.5 bg-[#333]"></div>
+                <button onclick="setSort('alpha')" id="sort-alpha" class="hover:text-white transition-colors">가나다순</button>
             </div>
         </div>
 
@@ -217,7 +215,6 @@
                 <p><strong class="text-white">1. 다중 검색 지원</strong><br>검색창에 작품명, 작가명, 장르, 키워드 등을 자유롭게 입력해 보세요.</p>
                 <p><strong class="text-white">2. 상세 필터 기능</strong><br>[상세 필터] 탭에서 원하는 결제/연령/장르/키워드를 복합적으로 적용할 수 있습니다. (장르/키워드는 중복 선택 가능)</p>
                 <p><strong class="text-white">3. 스포일러 (엔딩) 확인</strong><br>엔딩 정보는 가려져 있습니다. 작품 목록의 <span class="bg-[#222] border border-[#444] px-1.5 py-0.5 rounded text-[10px]"><i class="ph ph-eye inline"></i> 엔딩 확인</span> 버튼을 누르면 결말을 볼 수 있습니다.</p>
-                <p><strong class="text-white">4. 관리자 모드</strong><br>우측 상단의 자물쇠(<i class="ph ph-lock-key inline"></i>) 아이콘을 누르면 작품 데이터를 직접 추가/수정/삭제하거나 필터 옵션을 커스텀할 수 있습니다.</p>
             </div>
             <div class="p-4 bg-[#1e1e1e] border-t border-[#222]">
                 <button onclick="closeGuideModal()" class="w-full py-2.5 text-[13px] font-bold bg-[#333] text-white rounded-lg hover:bg-[#444] transition-colors">확인했습니다</button>
@@ -258,7 +255,7 @@
         const options = {
             category: ["소설", "만화"],
             price: ["무료", "유료"],
-            age: ["일반", "성인"],
+            age: ["전연령", "성인"],
             type: ["소설", "만화", "기타"],
             genre: ["리얼물", "리맨물", "장르물", "수인물", "조직물", "센가물", "알오물", "군부물", "육아물", "네임버스"],
             mood: ["로코", "게헤", "헤게", "청게", "캠게", "섹파", "싱글대디", "이별", "연예계", "계약", "재회", "오컬트", "F1", "사극", "회귀", "짭근친", "임출육", "노란장판", "혐관"],
@@ -352,8 +349,10 @@
         }
 
         async function fetchPosts() {
-            const cachedData = localStorage.getItem('pota_cache_v2');
             const syncStatus = document.getElementById('sync-status');
+            syncStatus.classList.remove('hidden'); // 동기화 아이콘 표시
+            
+            const cachedData = localStorage.getItem('pota_cache_v2');
             
             if (cachedData) {
                 try {
@@ -367,7 +366,6 @@
                     });
                     renderFilters();
                     renderList();
-                    syncStatus.classList.remove('hidden');
                 } catch (e) {
                     console.error("캐시 파싱 실패, 캐시를 초기화합니다.", e);
                     localStorage.removeItem('pota_cache_v2');
@@ -382,10 +380,13 @@
                 const processedData = rawData.map(row => {
                     if (!row["제목"] && !row["ID"]) return null;
                     
-                    // 시트 컬럼 이름이 '분위기' 혹은 '키워드' 일수도 있어 둘 다 호환되게 처리
                     const rawMood = row["분위기"] !== undefined ? row["분위기"] : row["키워드"];
 
-                    // ★ 핵심 수정: 시트 안에 쓰여진 모든 태그들을 모아서 시스템 옵션 목록에 자동으로 추가합니다.
+                    // '일반'을 '전연령'으로 자동 변환 (기존 데이터 호환성 유지)
+                    let ageValue = row["연령"];
+                    if (ageValue === "일반") ageValue = "전연령";
+
+                    // 시트 안의 태그 자동 등록
                     const genreList = splitTags(row["장르"]);
                     genreList.forEach(t => { if(!options.genre.includes(t)) options.genre.push(t); });
                     
@@ -399,7 +400,7 @@
                     bottomList.forEach(t => { if(!options.bottom.includes(t)) options.bottom.push(t); });
 
                     const allTags = [
-                        row["구분"], row["결제"], row["연령"], row["형태"], row["엔딩"],
+                        row["구분"], row["결제"], ageValue, row["형태"], row["엔딩"],
                         ...genreList, ...moodList, ...topList, ...bottomList
                     ].filter(Boolean);
 
@@ -409,11 +410,11 @@
                     return {
                         id: String(row["ID"]), 
                         title: row["제목"], author: row["작가"], url: row["URL"], date: displayDate,
-                        category: row["구분"], price: row["결제"], age: row["연령"],
+                        category: row["구분"], price: row["결제"], age: ageValue,
                         type: row["형태"], genre: row["장르"], mood: rawMood,
                         top: row["공"], bottom: row["수"], ending: row["엔딩"],
                         tags: allTags,
-                        isAdult: row["연령"] === "성인"
+                        isAdult: ageValue === "성인"
                     };
                 }).filter(Boolean);
 
@@ -424,14 +425,13 @@
                     } catch (storageError) {
                         localStorage.removeItem('pota_cache_v2');
                     }
-                    if (!cachedData) renderFilters(); 
+                    renderFilters(); 
                     renderList(); 
                 } else {
-                    // 데이터가 동일해도 옵션목록은 최신화
                     renderFilters();
                 }
 
-                syncStatus.classList.add('hidden'); 
+                syncStatus.classList.add('hidden'); // 동기화 완료 후 숨김
                 
             } catch (error) {
                 syncStatus.classList.add('hidden');
@@ -446,14 +446,16 @@
             state.visibleLimit = 30; 
             const latestBtn = document.getElementById('sort-latest');
             const oldestBtn = document.getElementById('sort-oldest');
+            const alphaBtn = document.getElementById('sort-alpha');
             
-            if (val === 'latest') {
-                latestBtn.classList.add('text-white', 'font-bold');
-                oldestBtn.classList.remove('text-white', 'font-bold');
-            } else {
-                oldestBtn.classList.add('text-white', 'font-bold');
-                latestBtn.classList.remove('text-white', 'font-bold');
-            }
+            [latestBtn, oldestBtn, alphaBtn].forEach(btn => {
+                if(btn) btn.classList.remove('text-white', 'font-bold');
+            });
+
+            if (val === 'latest' && latestBtn) latestBtn.classList.add('text-white', 'font-bold');
+            else if (val === 'oldest' && oldestBtn) oldestBtn.classList.add('text-white', 'font-bold');
+            else if (val === 'alpha' && alphaBtn) alphaBtn.classList.add('text-white', 'font-bold');
+            
             renderList();
         }
 
@@ -544,6 +546,9 @@
             });
 
             const sortedData = [...filteredData].sort((a, b) => {
+                if (state.sortBy === 'alpha') {
+                    return (a.title || "").localeCompare(b.title || "", 'ko');
+                }
                 const dateA = a.date || "0000-00-00";
                 const dateB = b.date || "0000-00-00";
                 if (state.sortBy === 'latest') return dateB.localeCompare(dateA);
@@ -583,19 +588,29 @@
                 ` : "";
 
                 return `
-                    <div class="flex flex-col border border-[#222] bg-[#161616] rounded-lg p-3 hover:border-[#333] transition-colors">
-                        <div class="flex justify-between items-center mb-1">
+                    <div class="flex flex-col border border-[#222] bg-[#161616] rounded-lg p-3 hover:border-[#333] transition-colors relative">
+                        <div class="flex justify-between items-center mb-2">
                             <div class="flex gap-1.5">
                                 <span class="text-[9px] text-[#e52828] border border-[#e52828]/50 px-1 py-[1px] rounded font-medium bg-[#3a1616]/30">${item.category === '소설' ? '글' : (item.category === '만화' ? '그림' : '기타')}</span>
-                                ${item.isAdult ? '<span class="text-[9px] text-[#ef4444] border border-[#ef4444]/30 px-1 py-[1px] rounded font-medium bg-[#ef4444]/10">19</span>' : '<span class="text-[9px] text-green-400 border border-green-400/30 px-1 py-[1px] rounded font-medium bg-green-400/10">일반</span>'}
+                                ${item.isAdult ? '<span class="text-[9px] text-[#ef4444] border border-[#ef4444]/30 px-1 py-[1px] rounded font-medium bg-[#ef4444]/10">19</span>' : '<span class="text-[9px] text-green-400 border border-green-400/30 px-1 py-[1px] rounded font-medium bg-green-400/10">전연령</span>'}
                                 <span class="text-[9px] ${item.price === '무료' ? 'text-blue-400 border-blue-400/30 bg-blue-400/10' : 'text-[#888] border-[#444] bg-[#222]'} border px-1 py-[1px] rounded font-medium">${item.price}</span>
                             </div>
                             <span class="text-[10px] text-[#666] tracking-wider">${item.date}</span>
                         </div>
-                        <h3 class="text-[14px] font-bold text-white my-1.5 cursor-pointer hover:text-[#e52828] transition-colors line-clamp-2" onclick="window.open('${item.url}', '_blank')">
-                            ${item.title}
-                        </h3>
-                        <div class="text-[11px] text-[#999] mb-2 font-medium">by <span class="text-[#bbb]">${item.author}</span></div>
+                        
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="flex-1">
+                                <h3 class="text-[14px] font-bold text-white mb-1 cursor-pointer hover:text-[#e52828] transition-colors line-clamp-2" onclick="window.open('${item.url}', '_blank')">
+                                    ${item.title}
+                                </h3>
+                                <div class="text-[11px] text-[#999] mb-1.5 font-medium">by <span class="text-[#bbb]">${item.author}</span></div>
+                            </div>
+                            <!-- 링크 이동 화살표 버튼 추가 -->
+                            <button onclick="window.open('${item.url}', '_blank')" class="w-8 h-8 rounded-full bg-[#1e1e1e] border border-[#333] flex items-center justify-center text-[#888] hover:bg-[#e52828] hover:text-white hover:border-[#e52828] transition-all shrink-0 mt-0.5 shadow-sm group" aria-label="링크로 이동">
+                                <i class="ph-bold ph-caret-right text-sm group-hover:translate-x-[2px] transition-transform"></i>
+                            </button>
+                        </div>
+                        
                         <div class="flex flex-wrap gap-1 items-center mt-1">${tagsHtml}${endingHtml}</div>
                         ${adminUI}
                     </div>`;
@@ -676,8 +691,8 @@
             } else {
                 title.innerHTML = '<i class="ph ph-plus-circle text-[#e52828] mr-1"></i> 신규 작품 추가';
                 document.getElementById('modal-form').querySelectorAll('input[type="text"], input[type="url"]').forEach(i => i.value = '');
-                state.form.category = "소설"; state.form.price = "무료"; state.form.age = "일반";
-                state.form.type = "소설"; state.form.ending = ""; // 원치 않으면 선택 안해도 됨
+                state.form.category = "소설"; state.form.price = "무료"; state.form.age = "전연령";
+                state.form.type = "소설"; state.form.ending = ""; 
                 document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
             }
             renderModalSelects();
@@ -789,7 +804,6 @@
                 "수": Array.from(state.form.tags).filter(t => options.bottom.includes(t)).join(', ')
             };
             
-            // 시트 헤더가 "키워드" 일수도 있으므로 양쪽 모두 전송
             data["키워드"] = data["분위기"];
 
             let sendId = state.editingId;
@@ -812,7 +826,8 @@
                 if(result.success) {
                     showCustomAlert("데이터가 성공적으로 저장되었습니다.", () => {
                         localStorage.removeItem('pota_cache_v2'); 
-                        location.reload();
+                        closeAdminModal(); // 모달창만 닫기
+                        fetchPosts(); // 페이지 새로고침 없이 백그라운드 데이터 재조회 (관리자 모드 유지)
                     });
                 } else {
                     showCustomAlert("저장 실패: " + result.message);
@@ -844,7 +859,7 @@
                     const result = await resApi.json();
                     if (result.success) { 
                         localStorage.removeItem('pota_cache_v2'); 
-                        location.reload(); 
+                        fetchPosts(); // 페이지 새로고침 없이 삭제 후 목록 갱신 (관리자 모드 유지)
                     } else showCustomAlert("삭제 실패: " + result.message);
                 } catch (e) { showCustomAlert("오류 발생: " + e.message); }
             });
@@ -875,5 +890,7 @@
     </script>
 </body>
 </html>
+
+
 
 

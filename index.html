@@ -254,7 +254,7 @@
         // Google Apps Script API URL
         const API_URL = "https://script.google.com/macros/s/AKfycbxe2ljEEAyQADHXDGn3mQEDSB1R2Z4UiA8-C9x-OraaPVDB0EdKaaGLt6mHV4HhoxnX2w/exec";
 
-        // 필터 옵션 초기 상태
+        // 기본 필터 옵션 상태 (스프레드시트에 있는 데이터가 자동으로 이곳에 추가됩니다)
         const options = {
             category: ["소설", "만화"],
             price: ["무료", "유료"],
@@ -358,6 +358,13 @@
             if (cachedData) {
                 try {
                     state.posts = JSON.parse(cachedData);
+                    // 캐시 데이터를 읽을 때도 시트에 있는 커스텀 태그들을 options에 누적시킵니다.
+                    state.posts.forEach(p => {
+                        splitTags(p.genre).forEach(t => { if(!options.genre.includes(t)) options.genre.push(t); });
+                        splitTags(p.mood).forEach(t => { if(!options.mood.includes(t)) options.mood.push(t); });
+                        splitTags(p.top).forEach(t => { if(!options.top.includes(t)) options.top.push(t); });
+                        splitTags(p.bottom).forEach(t => { if(!options.bottom.includes(t)) options.bottom.push(t); });
+                    });
                     renderFilters();
                     renderList();
                     syncStatus.classList.remove('hidden');
@@ -373,23 +380,37 @@
                 if (rawData.error) throw new Error(rawData.error);
                 
                 const processedData = rawData.map(row => {
-                    // 이제 제목이나 ID가 필수로 있어야 유효한 데이터로 봅니다.
                     if (!row["제목"] && !row["ID"]) return null;
+                    
+                    // 시트 컬럼 이름이 '분위기' 혹은 '키워드' 일수도 있어 둘 다 호환되게 처리
+                    const rawMood = row["분위기"] !== undefined ? row["분위기"] : row["키워드"];
+
+                    // ★ 핵심 수정: 시트 안에 쓰여진 모든 태그들을 모아서 시스템 옵션 목록에 자동으로 추가합니다.
+                    const genreList = splitTags(row["장르"]);
+                    genreList.forEach(t => { if(!options.genre.includes(t)) options.genre.push(t); });
+                    
+                    const moodList = splitTags(rawMood);
+                    moodList.forEach(t => { if(!options.mood.includes(t)) options.mood.push(t); });
+                    
+                    const topList = splitTags(row["공"]);
+                    topList.forEach(t => { if(!options.top.includes(t)) options.top.push(t); });
+                    
+                    const bottomList = splitTags(row["수"]);
+                    bottomList.forEach(t => { if(!options.bottom.includes(t)) options.bottom.push(t); });
+
                     const allTags = [
                         row["구분"], row["결제"], row["연령"], row["형태"], row["엔딩"],
-                        ...splitTags(row["장르"]), ...splitTags(row["분위기"]), 
-                        ...splitTags(row["공"]), ...splitTags(row["수"])
+                        ...genreList, ...moodList, ...topList, ...bottomList
                     ].filter(Boolean);
 
                     let displayDate = row["발행일"] || "";
                     if (displayDate.includes('T')) displayDate = displayDate.split('T')[0];
 
                     return {
-                        // 명시적으로 구글 시트의 "ID" 열 데이터를 매핑합니다.
                         id: String(row["ID"]), 
                         title: row["제목"], author: row["작가"], url: row["URL"], date: displayDate,
                         category: row["구분"], price: row["결제"], age: row["연령"],
-                        type: row["형태"], genre: row["장르"], mood: row["분위기"],
+                        type: row["형태"], genre: row["장르"], mood: rawMood,
                         top: row["공"], bottom: row["수"], ending: row["엔딩"],
                         tags: allTags,
                         isAdult: row["연령"] === "성인"
@@ -398,15 +419,16 @@
 
                 if (!cachedData || JSON.stringify(state.posts) !== JSON.stringify(processedData)) {
                     state.posts = processedData;
-                    
                     try {
                         localStorage.setItem('pota_cache_v2', JSON.stringify(processedData));
                     } catch (storageError) {
                         localStorage.removeItem('pota_cache_v2');
                     }
-
                     if (!cachedData) renderFilters(); 
                     renderList(); 
+                } else {
+                    // 데이터가 동일해도 옵션목록은 최신화
+                    renderFilters();
                 }
 
                 syncStatus.classList.add('hidden'); 
@@ -655,7 +677,7 @@
                 title.innerHTML = '<i class="ph ph-plus-circle text-[#e52828] mr-1"></i> 신규 작품 추가';
                 document.getElementById('modal-form').querySelectorAll('input[type="text"], input[type="url"]').forEach(i => i.value = '');
                 state.form.category = "소설"; state.form.price = "무료"; state.form.age = "일반";
-                state.form.type = "소설"; state.form.ending = ""; // 기본 선택값 제거
+                state.form.type = "소설"; state.form.ending = ""; // 원치 않으면 선택 안해도 됨
                 document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
             }
             renderModalSelects();
@@ -716,7 +738,7 @@
             if(!val) return;
             if(!options[type].includes(val)) {
                 options[type].push(val);
-                showCustomAlert(`'${val}' 옵션이 추가되었습니다.`);
+                showCustomAlert(`'${val}' 옵션이 추가되었습니다.\n※ 주의: 이 태그를 작품에 적용하고 [저장하기]를 눌러야 영구적으로 반영됩니다.`);
                 document.getElementById('new-filter-value').value = '';
                 renderModalSelects();
                 renderFilters(); 
@@ -726,7 +748,7 @@
         }
 
         function deleteFilterOption(type, val) {
-            showCustomConfirm(`'${val}' 필터 옵션을 삭제하시겠습니까?\n(이미 저장된 기존 데이터의 텍스트는 유지되지만 옵션에서는 제외됩니다.)`, (res) => {
+            showCustomConfirm(`'${val}' 필터 옵션을 숨기시겠습니까?\n(기존 데이터는 유지되지만 옵션 버튼만 사라집니다. 영구 삭제를 원하면 해당 태그가 포함된 모든 작품을 수정하세요.)`, (res) => {
                 if (!res) return;
                 options[type] = options[type].filter(o => o !== val);
                 state.filters.tags.delete(val);
@@ -751,7 +773,6 @@
             const isEdit = !!state.editingId;
             const action = isEdit ? "update" : "add";
             
-            // 시트에 전달할 데이터 구성 (ID 포함 유무는 action에 따라 앱스스크립트가 처리)
             const data = {
                 "제목": titleInput,
                 "작가": authorInput,
@@ -767,8 +788,10 @@
                 "공": Array.from(state.form.tags).filter(t => options.top.includes(t)).join(', '),
                 "수": Array.from(state.form.tags).filter(t => options.bottom.includes(t)).join(', ')
             };
+            
+            // 시트 헤더가 "키워드" 일수도 있으므로 양쪽 모두 전송
+            data["키워드"] = data["분위기"];
 
-            // ID가 숫자형태라면 앱스스크립트 검색을 위해 숫자로 변환 (텍스트일수도 있으므로 안전하게 처리)
             let sendId = state.editingId;
             if (sendId !== null && !isNaN(Number(sendId)) && String(sendId).trim() !== "") {
                 sendId = Number(sendId);
@@ -807,7 +830,6 @@
             showCustomConfirm("정말 이 포스트를 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.", async (res) => {
                 if (!res) return;
                 
-                // 삭제할 때도 숫자형 ID면 변환
                 let deleteId = id;
                 if (deleteId !== null && !isNaN(Number(deleteId)) && String(deleteId).trim() !== "") {
                     deleteId = Number(deleteId);
@@ -849,11 +871,9 @@
             }
         }
 
-        // 초기 데이터 로드
         fetchPosts();
     </script>
 </body>
 </html>
-
 
 

@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>혚쾌 포타 검색기</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         ::-webkit-scrollbar { display: none; }
@@ -58,12 +56,10 @@
 
     <div class="max-w-md mx-auto relative bg-[#121212] min-h-screen border-x border-[#222]">
 
-        <!-- 1. 최상단 배너 -->
         <a href="#" class="block bg-[#3a1616] text-[#e52828] text-[11px] py-2 text-center font-bold flex items-center justify-center gap-1">
             <i class="ph ph-house text-sm"></i> 메인 홈페이지로 이동
         </a>
 
-        <!-- 2. 헤더 -->
         <header class="px-4 py-4 flex justify-between items-center">
             <h1 class="text-[22px] font-black tracking-tighter text-[#e52828] uppercase font-sans">
                 혚쾌 포타 검색기
@@ -75,7 +71,6 @@
             </div>
         </header>
 
-        <!-- 3. 검색창 -->
         <div class="px-4">
             <div class="relative">
                 <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777] text-lg"></i>
@@ -83,17 +78,21 @@
                     class="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-full py-2.5 pl-10 pr-4 text-[13px] text-white placeholder-[#777] focus:outline-none focus:border-[#e52828] transition-colors">
             </div>
             <div class="mt-2 text-[11px] text-[#777] flex items-center justify-between pl-1">
-                <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-1.5 line-clamp-1">
                     <i class="ph-fill ph-lightbulb text-yellow-400 text-sm"></i>
-                    추천 검색: 달달, 미인공, 집착광공, 해피엔딩
+                    추천: 달달, 미인공, 집착광공, 해피엔딩
                 </div>
-                <div id="sync-status" class="text-[#555] hidden">
-                    <i class="ph ph-arrows-clockwise spinner inline-block"></i> 동기화 중...
+                <div class="flex items-center gap-3 shrink-0 ml-2">
+                    <div id="sync-status" class="text-[#555] hidden">
+                        <i class="ph ph-arrows-clockwise spinner inline-block"></i> 동기화 중...
+                    </div>
+                    <button onclick="openGuideModal()" class="flex items-center gap-1 hover:text-white transition-colors font-medium">
+                        <i class="ph ph-info text-sm"></i> 이용 가이드
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- 4. 탭 네비게이션 -->
         <div class="flex border-b border-[#222] mt-3">
             <button id="tab-list" class="flex-1 py-3 text-[14px] font-bold text-white border-b-2 border-[#e52828] flex items-center justify-center gap-1.5 transition-colors" onclick="switchTab('list')">
                 <i class="ph ph-folder-open text-lg"></i> 작품 목록
@@ -103,7 +102,6 @@
             </button>
         </div>
 
-        <!-- 🔴 관리자 전용 제어 패널 -->
         <div id="admin-panel" class="hidden px-4 py-3 bg-[#3a1616]/30 border-b border-[#e52828]/30 flex justify-between items-center">
             <span class="text-[12px] text-[#e52828] font-bold flex items-center gap-1">
                 <i class="ph-fill ph-shield-check text-sm"></i> 관리자 모드
@@ -113,12 +111,9 @@
             </button>
         </div>
 
-        <!-- 5. 필터 영역 -->
         <div id="filter-section" class="px-4 flex flex-col bg-[#161616] border-b border-[#222]" style="display: none;">
-            <!-- 필터들은 렌더링 시 JS에서 동적으로 생성됩니다 -->
-        </div>
+            </div>
 
-        <!-- 6. 리스트 카운트 & 정렬 -->
         <div class="px-4 py-4 flex justify-between items-center">
             <div class="text-[13px] text-[#999]">전체 <span id="visible-count" class="text-white font-bold">0</span>개</div>
             <div class="flex gap-3 text-[12px] text-[#777] items-center">
@@ -128,17 +123,15 @@
             </div>
         </div>
 
-        <!-- 7. 포스트 리스트 -->
         <div id="post-list" class="px-4 flex flex-col gap-4 pb-8 min-h-[300px]">
             <div class="text-center py-20 text-[#666]">
                 <i class="ph ph-circle-notch text-3xl spinner mb-3 text-[#e52828]"></i>
-                <div class="text-sm">서버에서 데이터를 불러오는 중...</div>
+                <div class="text-sm">데이터를 불러오는 중...</div>
             </div>
         </div>
 
     </div>
 
-    <!-- 🟡 관리자 입력/수정 모달 -->
     <div id="admin-modal" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
         <div class="bg-[#161616] w-full max-w-md rounded-xl border border-[#333] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
             <div class="p-4 border-b border-[#222] flex justify-between items-center bg-[#1e1e1e]">
@@ -147,7 +140,6 @@
             </div>
             
             <div id="modal-form" class="p-5 overflow-y-auto space-y-4">
-                <!-- 기본 정보 -->
                 <div class="grid grid-cols-2 gap-3">
                     <div><p class="label-text">제목</p><input type="text" id="form-title" class="input-field"></div>
                     <div><p class="label-text">작가</p><input type="text" id="form-author" class="input-field"></div>
@@ -155,13 +147,10 @@
                 <div><p class="label-text">URL</p><input type="text" id="form-url" class="input-field"></div>
                 <div><p class="label-text">발행일</p><input type="date" id="form-date" class="input-field"></div>
 
-                <!-- 단일 선택 영역 (JS 렌더링) -->
                 <div id="modal-single-selects" class="space-y-4 pt-2"></div>
 
-                <!-- 다중 선택 영역 (JS 렌더링) -->
                 <div id="modal-multi-selects" class="space-y-4 pt-2"></div>
 
-                <!-- 필터 신규 추가 -->
                 <div class="pt-4 border-t border-[#222]">
                     <p class="label-text">필터 옵션 추가</p>
                     <div class="flex gap-2">
@@ -179,7 +168,27 @@
 
             <div class="p-4 bg-[#1e1e1e] border-t border-[#222] flex gap-2">
                 <button onclick="closeAdminModal()" class="flex-1 py-3 text-[14px] font-bold text-[#888]">취소</button>
-                <button onclick="submitForm()" class="flex-1 py-3 text-[14px] font-bold bg-[#e52828] text-white rounded-lg">저장하기</button>
+                <button onclick="submitForm()" id="submit-btn" class="flex-1 py-3 text-[14px] font-bold bg-[#e52828] text-white rounded-lg">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="guide-modal" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+        <div class="bg-[#161616] w-full max-w-sm rounded-xl border border-[#333] shadow-2xl overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-[#222] flex justify-between items-center bg-[#1e1e1e]">
+                <h2 class="text-white font-bold text-base flex items-center gap-1.5">
+                    <i class="ph-fill ph-info text-[#e52828]"></i> 검색기 이용 가이드
+                </h2>
+                <button onclick="closeGuideModal()" class="text-[#888] hover:text-white"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <div class="p-5 text-[13px] text-[#ccc] space-y-4 leading-relaxed">
+                <p><strong class="text-white">1. 다중 검색 지원</strong><br>검색창에 작품명, 작가명, 장르, 키워드 등을 자유롭게 입력해 보세요.</p>
+                <p><strong class="text-white">2. 상세 필터 기능</strong><br>[상세 필터] 탭에서 원하는 결제/연령/장르/키워드를 복합적으로 적용할 수 있습니다. (장르/키워드는 중복 선택 가능)</p>
+                <p><strong class="text-white">3. 스포일러 (엔딩) 확인</strong><br>엔딩 정보는 가려져 있습니다. 작품 목록의 <span class="bg-[#222] border border-[#444] px-1.5 py-0.5 rounded text-[10px]"><i class="ph ph-eye inline"></i> 엔딩 확인</span> 버튼을 누르면 결말을 볼 수 있습니다.</p>
+                <p><strong class="text-white">4. 관리자 모드</strong><br>우측 상단의 자물쇠(<i class="ph ph-lock-key inline"></i>) 아이콘을 누르면 작품 데이터를 직접 추가/수정/삭제하거나 필터 옵션을 자유롭게 커스텀할 수 있습니다.</p>
+            </div>
+            <div class="p-4 bg-[#1e1e1e] border-t border-[#222]">
+                <button onclick="closeGuideModal()" class="w-full py-2.5 text-[13px] font-bold bg-[#333] text-white rounded-lg hover:bg-[#444] transition-colors">확인했습니다</button>
             </div>
         </div>
     </div>
@@ -187,7 +196,6 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxe2ljEEAyQADHXDGn3mQEDSB1R2Z4UiA8-C9x-OraaPVDB0EdKaaGLt6mHV4HhoxnX2w/exec";
 
-        // 옵션 목록 (사용자가 추가/삭제 가능)
         const options = {
             category: ["소설", "만화"],
             price: ["무료", "유료"],
@@ -220,8 +228,7 @@
         }
 
         async function fetchPosts() {
-            // 1. 빠른 체감을 위한 로컬 캐시(임시 저장소) 먼저 확인
-            const cachedData = localStorage.getItem('pota_cache_v1');
+            const cachedData = localStorage.getItem('pota_cache_v2');
             const syncStatus = document.getElementById('sync-status');
             
             if (cachedData) {
@@ -229,13 +236,12 @@
                     state.posts = JSON.parse(cachedData);
                     renderFilters();
                     renderList();
-                    syncStatus.classList.remove('hidden'); // "동기화 중" 표시
+                    syncStatus.classList.remove('hidden');
                 } catch (e) {
                     console.error("캐시 로드 실패", e);
                 }
             }
 
-            // 2. 백그라운드에서 최신 데이터 패치
             try {
                 const response = await fetch(API_URL);
                 const rawData = await response.json();
@@ -262,15 +268,14 @@
                     };
                 }).filter(Boolean);
 
-                // 데이터가 캐시와 다르거나, 캐시가 없었던 경우에만 다시 렌더링하고 캐시 업데이트
                 if (!cachedData || JSON.stringify(state.posts) !== JSON.stringify(processedData)) {
                     state.posts = processedData;
-                    localStorage.setItem('pota_cache_v1', JSON.stringify(processedData));
-                    if (!cachedData) renderFilters(); // 최초 로딩 시
+                    localStorage.setItem('pota_cache_v2', JSON.stringify(processedData));
+                    if (!cachedData) renderFilters(); 
                     renderList(); 
                 }
 
-                syncStatus.classList.add('hidden'); // 동기화 완료
+                syncStatus.classList.add('hidden'); 
                 
             } catch (error) {
                 syncStatus.classList.add('hidden');
@@ -354,11 +359,15 @@
         function renderList() {
             const container = document.getElementById('post-list');
             const filteredData = state.posts.filter(item => {
+                
                 if (state.searchQuery) {
-                    const q = state.searchQuery.toLowerCase();
-                    const matchTitle = item.title && item.title.toLowerCase().includes(q);
-                    const matchAuthor = item.author && item.author.toLowerCase().includes(q);
-                    const matchTags = item.tags && item.tags.some(t => t.toLowerCase().includes(q));
+                    const q = state.searchQuery.toLowerCase().trim();
+                    const safeTitle = String(item.title || "").toLowerCase();
+                    const safeAuthor = String(item.author || "").toLowerCase();
+                    
+                    const matchTitle = safeTitle.includes(q);
+                    const matchAuthor = safeAuthor.includes(q);
+                    const matchTags = item.tags && item.tags.some(t => String(t || "").toLowerCase().includes(q));
                     
                     if (!(matchTitle || matchAuthor || matchTags)) return false;
                 }
@@ -411,8 +420,8 @@
                     <div class="flex flex-col border-b border-[#222] pb-3 relative">
                         <div class="flex justify-between items-center mb-1">
                             <div class="flex gap-1">
-                                <span class="text-[9px] text-[#e52828] border border-[#e52828]/50 px-1 py-[1px] rounded font-medium bg-[#3a1616]/30">${item.category === '소설' ? '글' : '그림'}</span>
-                                ${item.age === '성인' ? '<span class="text-[9px] text-[#ef4444] border border-[#ef4444]/30 px-1 py-[1px] rounded font-medium bg-[#ef4444]/10">19</span>' : ''}
+                                <span class="text-[9px] text-[#e52828] border border-[#e52828]/50 px-1 py-[1px] rounded font-medium bg-[#3a1616]/30">${item.category === '소설' ? '글' : (item.category === '만화' ? '그림' : '기타')}</span>
+                                ${item.isAdult ? '<span class="text-[9px] text-[#ef4444] border border-[#ef4444]/30 px-1 py-[1px] rounded font-medium bg-[#ef4444]/10">19</span>' : ''}
                                 <span class="text-[9px] ${item.price === '무료' ? 'text-blue-400 border-blue-400/30' : 'text-[#888] border-[#444]'} border px-1 py-[1px] rounded font-medium">${item.price}</span>
                             </div>
                             <span class="text-[10px] text-[#666]">${item.date}</span>
@@ -459,20 +468,19 @@
         }
 
         function toggleAdminMode() {
-            if (!state.isAdmin) {
-                if (prompt("비밀번호를 입력하세요.") === "admin123") {
-                    state.isAdmin = true;
-                    document.getElementById('admin-icon').classList.replace('ph-lock-key', 'ph-lock-key-open');
-                    document.getElementById('admin-panel').classList.remove('hidden'); 
-                    renderList();
-                } else alert("비밀번호 오류");
+            state.isAdmin = !state.isAdmin;
+            if (state.isAdmin) {
+                document.getElementById('admin-icon').classList.replace('ph-lock-key', 'ph-lock-key-open');
+                document.getElementById('admin-panel').classList.remove('hidden'); 
             } else {
-                state.isAdmin = false;
                 document.getElementById('admin-icon').classList.replace('ph-lock-key-open', 'ph-lock-key');
                 document.getElementById('admin-panel').classList.add('hidden'); 
-                renderList();
             }
+            renderList();
         }
+
+        function openGuideModal() { document.getElementById('guide-modal').classList.remove('hidden'); }
+        function closeGuideModal() { document.getElementById('guide-modal').classList.add('hidden'); }
 
         function openAdminModal(type, id = null) {
             state.editingId = id;
@@ -500,6 +508,7 @@
                 document.getElementById('modal-form').querySelectorAll('input').forEach(i => i.value = '');
                 state.form.category = "소설"; state.form.price = "무료"; state.form.age = "일반";
                 state.form.type = "소설"; state.form.ending = "해피엔딩";
+                document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
             }
             renderModalSelects();
         }
@@ -563,7 +572,7 @@
         }
 
         function deleteFilterOption(type, val) {
-            if(!confirm(`'${val}' 필터 옵션을 영구적으로 삭제하시겠습니까?\n(이미 저장된 데이터의 텍스트는 유지되지만 필터링에서 제외됩니다.)`)) return;
+            if(!confirm(`'${val}' 필터 옵션을 삭제하시겠습니까?\n(이미 저장된 데이터의 텍스트는 유지되지만 필터링에서 제외됩니다.)`)) return;
             options[type] = options[type].filter(o => o !== val);
             state.filters.tags.delete(val);
             state.form.tags.delete(val);
@@ -592,6 +601,10 @@
 
             const isEdit = !!state.editingId;
             const action = isEdit ? "update" : "add";
+            
+            const btn = document.getElementById('submit-btn');
+            btn.innerHTML = `<i class="ph ph-spinner spinner inline-block"></i> 저장 중...`;
+            btn.disabled = true;
 
             try {
                 const res = await fetch(API_URL, {
@@ -602,15 +615,18 @@
                 const result = await res.json();
                 if(result.success) {
                     alert("저장되었습니다.");
-                    localStorage.removeItem('pota_cache_v1'); // 업데이트 후 캐시 강제 삭제하여 갱신 유도
+                    localStorage.removeItem('pota_cache_v2'); 
                     location.reload();
                 } else alert(result.message);
-            } catch(e) { alert("서버 연결 실패"); }
+            } catch(e) { alert("서버 연결 실패"); } finally {
+                btn.innerHTML = `저장하기`;
+                btn.disabled = false;
+            }
         }
 
         async function deletePost(e, id) {
             e.stopPropagation();
-            if (!confirm("정말 삭제하시겠습니까?")) return;
+            if (!confirm("정말 이 포스트를 영구 삭제하시겠습니까?")) return;
             try {
                 const res = await fetch(API_URL, {
                     method: 'POST',
@@ -619,7 +635,7 @@
                 });
                 const result = await res.json();
                 if (result.success) { 
-                    localStorage.removeItem('pota_cache_v1'); // 업데이트 후 캐시 강제 삭제
+                    localStorage.removeItem('pota_cache_v2'); 
                     location.reload(); 
                 } else alert(result.message);
             } catch (e) { alert(e.message); }

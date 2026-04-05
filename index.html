@@ -8,7 +8,13 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         ::-webkit-scrollbar { display: none; }
-        body { -ms-overflow-style: none; scrollbar-width: none; background-color: #121212; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, sans-serif; }
+        body { 
+            -ms-overflow-style: none; 
+            scrollbar-width: none; 
+            background-color: #121212; 
+            color: #ffffff; 
+            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, sans-serif; 
+        }
         
         .filter-btn { 
             background-color: #222222; 
@@ -25,9 +31,23 @@
             border-color: #e52828; 
         }
 
-        /* 관리자 모달 스타일 */
-        .modal-overlay { background-color: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
-        .input-field { background-color: #1e1e1e; border: 1px border-[#2a2a2a]; border-radius: 6px; padding: 10px; font-size: 13px; color: white; width: 100%; outline: none; }
+        /* 모달 오버레이 스타일 */
+        .modal-overlay { 
+            background-color: rgba(0,0,0,0.85); 
+            backdrop-filter: blur(4px); 
+        }
+        
+        .input-field { 
+            background-color: #1e1e1e; 
+            border: 1px solid #2a2a2a; 
+            border-radius: 6px; 
+            padding: 10px; 
+            font-size: 13px; 
+            color: white; 
+            width: 100%; 
+            outline: none; 
+            transition: border-color 0.2s;
+        }
         .input-field:focus { border-color: #e52828; }
         .label-text { font-size: 11px; color: #777; margin-bottom: 4px; font-weight: bold; }
         
@@ -56,26 +76,29 @@
 
     <div class="max-w-md mx-auto relative bg-[#121212] min-h-screen border-x border-[#222]">
 
-        <a href="#" class="block bg-[#3a1616] text-[#e52828] text-[11px] py-2 text-center font-bold flex items-center justify-center gap-1">
+        <!-- 상단 배너 -->
+        <a href="#" class="block bg-[#3a1616] text-[#e52828] text-[11px] py-2 text-center font-bold flex items-center justify-center gap-1 hover:bg-[#4a1c1c] transition-colors">
             <i class="ph ph-house text-sm"></i> 메인 홈페이지로 이동
         </a>
 
+        <!-- 헤더 -->
         <header class="px-4 py-4 flex justify-between items-center">
             <h1 class="text-[22px] font-black tracking-tighter text-[#e52828] uppercase font-sans">
                 혚쾌 포타 검색기
             </h1>
             <div class="flex items-center gap-3">
-                <button onclick="toggleAdminMode()" id="admin-btn" class="text-[#ccc] hover:text-white transition-colors">
+                <button onclick="toggleAdminMode()" id="admin-btn" class="text-[#ccc] hover:text-white transition-colors" aria-label="관리자 모드 전환">
                     <i class="ph ph-lock-key text-xl" id="admin-icon"></i>
                 </button>
             </div>
         </header>
 
+        <!-- 검색바 영역 -->
         <div class="px-4">
             <div class="relative">
                 <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777] text-lg"></i>
                 <input type="text" id="search-input" placeholder="제목 · 작가 · 키워드 검색" 
-                    class="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-full py-2.5 pl-10 pr-4 text-[13px] text-white placeholder-[#777] focus:outline-none focus:border-[#e52828] transition-colors">
+                    class="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-full py-2.5 pl-10 pr-4 text-[13px] text-white placeholder-[#777] focus:outline-none focus:border-[#e52828] transition-colors shadow-inner">
             </div>
             <div class="mt-2 text-[11px] text-[#777] flex items-center justify-between pl-1">
                 <div class="flex items-center gap-1.5 line-clamp-1">
@@ -93,6 +116,7 @@
             </div>
         </div>
 
+        <!-- 탭 영역 -->
         <div class="flex border-b border-[#222] mt-3">
             <button id="tab-list" class="flex-1 py-3 text-[14px] font-bold text-white border-b-2 border-[#e52828] flex items-center justify-center gap-1.5 transition-colors" onclick="switchTab('list')">
                 <i class="ph ph-folder-open text-lg"></i> 작품 목록
@@ -102,18 +126,22 @@
             </button>
         </div>
 
+        <!-- 관리자 메뉴 바 -->
         <div id="admin-panel" class="hidden px-4 py-3 bg-[#3a1616]/30 border-b border-[#e52828]/30 flex justify-between items-center">
             <span class="text-[12px] text-[#e52828] font-bold flex items-center gap-1">
                 <i class="ph-fill ph-shield-check text-sm"></i> 관리자 모드
             </span>
-            <button onclick="openAdminModal('add')" class="bg-[#e52828] text-white text-[11px] px-3 py-1.5 rounded font-bold hover:bg-red-600 transition-colors flex items-center gap-1">
-                <i class="ph ph-plus-circle"></i> 포타 새 글 추가하기
+            <button onclick="openAdminModal('add')" class="bg-[#e52828] text-white text-[11px] px-3 py-1.5 rounded font-bold hover:bg-red-600 transition-colors flex items-center gap-1 shadow">
+                <i class="ph ph-plus-circle"></i> 새 글 추가
             </button>
         </div>
 
+        <!-- 필터 섹션 (기본 숨김) -->
         <div id="filter-section" class="px-4 flex flex-col bg-[#161616] border-b border-[#222]" style="display: none;">
-            </div>
+            <!-- JS로 동적 렌더링 됨 -->
+        </div>
 
+        <!-- 리스트 컨트롤 (정렬 및 카운트) -->
         <div class="px-4 py-4 flex justify-between items-center">
             <div class="text-[13px] text-[#999]">전체 <span id="visible-count" class="text-white font-bold">0</span>개</div>
             <div class="flex gap-3 text-[12px] text-[#777] items-center">
@@ -123,6 +151,7 @@
             </div>
         </div>
 
+        <!-- 포스트 리스트 -->
         <div id="post-list" class="px-4 flex flex-col gap-4 pb-8 min-h-[300px]">
             <div class="text-center py-20 text-[#666]">
                 <i class="ph ph-circle-notch text-3xl spinner mb-3 text-[#e52828]"></i>
@@ -132,60 +161,63 @@
 
     </div>
 
+    <!-- ===== 모달 영역 ===== -->
+
+    <!-- 관리자 추가/수정 모달 -->
     <div id="admin-modal" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
-        <div class="bg-[#161616] w-full max-w-md rounded-xl border border-[#333] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        <div class="bg-[#161616] w-full max-w-md rounded-xl border border-[#333] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col transform transition-all">
             <div class="p-4 border-b border-[#222] flex justify-between items-center bg-[#1e1e1e]">
                 <h2 id="modal-title" class="text-white font-bold text-base">포타 정보 수정</h2>
-                <button onclick="closeAdminModal()" class="text-[#888] hover:text-white"><i class="ph ph-x text-xl"></i></button>
+                <button onclick="closeAdminModal()" class="text-[#888] hover:text-white transition-colors"><i class="ph ph-x text-xl"></i></button>
             </div>
             
             <div id="modal-form" class="p-5 overflow-y-auto space-y-4">
                 <div class="grid grid-cols-2 gap-3">
-                    <div><p class="label-text">제목</p><input type="text" id="form-title" class="input-field"></div>
-                    <div><p class="label-text">작가</p><input type="text" id="form-author" class="input-field"></div>
+                    <div><p class="label-text">제목</p><input type="text" id="form-title" class="input-field" placeholder="작품명"></div>
+                    <div><p class="label-text">작가</p><input type="text" id="form-author" class="input-field" placeholder="작가명"></div>
                 </div>
-                <div><p class="label-text">URL</p><input type="text" id="form-url" class="input-field"></div>
+                <div><p class="label-text">URL</p><input type="url" id="form-url" class="input-field" placeholder="https://..."></div>
                 <div><p class="label-text">발행일</p><input type="date" id="form-date" class="input-field"></div>
 
                 <div id="modal-single-selects" class="space-y-4 pt-2"></div>
-
                 <div id="modal-multi-selects" class="space-y-4 pt-2"></div>
 
                 <div class="pt-4 border-t border-[#222]">
                     <p class="label-text">필터 옵션 추가</p>
                     <div class="flex gap-2">
-                        <select id="new-filter-type" class="bg-[#222] text-[11px] rounded px-2 py-1 outline-none text-[#ccc]">
+                        <select id="new-filter-type" class="bg-[#222] text-[11px] rounded px-2 py-1 outline-none text-[#ccc] border border-[#333]">
                             <option value="genre">장르</option>
                             <option value="mood">키워드</option>
                             <option value="top">공</option>
                             <option value="bottom">수</option>
                         </select>
-                        <input type="text" id="new-filter-value" placeholder="옵션명" class="flex-1 bg-[#222] text-[11px] rounded px-2 py-1 outline-none">
-                        <button onclick="addNewFilterOption()" class="bg-[#333] px-3 py-1 rounded text-[11px] font-bold">추가</button>
+                        <input type="text" id="new-filter-value" placeholder="옵션명" class="flex-1 bg-[#222] text-[11px] rounded px-2 py-1 outline-none border border-[#333] text-white">
+                        <button onclick="addNewFilterOption()" class="bg-[#444] hover:bg-[#555] px-3 py-1 rounded text-[11px] font-bold text-white transition-colors">추가</button>
                     </div>
                 </div>
             </div>
 
             <div class="p-4 bg-[#1e1e1e] border-t border-[#222] flex gap-2">
-                <button onclick="closeAdminModal()" class="flex-1 py-3 text-[14px] font-bold text-[#888]">취소</button>
-                <button onclick="submitForm()" id="submit-btn" class="flex-1 py-3 text-[14px] font-bold bg-[#e52828] text-white rounded-lg">저장하기</button>
+                <button onclick="closeAdminModal()" class="flex-1 py-3 text-[13px] font-bold text-[#888] hover:text-white transition-colors bg-[#222] rounded-lg">취소</button>
+                <button onclick="submitForm()" id="submit-btn" class="flex-1 py-3 text-[13px] font-bold bg-[#e52828] hover:bg-red-600 text-white rounded-lg transition-colors flex items-center justify-center gap-1">저장하기</button>
             </div>
         </div>
     </div>
 
+    <!-- 가이드 모달 -->
     <div id="guide-modal" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
-        <div class="bg-[#161616] w-full max-w-sm rounded-xl border border-[#333] shadow-2xl overflow-hidden flex flex-col">
+        <div class="bg-[#161616] w-full max-w-sm rounded-xl border border-[#333] shadow-2xl overflow-hidden flex flex-col transform transition-all">
             <div class="p-4 border-b border-[#222] flex justify-between items-center bg-[#1e1e1e]">
                 <h2 class="text-white font-bold text-base flex items-center gap-1.5">
                     <i class="ph-fill ph-info text-[#e52828]"></i> 검색기 이용 가이드
                 </h2>
-                <button onclick="closeGuideModal()" class="text-[#888] hover:text-white"><i class="ph ph-x text-xl"></i></button>
+                <button onclick="closeGuideModal()" class="text-[#888] hover:text-white transition-colors"><i class="ph ph-x text-xl"></i></button>
             </div>
-            <div class="p-5 text-[13px] text-[#ccc] space-y-4 leading-relaxed">
+            <div class="p-5 text-[13px] text-[#ccc] space-y-4 leading-relaxed bg-[#1a1a1a]">
                 <p><strong class="text-white">1. 다중 검색 지원</strong><br>검색창에 작품명, 작가명, 장르, 키워드 등을 자유롭게 입력해 보세요.</p>
                 <p><strong class="text-white">2. 상세 필터 기능</strong><br>[상세 필터] 탭에서 원하는 결제/연령/장르/키워드를 복합적으로 적용할 수 있습니다. (장르/키워드는 중복 선택 가능)</p>
                 <p><strong class="text-white">3. 스포일러 (엔딩) 확인</strong><br>엔딩 정보는 가려져 있습니다. 작품 목록의 <span class="bg-[#222] border border-[#444] px-1.5 py-0.5 rounded text-[10px]"><i class="ph ph-eye inline"></i> 엔딩 확인</span> 버튼을 누르면 결말을 볼 수 있습니다.</p>
-                <p><strong class="text-white">4. 관리자 모드</strong><br>우측 상단의 자물쇠(<i class="ph ph-lock-key inline"></i>) 아이콘을 누르면 작품 데이터를 직접 추가/수정/삭제하거나 필터 옵션을 자유롭게 커스텀할 수 있습니다.</p>
+                <p><strong class="text-white">4. 관리자 모드</strong><br>우측 상단의 자물쇠(<i class="ph ph-lock-key inline"></i>) 아이콘을 누르면 작품 데이터를 직접 추가/수정/삭제하거나 필터 옵션을 커스텀할 수 있습니다.</p>
             </div>
             <div class="p-4 bg-[#1e1e1e] border-t border-[#222]">
                 <button onclick="closeGuideModal()" class="w-full py-2.5 text-[13px] font-bold bg-[#333] text-white rounded-lg hover:bg-[#444] transition-colors">확인했습니다</button>
@@ -193,9 +225,36 @@
         </div>
     </div>
 
+    <!-- 커스텀 알림(Alert) 모달 -->
+    <div id="custom-alert-modal" class="fixed inset-0 z-[100] modal-overlay hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-200">
+        <div class="bg-[#1e1e1e] border border-[#333] rounded-xl p-6 max-w-[300px] w-full shadow-2xl transform scale-95 transition-transform duration-200" id="custom-alert-box">
+            <div class="text-center mb-5">
+                <i class="ph-fill ph-bell-ringing text-[#e52828] text-3xl mb-2 inline-block"></i>
+                <p id="custom-alert-msg" class="text-white text-[14px] font-medium leading-snug break-keep"></p>
+            </div>
+            <button onclick="closeCustomAlert()" class="w-full bg-[#e52828] hover:bg-red-600 transition-colors text-white py-2.5 rounded-lg text-[13px] font-bold shadow-md">확인</button>
+        </div>
+    </div>
+
+    <!-- 커스텀 확인(Confirm) 모달 -->
+    <div id="custom-confirm-modal" class="fixed inset-0 z-[100] modal-overlay hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-200">
+        <div class="bg-[#1e1e1e] border border-[#333] rounded-xl p-6 max-w-[300px] w-full shadow-2xl transform scale-95 transition-transform duration-200" id="custom-confirm-box">
+            <div class="text-center mb-5">
+                <i class="ph-fill ph-warning-circle text-yellow-500 text-3xl mb-2 inline-block"></i>
+                <p id="custom-confirm-msg" class="text-white text-[14px] font-medium leading-snug break-keep"></p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="closeCustomConfirm(false)" class="flex-1 bg-[#333] hover:bg-[#444] transition-colors text-white py-2.5 rounded-lg text-[13px] font-bold">취소</button>
+                <button onclick="closeCustomConfirm(true)" class="flex-1 bg-[#e52828] hover:bg-red-600 transition-colors text-white py-2.5 rounded-lg text-[13px] font-bold shadow-md">확인</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Google Apps Script API URL
         const API_URL = "https://script.google.com/macros/s/AKfycbxe2ljEEAyQADHXDGn3mQEDSB1R2Z4UiA8-C9x-OraaPVDB0EdKaaGLt6mHV4HhoxnX2w/exec";
 
+        // 필터 옵션 초기 상태
         const options = {
             category: ["소설", "만화"],
             price: ["무료", "유료"],
@@ -208,6 +267,7 @@
             ending: ["해피엔딩", "새드엔딩", "죽음", "열린결말", "메리배드"]
         };
 
+        // 앱 상태 관리
         const state = {
             posts: [],
             searchQuery: '',
@@ -222,6 +282,71 @@
             visibleLimit: 30 
         };
 
+        // ====== 커스텀 Alert / Confirm 로직 ======
+        let confirmCallback = null;
+
+        function showCustomAlert(msg, callback = null) {
+            const modal = document.getElementById('custom-alert-modal');
+            const box = document.getElementById('custom-alert-box');
+            document.getElementById('custom-alert-msg').innerText = msg;
+            
+            modal.classList.remove('hidden');
+            // setTimeout for CSS transitions
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-95');
+            }, 10);
+            
+            modal.dataset.callback = callback ? 'true' : 'false';
+            if (callback) window._alertCallback = callback;
+        }
+
+        function closeCustomAlert() {
+            const modal = document.getElementById('custom-alert-modal');
+            const box = document.getElementById('custom-alert-box');
+            
+            modal.classList.add('opacity-0');
+            box.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (modal.dataset.callback === 'true' && window._alertCallback) {
+                    window._alertCallback();
+                    window._alertCallback = null;
+                }
+            }, 200);
+        }
+
+        function showCustomConfirm(msg, callback) {
+            const modal = document.getElementById('custom-confirm-modal');
+            const box = document.getElementById('custom-confirm-box');
+            document.getElementById('custom-confirm-msg').innerText = msg;
+            confirmCallback = callback;
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                box.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeCustomConfirm(result) {
+            const modal = document.getElementById('custom-confirm-modal');
+            const box = document.getElementById('custom-confirm-box');
+            
+            modal.classList.add('opacity-0');
+            box.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (confirmCallback) {
+                    confirmCallback(result);
+                    confirmCallback = null;
+                }
+            }, 200);
+        }
+        // ==========================================
+
         function splitTags(str) {
             if (!str) return [];
             return String(str).split(',').map(s => s.trim()).filter(Boolean);
@@ -231,6 +356,7 @@
             const cachedData = localStorage.getItem('pota_cache_v2');
             const syncStatus = document.getElementById('sync-status');
             
+            // 캐시 데이터가 있으면 먼저 화면에 그림
             if (cachedData) {
                 try {
                     state.posts = JSON.parse(cachedData);
@@ -238,7 +364,8 @@
                     renderList();
                     syncStatus.classList.remove('hidden');
                 } catch (e) {
-                    console.error("캐시 로드 실패", e);
+                    console.error("캐시 파싱 실패, 캐시를 초기화합니다.", e);
+                    localStorage.removeItem('pota_cache_v2');
                 }
             }
 
@@ -264,13 +391,24 @@
                         category: row["구분"], price: row["결제"], age: row["연령"],
                         type: row["형태"], genre: row["장르"], mood: row["분위기"],
                         top: row["공"], bottom: row["수"], ending: row["엔딩"],
-                        tags: allTags
+                        tags: allTags,
+                        isAdult: row["연령"] === "성인"
                     };
                 }).filter(Boolean);
 
+                // 데이터 갱신 확인 시 리렌더링
                 if (!cachedData || JSON.stringify(state.posts) !== JSON.stringify(processedData)) {
                     state.posts = processedData;
-                    localStorage.setItem('pota_cache_v2', JSON.stringify(processedData));
+                    
+                    // 용량 초과 에러 방지를 위한 예외 처리
+                    try {
+                        localStorage.setItem('pota_cache_v2', JSON.stringify(processedData));
+                    } catch (storageError) {
+                        console.warn("로컬 스토리지 저장 용량 초과. 캐시 없이 진행합니다.", storageError);
+                        // 용량 초과 시 이전 캐시라도 비워두는 것이 좋음
+                        localStorage.removeItem('pota_cache_v2');
+                    }
+
                     if (!cachedData) renderFilters(); 
                     renderList(); 
                 }
@@ -280,7 +418,7 @@
             } catch (error) {
                 syncStatus.classList.add('hidden');
                 if (!cachedData) {
-                    document.getElementById('post-list').innerHTML = `<div class="text-center py-20 text-red-500 text-sm">연결 오류: ${error.message}</div>`;
+                    document.getElementById('post-list').innerHTML = `<div class="text-center py-20 text-red-500 text-sm"><i class="ph ph-warning text-2xl mb-2 inline-block"></i><br>데이터를 불러오지 못했습니다.<br>${error.message}</div>`;
                 }
             }
         }
@@ -348,18 +486,25 @@
             });
 
             html += `
-            <div class="flex justify-between items-center py-2">
-                <button onclick="resetFilters()" class="text-[#888] text-[11px] flex items-center gap-1 font-medium"><i class="ph ph-arrow-counter-clockwise"></i> 필터 초기화</button>
-                <button onclick="switchTab('list')" class="text-[#e52828] text-[11px] font-bold">필터 접기 <i class="ph ph-caret-up"></i></button>
+            <div class="flex justify-between items-center py-2 mt-1">
+                <button onclick="resetFilters()" class="text-[#888] hover:text-white transition-colors text-[11px] flex items-center gap-1 font-medium bg-[#222] px-2 py-1 rounded"><i class="ph ph-arrow-counter-clockwise"></i> 필터 초기화</button>
+                <button onclick="switchTab('list')" class="text-[#e52828] text-[11px] font-bold flex items-center gap-1">필터 접기 <i class="ph ph-caret-up"></i></button>
             </div>`;
 
             container.innerHTML = html;
         }
 
+        // 스포일러 (엔딩) 보기 버튼 토글 함수
+        window.revealEnding = function(btn, endingWord) {
+            const parent = btn.parentElement;
+            parent.innerHTML = `<span class="text-red-300 bg-[#e52828]/20 border border-red-900/50 text-[10px] px-2 py-0.5 rounded ml-1 font-bold shadow-sm inline-block animate-pulse" style="animation-iteration-count: 1;">#${endingWord}</span>`;
+        };
+
         function renderList() {
             const container = document.getElementById('post-list');
             const filteredData = state.posts.filter(item => {
                 
+                // 검색어 매칭
                 if (state.searchQuery) {
                     const q = state.searchQuery.toLowerCase().trim();
                     const safeTitle = String(item.title || "").toLowerCase();
@@ -372,10 +517,12 @@
                     if (!(matchTitle || matchAuthor || matchTags)) return false;
                 }
                 
+                // 단일 필터 매칭
                 if (state.filters.category !== 'all' && item.category !== state.filters.category) return false;
                 if (state.filters.price !== 'all' && item.price !== state.filters.price) return false;
                 if (state.filters.age !== 'all' && item.age !== state.filters.age) return false;
                 
+                // 다중 태그 매칭 (AND 조건)
                 if (state.filters.tags.size > 0) {
                     const hasAll = Array.from(state.filters.tags).every(t => item.tags.includes(t));
                     if (!hasAll) return false;
@@ -383,6 +530,7 @@
                 return true;
             });
 
+            // 정렬
             const sortedData = [...filteredData].sort((a, b) => {
                 const dateA = a.date || "0000-00-00";
                 const dateB = b.date || "0000-00-00";
@@ -392,7 +540,7 @@
 
             document.getElementById('visible-count').textContent = sortedData.length;
             if (sortedData.length === 0) {
-                container.innerHTML = `<div class="text-center py-16 text-[#666] text-sm">결과가 없습니다.</div>`;
+                container.innerHTML = `<div class="text-center py-16 text-[#666] text-sm"><i class="ph ph-magnifying-glass text-3xl mb-2 inline-block opacity-50"></i><br>검색 결과가 없습니다.</div>`;
                 return;
             }
 
@@ -403,42 +551,50 @@
                 const postEnding = item.tags.find(tag => endingKeywords.includes(tag));
 
                 const otherTags = item.tags.filter(t => ![item.category, item.price, item.age, item.type].includes(t) && !endingKeywords.includes(t));
-                let tagsHtml = otherTags.map(tag => `<span class="text-[#888] bg-[#1a1a1e] border border-[#222] text-[10px] px-1.5 py-0.5 rounded">#${tag}</span>`).join('');
+                let tagsHtml = otherTags.map(tag => `<span class="text-[#888] bg-[#1a1a1e] border border-[#333] text-[10px] px-1.5 py-0.5 rounded">#${tag}</span>`).join('');
 
+                // 스포일러 가리기 적용
+                let endingHtml = '';
                 if (postEnding) {
-                    tagsHtml += `<button class="text-red-400 bg-[#3a1616]/30 border border-red-900/50 text-[10px] px-1.5 py-0.5 rounded ml-1">#${postEnding}</button>`;
+                    endingHtml = `
+                    <span class="inline-block relative">
+                        <button onclick="revealEnding(this, '${postEnding}')" class="text-[#888] bg-[#222] border border-[#444] hover:bg-[#333] hover:text-white transition-colors text-[10px] px-1.5 py-0.5 rounded ml-1 flex items-center gap-1 shadow-sm">
+                            <i class="ph ph-eye"></i> 엔딩 보기
+                        </button>
+                    </span>`;
                 }
 
                 const adminUI = state.isAdmin ? `
                     <div class="mt-3 pt-2 border-t border-[#222] flex justify-end gap-2">
-                        <button onclick="openAdminModal('edit', '${item.id}')" class="text-[#888] text-[11px] px-2 py-1 rounded bg-[#222]">수정</button>
-                        <button onclick="deletePost(event, '${item.id}')" class="text-red-500 text-[11px] px-2 py-1 rounded bg-[#3a1616]/50">삭제</button>
+                        <button onclick="openAdminModal('edit', '${item.id}')" class="text-[#888] text-[11px] px-3 py-1 rounded bg-[#222] hover:bg-[#333] transition-colors"><i class="ph ph-pencil-simple inline"></i> 수정</button>
+                        <button onclick="deletePost(event, '${item.id}')" class="text-red-500 text-[11px] px-3 py-1 rounded bg-[#3a1616]/50 hover:bg-[#3a1616] transition-colors"><i class="ph ph-trash inline"></i> 삭제</button>
                     </div>
                 ` : "";
 
                 return `
-                    <div class="flex flex-col border-b border-[#222] pb-3 relative">
+                    <div class="flex flex-col border border-[#222] bg-[#161616] rounded-lg p-3 hover:border-[#333] transition-colors">
                         <div class="flex justify-between items-center mb-1">
-                            <div class="flex gap-1">
+                            <div class="flex gap-1.5">
                                 <span class="text-[9px] text-[#e52828] border border-[#e52828]/50 px-1 py-[1px] rounded font-medium bg-[#3a1616]/30">${item.category === '소설' ? '글' : (item.category === '만화' ? '그림' : '기타')}</span>
-                                ${item.isAdult ? '<span class="text-[9px] text-[#ef4444] border border-[#ef4444]/30 px-1 py-[1px] rounded font-medium bg-[#ef4444]/10">19</span>' : ''}
-                                <span class="text-[9px] ${item.price === '무료' ? 'text-blue-400 border-blue-400/30' : 'text-[#888] border-[#444]'} border px-1 py-[1px] rounded font-medium">${item.price}</span>
+                                ${item.isAdult ? '<span class="text-[9px] text-[#ef4444] border border-[#ef4444]/30 px-1 py-[1px] rounded font-medium bg-[#ef4444]/10">19</span>' : '<span class="text-[9px] text-green-400 border border-green-400/30 px-1 py-[1px] rounded font-medium bg-green-400/10">일반</span>'}
+                                <span class="text-[9px] ${item.price === '무료' ? 'text-blue-400 border-blue-400/30 bg-blue-400/10' : 'text-[#888] border-[#444] bg-[#222]'} border px-1 py-[1px] rounded font-medium">${item.price}</span>
                             </div>
-                            <span class="text-[10px] text-[#666]">${item.date}</span>
+                            <span class="text-[10px] text-[#666] tracking-wider">${item.date}</span>
                         </div>
-                        <h3 class="text-[14px] font-bold text-white mb-2 cursor-pointer" onclick="window.open('${item.url}', '_blank')">
-                            ${item.title} <span class="text-[12px] font-normal text-[#999] ml-1">by ${item.author}</span>
+                        <h3 class="text-[14px] font-bold text-white my-1.5 cursor-pointer hover:text-[#e52828] transition-colors line-clamp-2" onclick="window.open('${item.url}', '_blank')">
+                            ${item.title}
                         </h3>
-                        <div class="flex flex-wrap gap-1 items-center">${tagsHtml}</div>
+                        <div class="text-[11px] text-[#999] mb-2 font-medium">by <span class="text-[#bbb]">${item.author}</span></div>
+                        <div class="flex flex-wrap gap-1 items-center mt-1">${tagsHtml}${endingHtml}</div>
                         ${adminUI}
                     </div>`;
             }).join('');
 
             if (sortedData.length > state.visibleLimit) {
                 listHtml += `
-                    <div class="pt-4 pb-2 text-center">
-                        <button onclick="loadMore()" class="bg-[#222] hover:bg-[#333] text-[#aaa] hover:text-white px-6 py-2.5 rounded-full text-sm font-medium transition-colors w-full border border-[#333]">
-                            더보기 (${state.visibleLimit} / ${sortedData.length})
+                    <div class="pt-2 pb-2 text-center">
+                        <button onclick="loadMore()" class="bg-[#222] hover:bg-[#333] text-[#aaa] hover:text-white px-6 py-2.5 rounded-full text-sm font-medium transition-colors w-full border border-[#333] flex justify-center items-center gap-2">
+                            <i class="ph ph-caret-down"></i> 더보기 (${state.visibleLimit} / ${sortedData.length})
                         </button>
                     </div>
                 `;
@@ -471,9 +627,12 @@
             state.isAdmin = !state.isAdmin;
             if (state.isAdmin) {
                 document.getElementById('admin-icon').classList.replace('ph-lock-key', 'ph-lock-key-open');
+                document.getElementById('admin-icon').classList.add('text-[#e52828]');
                 document.getElementById('admin-panel').classList.remove('hidden'); 
+                showCustomAlert("관리자 모드가 활성화 되었습니다.\n작품을 추가, 수정, 삭제할 수 있습니다.");
             } else {
                 document.getElementById('admin-icon').classList.replace('ph-lock-key-open', 'ph-lock-key');
+                document.getElementById('admin-icon').classList.remove('text-[#e52828]');
                 document.getElementById('admin-panel').classList.add('hidden'); 
             }
             renderList();
@@ -491,7 +650,7 @@
             modal.classList.remove('hidden');
             
             if(type === 'edit') {
-                title.innerText = '포타 정보 수정';
+                title.innerHTML = '<i class="ph ph-pencil-simple text-[#e52828] mr-1"></i> 포타 정보 수정';
                 const post = state.posts.find(p => p.id === id);
                 document.getElementById('form-title').value = post.title;
                 document.getElementById('form-author').value = post.author;
@@ -504,8 +663,8 @@
                 state.form.ending = post.ending;
                 post.tags.forEach(t => state.form.tags.add(t));
             } else {
-                title.innerText = '신규 포타 추가';
-                document.getElementById('modal-form').querySelectorAll('input').forEach(i => i.value = '');
+                title.innerHTML = '<i class="ph ph-plus-circle text-[#e52828] mr-1"></i> 신규 작품 추가';
+                document.getElementById('modal-form').querySelectorAll('input[type="text"], input[type="url"]').forEach(i => i.value = '');
                 state.form.category = "소설"; state.form.price = "무료"; state.form.age = "일반";
                 state.form.type = "소설"; state.form.ending = "해피엔딩";
                 document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
@@ -544,9 +703,9 @@
                     <p class="label-text">${m.label}</p>
                     <div class="flex flex-wrap gap-1.5">
                         ${m.items.map(item => `
-                            <div class="inline-flex items-center bg-[#222] rounded overflow-hidden">
+                            <div class="inline-flex items-center bg-[#222] rounded overflow-hidden border border-transparent ${state.form.tags.has(item) ? '!border-[#e52828]' : ''}">
                                 <button class="filter-btn ${state.form.tags.has(item) ? 'active' : ''} px-2.5 py-1 text-[10px] rounded-none border-none" onclick="toggleFormTag('${item}')">${item}</button>
-                                <button onclick="deleteFilterOption('${m.id}', '${item}')" class="delete-opt-btn text-[10px] py-1">
+                                <button onclick="deleteFilterOption('${m.id}', '${item}')" class="delete-opt-btn text-[10px] py-1 h-full">
                                     <i class="ph ph-x"></i>
                                 </button>
                             </div>
@@ -556,7 +715,11 @@
             `).join('');
         }
 
-        function toggleFormTag(tag) { if(state.form.tags.has(tag)) state.form.tags.delete(tag); else state.form.tags.add(tag); renderModalSelects(); }
+        function toggleFormTag(tag) { 
+            if(state.form.tags.has(tag)) state.form.tags.delete(tag); 
+            else state.form.tags.add(tag); 
+            renderModalSelects(); 
+        }
         
         function addNewFilterOption() {
             const type = document.getElementById('new-filter-type').value;
@@ -564,29 +727,42 @@
             if(!val) return;
             if(!options[type].includes(val)) {
                 options[type].push(val);
-                alert(`'${val}' 옵션이 추가되었습니다.`);
+                showCustomAlert(`'${val}' 옵션이 추가되었습니다.`);
                 document.getElementById('new-filter-value').value = '';
                 renderModalSelects();
                 renderFilters(); 
+            } else {
+                showCustomAlert(`이미 존재하는 옵션입니다.`);
             }
         }
 
         function deleteFilterOption(type, val) {
-            if(!confirm(`'${val}' 필터 옵션을 삭제하시겠습니까?\n(이미 저장된 데이터의 텍스트는 유지되지만 필터링에서 제외됩니다.)`)) return;
-            options[type] = options[type].filter(o => o !== val);
-            state.filters.tags.delete(val);
-            state.form.tags.delete(val);
-            renderModalSelects();
-            renderFilters();
+            showCustomConfirm(`'${val}' 필터 옵션을 삭제하시겠습니까?\n(이미 저장된 기존 데이터의 텍스트는 유지되지만 옵션에서는 제외됩니다.)`, (res) => {
+                if (!res) return;
+                options[type] = options[type].filter(o => o !== val);
+                state.filters.tags.delete(val);
+                state.form.tags.delete(val);
+                renderModalSelects();
+                renderFilters();
+            });
         }
 
         function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
 
         async function submitForm() {
+            const titleInput = document.getElementById('form-title').value.trim();
+            const authorInput = document.getElementById('form-author').value.trim();
+            const urlInput = document.getElementById('form-url').value.trim();
+
+            if (!titleInput || !authorInput || !urlInput) {
+                showCustomAlert("제목, 작가, URL은 필수 입력 항목입니다.");
+                return;
+            }
+
             const data = {
-                "제목": document.getElementById('form-title').value,
-                "작가": document.getElementById('form-author').value,
-                "URL": document.getElementById('form-url').value,
+                "제목": titleInput,
+                "작가": authorInput,
+                "URL": urlInput,
                 "발행일": document.getElementById('form-date').value,
                 "구분": state.form.category,
                 "결제": state.form.price,
@@ -603,6 +779,7 @@
             const action = isEdit ? "update" : "add";
             
             const btn = document.getElementById('submit-btn');
+            const originalBtnHtml = btn.innerHTML;
             btn.innerHTML = `<i class="ph ph-spinner spinner inline-block"></i> 저장 중...`;
             btn.disabled = true;
 
@@ -614,31 +791,39 @@
                 });
                 const result = await res.json();
                 if(result.success) {
-                    alert("저장되었습니다.");
-                    localStorage.removeItem('pota_cache_v2'); 
-                    location.reload();
-                } else alert(result.message);
-            } catch(e) { alert("서버 연결 실패"); } finally {
-                btn.innerHTML = `저장하기`;
+                    showCustomAlert("데이터가 성공적으로 저장되었습니다.", () => {
+                        localStorage.removeItem('pota_cache_v2'); 
+                        location.reload();
+                    });
+                } else {
+                    showCustomAlert("저장 실패: " + result.message);
+                }
+            } catch(e) { 
+                showCustomAlert("서버와의 연결에 실패했습니다."); 
+            } finally {
+                btn.innerHTML = originalBtnHtml;
                 btn.disabled = false;
             }
         }
 
-        async function deletePost(e, id) {
+        function deletePost(e, id) {
             e.stopPropagation();
-            if (!confirm("정말 이 포스트를 영구 삭제하시겠습니까?")) return;
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ action: "delete", id: id })
-                });
-                const result = await res.json();
-                if (result.success) { 
-                    localStorage.removeItem('pota_cache_v2'); 
-                    location.reload(); 
-                } else alert(result.message);
-            } catch (e) { alert(e.message); }
+            showCustomConfirm("정말 이 포스트를 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.", async (res) => {
+                if (!res) return;
+                
+                try {
+                    const resApi = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify({ action: "delete", id: id })
+                    });
+                    const result = await resApi.json();
+                    if (result.success) { 
+                        localStorage.removeItem('pota_cache_v2'); 
+                        location.reload(); 
+                    } else showCustomAlert("삭제 실패: " + result.message);
+                } catch (e) { showCustomAlert("오류 발생: " + e.message); }
+            });
         }
 
         document.getElementById('search-input').addEventListener('input', (e) => { 
@@ -662,7 +847,10 @@
             }
         }
 
+        // 초기 데이터 로드
         fetchPosts();
     </script>
 </body>
 </html>
+
+

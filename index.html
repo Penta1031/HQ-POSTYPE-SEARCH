@@ -357,7 +357,6 @@
             if (cachedData) {
                 try {
                     state.posts = JSON.parse(cachedData);
-                    // 캐시 데이터를 읽을 때도 시트에 있는 커스텀 태그들을 options에 누적시킵니다.
                     state.posts.forEach(p => {
                         splitTags(p.genre).forEach(t => { if(!options.genre.includes(t)) options.genre.push(t); });
                         splitTags(p.mood).forEach(t => { if(!options.mood.includes(t)) options.mood.push(t); });
@@ -381,21 +380,15 @@
                     if (!row["제목"] && !row["ID"]) return null;
                     
                     const rawMood = row["분위기"] !== undefined ? row["분위기"] : row["키워드"];
-
-                    // '일반'을 '전연령'으로 자동 변환 (기존 데이터 호환성 유지)
                     let ageValue = row["연령"];
                     if (ageValue === "일반") ageValue = "전연령";
 
-                    // 시트 안의 태그 자동 등록
                     const genreList = splitTags(row["장르"]);
                     genreList.forEach(t => { if(!options.genre.includes(t)) options.genre.push(t); });
-                    
                     const moodList = splitTags(rawMood);
                     moodList.forEach(t => { if(!options.mood.includes(t)) options.mood.push(t); });
-                    
                     const topList = splitTags(row["공"]);
                     topList.forEach(t => { if(!options.top.includes(t)) options.top.push(t); });
-                    
                     const bottomList = splitTags(row["수"]);
                     bottomList.forEach(t => { if(!options.bottom.includes(t)) options.bottom.push(t); });
 
@@ -405,7 +398,11 @@
                     ].filter(Boolean);
 
                     let displayDate = row["발행일"] || "";
-                    if (displayDate.includes('T')) displayDate = displayDate.split('T')[0];
+                    // 수정된 부분: UTC 날짜를 로컬(KST) 시간으로 올바르게 변환
+                    if (displayDate.includes('T')) {
+                        const d = new Date(displayDate);
+                        displayDate = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                    }
 
                     return {
                         id: String(row["ID"]), 
@@ -431,7 +428,7 @@
                     renderFilters();
                 }
 
-                syncStatus.classList.add('hidden'); // 동기화 완료 후 숨김
+                syncStatus.classList.add('hidden'); 
                 
             } catch (error) {
                 syncStatus.classList.add('hidden');
@@ -696,7 +693,13 @@
                 document.getElementById('modal-form').querySelectorAll('input[type="text"], input[type="url"]').forEach(i => i.value = '');
                 state.form.category = "소설"; state.form.price = "무료"; state.form.age = "전연령";
                 state.form.type = "소설"; state.form.ending = ""; 
-                document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+                
+                // 수정된 부분: 로컬(한국 시간 기준)로 오늘 날짜 가져오기
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                document.getElementById('form-date').value = `${yyyy}-${mm}-${dd}`;
             }
             renderModalSelects();
         }

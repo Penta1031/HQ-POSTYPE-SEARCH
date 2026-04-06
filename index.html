@@ -105,6 +105,9 @@
                     <div id="sync-status" class="text-[#555] hidden">
                         <i class="ph ph-arrows-clockwise spinner inline-block"></i> 동기화 중...
                     </div>
+                    <button onclick="forceRefresh()" class="flex items-center gap-1 hover:text-white transition-colors font-medium">
+                        <i class="ph ph-arrows-clockwise text-sm"></i> 새로고침
+                    </button>
                     <button onclick="openGuideModal()" class="flex items-center gap-1 hover:text-white transition-colors font-medium">
                         <i class="ph ph-info text-sm"></i> 이용 가이드
                     </button>
@@ -127,9 +130,14 @@
             <span class="text-[12px] text-[#e52828] font-bold flex items-center gap-1">
                 <i class="ph-fill ph-shield-check text-sm"></i> 관리자 모드
             </span>
-            <button onclick="openAdminModal('add')" class="bg-[#e52828] text-white text-[11px] px-3 py-1.5 rounded font-bold hover:bg-red-600 transition-colors flex items-center gap-1 shadow">
-                <i class="ph ph-plus-circle"></i> 새 글 추가
-            </button>
+            <div class="flex gap-2">
+                <button onclick="forceRefresh()" class="bg-[#222] border border-[#444] text-[#ccc] text-[11px] px-3 py-1.5 rounded font-bold hover:bg-[#333] hover:text-white transition-colors flex items-center gap-1 shadow">
+                    <i class="ph ph-arrows-clockwise"></i> 새로고침
+                </button>
+                <button onclick="openAdminModal('add')" class="bg-[#e52828] text-white text-[11px] px-3 py-1.5 rounded font-bold hover:bg-red-600 transition-colors flex items-center gap-1 shadow">
+                    <i class="ph ph-plus-circle"></i> 새 글 추가
+                </button>
+            </div>
         </div>
 
         <!-- 필터 섹션 (기본 숨김) -->
@@ -346,6 +354,18 @@
         function splitTags(str) {
             if (!str) return [];
             return String(str).split(',').map(s => s.trim()).filter(Boolean);
+        }
+
+        // 새롭게 추가된 강제 새로고침 함수
+        function forceRefresh() {
+            localStorage.removeItem('pota_cache_v2'); // 캐시 삭제
+            document.getElementById('post-list').innerHTML = `
+                <div class="text-center py-20 text-[#666]">
+                    <i class="ph ph-circle-notch text-3xl spinner mb-3 text-[#e52828]"></i>
+                    <div class="text-sm">데이터를 새로 불러오는 중...</div>
+                </div>
+            `;
+            fetchPosts();
         }
 
         async function fetchPosts() {

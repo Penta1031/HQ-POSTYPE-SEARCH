@@ -251,9 +251,9 @@
         // Google Apps Script API URL
         const API_URL = "https://script.google.com/macros/s/AKfycbxe2ljEEAyQADHXDGn3mQEDSB1R2Z4UiA8-C9x-OraaPVDB0EdKaaGLt6mHV4HhoxnX2w/exec";
 
-        // 기본 필터 옵션 상태 (스프레드시트에 있는 데이터가 자동으로 이곳에 추가됩니다)
+        // 구분 옵션에 '썰', '일러스트', '기타' 추가
         const options = {
-            category: ["소설", "만화"],
+            category: ["소설", "만화", "썰", "일러스트", "기타"],
             price: ["무료", "유료"],
             age: ["전연령", "성인"],
             type: ["소설", "만화", "기타"],
@@ -587,11 +587,14 @@
                     </div>
                 ` : "";
 
+                // 카테고리 라벨 처리 (소설->글, 만화->그림, 나머지는 그대로 출력)
+                const categoryLabel = item.category === '소설' ? '글' : (item.category === '만화' ? '그림' : (item.category || '기타'));
+
                 return `
                     <div class="flex flex-col border border-[#222] bg-[#161616] rounded-lg p-3 hover:border-[#333] transition-colors relative">
                         <div class="flex justify-between items-center mb-2">
                             <div class="flex gap-1.5">
-                                <span class="text-[9px] text-[#e52828] border border-[#e52828]/50 px-1 py-[1px] rounded font-medium bg-[#3a1616]/30">${item.category === '소설' ? '글' : (item.category === '만화' ? '그림' : '기타')}</span>
+                                <span class="text-[9px] text-[#e52828] border border-[#e52828]/50 px-1 py-[1px] rounded font-medium bg-[#3a1616]/30">${categoryLabel}</span>
                                 ${item.isAdult ? '<span class="text-[9px] text-[#ef4444] border border-[#ef4444]/30 px-1 py-[1px] rounded font-medium bg-[#ef4444]/10">19</span>' : '<span class="text-[9px] text-green-400 border border-green-400/30 px-1 py-[1px] rounded font-medium bg-green-400/10">전연령</span>'}
                                 <span class="text-[9px] ${item.price === '무료' ? 'text-blue-400 border-blue-400/30 bg-blue-400/10' : 'text-[#888] border-[#444] bg-[#222]'} border px-1 py-[1px] rounded font-medium">${item.price}</span>
                             </div>
@@ -890,8 +893,5 @@
     </script>
 </body>
 </html>
-
-
-
 
 

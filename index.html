@@ -21,24 +21,27 @@
         .thumbnail-mode { background-color: #f3f4f6; min-height: 100px; display: flex; align-items: center; justify-content: center; position: relative; }
         .thumbnail-mode img { width: 100%; height: auto; max-height: 400px; border-radius: 20px; object-fit: cover; }
         
-        /* 재생 버튼 오버레이 */
+        /* 🌟 오디오 인터페이스 스타일 (재생바 포함) */
+        .audio-player-bubble { width: 280px; padding: 12px 16px; border-radius: 22px; display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+        .audio-player-bubble.artist { background-color: #ffffff; border: 1px solid #e5e7eb; color: #3b82f6; }
+        .audio-player-bubble.user { background-color: #3b82f6; color: white; }
+
+        .play-toggle-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .audio-progress-container { flex-grow: 1; height: 4px; background-color: rgba(0, 0, 0, 0.08); border-radius: 2px; position: relative; overflow: hidden; }
+        .audio-player-bubble.user .audio-progress-container { background-color: rgba(255, 255, 255, 0.25); }
+        .audio-progress-bar { height: 100%; width: 0%; background-color: currentColor; border-radius: 2px; transition: width 0.1s linear; }
+        .audio-time-label { font-size: 11px; font-weight: 600; min-width: 32px; text-align: right; opacity: 0.8; }
+
+        /* 재생 버튼 오버레이 (일반 영상용) */
         .play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background-color: rgba(0, 0, 0, 0.2); }
         .play-icon { width: 40px; height: 40px; color: white; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
 
         /* 비디오/이미지 팝업 (모달) 스타일 */
-        #videoPopup, #profilePopup { position: fixed; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; background-color: rgba(0, 0, 0, 0.9); }
-        .popup-content { position: relative; width: 100%; max-width: 1000px; max-height: 90vh; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; }
+        #videoPopup { position: fixed; inset: 0; z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; background-color: rgba(0, 0, 0, 0.9); }
+        #videoPopup .popup-content { position: relative; width: 100%; max-width: 1000px; max-height: 90vh; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; }
         #videoPopup iframe { width: 100%; aspect-ratio: 16 / 9; border: none; }
-        #videoPopup img { max-height: 90vh; object-fit: contain; }
-        .close-btn { position: absolute; top: 15px; right: 15px; color: white; cursor: pointer; font-weight: bold; font-size: 18px; z-index: 10; background: rgba(0,0,0,0.5); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-
-        /* 프로필 선택 팝업 */
-        #profilePopup { background-color: rgba(0, 0, 0, 0.8); z-index: 300; }
-        .profile-selection-card { background: white; width: 90%; max-width: 350px; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
-        .profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-        .profile-option { aspect-ratio: 1/1; border-radius: 16px; overflow: hidden; cursor: pointer; border: 3px solid transparent; transition: border-color 0.2s; }
-        .profile-option.selected { border-color: #3b82f6; }
-        .profile-option img { width: 100%; height: 100%; object-fit: cover; }
+        #videoPopup img { max-width: 100%; max-height: 90vh; object-fit: contain; }
+        #videoPopup .close-btn { position: absolute; top: 15px; right: 15px; color: white; cursor: pointer; font-weight: bold; font-size: 18px; z-index: 10; background: rgba(0,0,0,0.5); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
 
         .img-error { font-size: 11px; color: #9ca3af; text-align: center; padding: 10px; background: #fff; border-radius: 12px; border: 1px solid #eee; width: 100%; }
         .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 30px; height: 30px; border-radius: 50%; border-left-color: #f4ad3b; animation: spin 1s linear infinite; }
@@ -73,42 +76,21 @@
         </div>
     </div>
 
-    <!-- 🌟 프로필 선택 팝업 레이어 -->
-    <div id="profilePopup">
-        <div class="profile-selection-card">
-            <h2 class="text-center font-bold text-lg text-gray-800" id="profilePopupTitle">프로필 선택</h2>
-            <div class="profile-grid" id="profileOptionGrid">
-                <!-- 프로필 목록 주입 -->
-            </div>
-            <button onclick="startWithProfile()" class="w-full bg-blue-500 text-white py-3 rounded-xl font-bold hover:bg-blue-600 transition-colors">이 프로필로 시작하기</button>
-            <button onclick="closeProfilePicker()" class="w-full text-gray-400 text-sm py-1">취소</button>
-        </div>
-    </div>
-
-    <!-- 프로필 선택 및 이름 설정 -->
-    <div id="selectionScreen" class="w-full max-w-[400px] h-[100dvh] sm:h-[800px] sm:rounded-[2rem] bg-[#f2f3f5] flex flex-col items-center justify-center shadow-2xl relative p-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">혚쾌버블 아카이브</h1>
-        <p class="text-sm text-gray-500 mb-10">채팅하고 싶은 멤버를 선택하세요.</p>
-
-        <!-- 🌟 내 이름 설정 입력창 -->
-        <div class="w-full max-w-[280px] mb-12">
-            <label class="block text-[11px] font-bold text-gray-400 mb-2 ml-1">내 이름 설정 (@@)</label>
-            <input type="text" id="userNicknameInput" value="@@" placeholder="표시될 이름을 입력하세요" 
-                   class="w-full px-4 py-3 rounded-2xl bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all text-sm font-medium">
-        </div>
-
+    <!-- 프로필 선택 -->
+    <div id="selectionScreen" class="w-full max-w-[400px] h-[100dvh] sm:h-[800px] sm:rounded-[2rem] bg-[#f2f3f5] flex flex-col items-center justify-center shadow-2xl relative">
+        <h1 class="text-xl font-bold text-gray-800 mb-10">혚쾌버블 아카이브</h1>
         <div class="flex gap-10">
-            <button onclick="openProfilePicker('혀비')" class="flex flex-col items-center gap-3 hover:scale-105 transition-transform focus:outline-none">
-                <div class="w-24 h-24 rounded-full border-4 border-white overflow-hidden shadow-md">
+            <button onclick="enterChat('혀비')" class="flex flex-col items-center gap-3 hover:scale-105 transition-transform focus:outline-none">
+                <div class="w-20 h-20 rounded-full border-2 border-white overflow-hidden shadow-sm">
                     <img src="https://pbs.twimg.com/media/HFOi5gtasAASasa?format=jpg&name=small" class="w-full h-full object-cover">
                 </div>
-                <span class="text-gray-800 font-bold text-lg">혀비</span>
+                <span class="text-gray-800 font-semibold text-lg text-center">혀비</span>
             </button>
-            <button onclick="openProfilePicker('유말랑')" class="flex flex-col items-center gap-3 hover:scale-105 transition-transform focus:outline-none">
-                <div class="w-24 h-24 rounded-full border-4 border-white overflow-hidden shadow-md">
+            <button onclick="enterChat('유말랑')" class="flex flex-col items-center gap-3 hover:scale-105 transition-transform focus:outline-none">
+                <div class="w-20 h-20 rounded-full border-2 border-white overflow-hidden shadow-sm">
                     <img src="https://pbs.twimg.com/media/HFOi7g7bAAAEVPU?format=jpg&name=small" class="w-full h-full object-cover">
                 </div>
-                <span class="text-gray-800 font-bold text-lg">유말랑</span>
+                <span class="text-gray-800 font-semibold text-lg text-center">유말랑</span>
             </button>
         </div>
     </div>
@@ -160,8 +142,6 @@
         let displayedCount = 0; 
         let currentArtistName = "";
         let currentView = 'chat';
-        let userNickname = "@@";
-        let selectedProfileImg = "";
         const PAGE_SIZE = 150;
         
         let searchIndices = [];
@@ -169,26 +149,6 @@
         let activeQuery = "";
 
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTiiqBBRaOAc7OxW3NpJC5aRcIyq_V7xFLlDHgoN6trdI-xc0jxfJ_ak-qmeCIvjDKSWwgThnT1SK92/pub?gid=2099676467&single=true&output=csv";
-
-        // 🌟 프로필 이미지 리스트
-        const artistProfiles = {
-            '혀비': [
-                "https://pbs.twimg.com/media/HFOi5gtasAASasa?format=jpg&name=small",
-                "https://pbs.twimg.com/media/F9F2W7baYAA9_YV?format=jpg&name=small",
-                "https://pbs.twimg.com/media/F8fX5Qza8AArB6k?format=jpg&name=small",
-                "https://pbs.twimg.com/media/F7-RInka0AAW_jH?format=jpg&name=small",
-                "https://pbs.twimg.com/media/F7R_6mcaUAAVM8X?format=jpg&name=small",
-                "https://pbs.twimg.com/media/F63iY0waYAA2V0u?format=jpg&name=small"
-            ],
-            '유말랑': [
-                "https://pbs.twimg.com/media/HFOi7g7bAAAEVPU?format=jpg&name=small",
-                "https://pbs.twimg.com/media/F9F2W7aa4AAWzIu?format=jpg&name=small",
-                "https://pbs.twimg.com/media/F8fX5Qwa4AAp-yJ?format=jpg&name=small",
-                "https://pbs.twimg.com/media/F7-RInjagAAl-R_?format=jpg&name=small",
-                "https://pbs.twimg.com/media/F7R_6mbaMAAIs_O?format=jpg&name=small",
-                "https://pbs.twimg.com/media/F63iY0vaUAATZ8m?format=jpg&name=small"
-            ]
-        };
 
         const testMappings = {
             "sh_2020_11_5_음성 - 1.mp4": "https://drive.google.com/file/d/1Z5VJyQfhQAa8S32LN8XxHjSjgI1LuIpw/preview",
@@ -241,44 +201,6 @@
             }
         }
         window.onload = loadData;
-
-        // 🌟 프로필 선택 팝업 관련 함수
-        function openProfilePicker(artist) {
-            currentArtistName = artist;
-            const popup = document.getElementById('profilePopup');
-            const grid = document.getElementById('profileOptionGrid');
-            const title = document.getElementById('profilePopupTitle');
-            
-            title.innerText = `${artist}의 프로필 선택`;
-            grid.innerHTML = "";
-            
-            const list = artistProfiles[artist];
-            selectedProfileImg = list[0]; // 기본 첫 번째 선택
-            
-            list.forEach((url, i) => {
-                const div = document.createElement('div');
-                div.className = `profile-option ${i === 0 ? 'selected' : ''}`;
-                div.innerHTML = `<img src="${url}">`;
-                div.onclick = () => {
-                    document.querySelectorAll('.profile-option').forEach(el => el.classList.remove('selected'));
-                    div.classList.add('selected');
-                    selectedProfileImg = url;
-                };
-                grid.appendChild(div);
-            });
-            
-            popup.style.display = 'flex';
-        }
-
-        function closeProfilePicker() {
-            document.getElementById('profilePopup').style.display = 'none';
-        }
-
-        function startWithProfile() {
-            userNickname = document.getElementById('userNicknameInput').value.trim() || "@@";
-            closeProfilePicker();
-            enterChat(currentArtistName);
-        }
 
         function parseDate(dateStr) {
             let s = dateStr.replace(/-/g, '/');
@@ -455,21 +377,79 @@
             return {
                 iframe: id ? `https://drive.google.com/file/d/${id}/preview` : url,
                 image: id ? `https://drive.google.com/thumbnail?authuser=0&sz=w1000&id=${id}` : url,
+                // 🌟 confirm=t 옵션을 추가하여 바이러스 검사 경고창을 건너뛰고 바로 소스를 불러옴
                 direct: id ? `https://drive.google.com/uc?export=download&id=${id}&confirm=t` : url, 
                 id: id
             };
+        }
+
+        // 🌟 실시간 오디오(비디오 백그라운드) 재생 제어 로직
+        function toggleAudio(btn, audioId) {
+            const media = document.getElementById(audioId);
+            const container = btn.closest('.audio-player-bubble');
+            const progressBar = container.querySelector('.audio-progress-bar');
+            const timeLabel = container.querySelector('.audio-time-label');
+            const icon = btn.querySelector('svg path');
+
+            if (media.paused) {
+                document.querySelectorAll('audio, video').forEach(m => {
+                    if (m.id !== audioId && !m.closest('#videoPopup')) {
+                        m.pause();
+                        const otherIcon = m.closest('.audio-player-bubble')?.querySelector('.play-toggle-btn svg path');
+                        if (otherIcon) otherIcon.setAttribute('d', 'M8 5v14l11-7z');
+                    }
+                });
+                
+                media.play().catch(e => {
+                    console.error("재생 오류:", e);
+                });
+                icon.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z'); 
+            } else {
+                media.pause();
+                icon.setAttribute('d', 'M8 5v14l11-7z'); 
+            }
+
+            media.ontimeupdate = () => {
+                if (media.duration) {
+                    const progress = (media.currentTime / media.duration) * 100;
+                    progressBar.style.width = progress + '%';
+                    
+                    const cur = Math.floor(media.currentTime);
+                    const min = Math.floor(cur / 60);
+                    const sec = cur % 60;
+                    timeLabel.innerText = `${min}:${sec.toString().padStart(2, '0')}`;
+                }
+            };
+
+            media.onended = () => {
+                icon.setAttribute('d', 'M8 5v14l11-7z');
+                progressBar.style.width = '0%';
+                const dur = Math.floor(media.duration || 0);
+                const min = Math.floor(dur / 60);
+                const sec = dur % 60;
+                timeLabel.innerText = `${min}:${sec.toString().padStart(2, '0')}`;
+            };
+        }
+
+        // 🌟 미디어가 로드되면 전체 길이를 초기에 표시해줌
+        function handleMetadata(media) {
+            const container = media.closest('.audio-player-bubble');
+            if (!container) return;
+            const timeLabel = container.querySelector('.audio-time-label');
+            const dur = Math.floor(media.duration || 0);
+            const min = Math.floor(dur / 60);
+            const sec = dur % 60;
+            timeLabel.innerText = `${min}:${sec.toString().padStart(2, '0')}`;
         }
 
         function handleImgError(img, fileName, fileId) {
             img.parentElement.innerHTML = `<div class="img-error"><p>로드 실패</p><a href="https://drive.google.com/file/d/${fileId}/view" target="_blank" class="text-blue-500 underline font-bold text-[10px]">보기</a></div>`;
         }
 
-        // 🌟 하이라이트 및 @@ 치환 로직
         function highlightText(text) {
-            let processed = (text || "").replace(/@@/g, userNickname);
-            if (!activeQuery) return processed;
+            if (!activeQuery) return text.replace(/@@/g, '@@');
             const regex = new RegExp(`(${activeQuery})`, 'gi');
-            return processed.replace(regex, '<mark class="highlight">$1</mark>');
+            return text.replace(/@@/g, '@@').replace(regex, '<mark class="highlight">$1</mark>');
         }
 
         function renderMessages(artist, isReset = false) {
@@ -509,11 +489,24 @@
                 if (link) {
                     const urls = getMediaUrls(link);
                     const isImg = superKey.match(/(jpg|jpeg|png|gif|webp)/i) || item.content?.includes('(사진)');
+                    const isAudio = rawFileName.includes('음성');
                     
-                    if (isImg) {
+                    if (isAudio) {
+                        const audioId = `audio-${i}`;
+                        contentHtml = `
+                            <div class="audio-player-bubble ${isArt ? 'artist' : 'user'}">
+                                <video id="${audioId}" src="${urls.direct}" preload="metadata" style="display:none;" playsinline onloadedmetadata="handleMetadata(this)"></video>
+                                <div class="play-toggle-btn" onclick="toggleAudio(this, '${audioId}')">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                                <div class="audio-progress-container">
+                                    <div class="audio-progress-bar"></div>
+                                </div>
+                                <div class="audio-time-label">0:00</div>
+                            </div>`;
+                    } else if (isImg) {
                         contentHtml = `<div class="media-content thumbnail-mode" onclick="showPopup('${urls.id}', 'image')"><img src="${urls.image}" loading="lazy" onerror="handleImgError(this, '${rawFileName}', '${urls.id}')"></div>`;
                     } else {
-                        // 🌟 모든 음성/영상은 썸네일 + 영상 인터페이스로 통일
                         contentHtml = `
                             <div class="media-content thumbnail-mode" onclick="showPopup('${urls.id}', 'video')">
                                 <img src="${urls.image}" loading="lazy" onerror="handleImgError(this, '${rawFileName}', '${urls.id}')">
@@ -525,8 +518,7 @@
                     contentHtml = highlightText(rawContent) || (rawFileName ? `<span class="text-xs text-gray-400 italic">[매칭 대기: ${rawFileName}]</span>` : "");
                 }
 
-                // 🌟 선택된 프로필 사진 사용
-                const prof = isArt ? selectedProfileImg : "";
+                const prof = isArt ? (artist === '혀비' ? "https://pbs.twimg.com/media/HFOi5gtasAASasa?format=jpg&name=small" : "https://pbs.twimg.com/media/HFOi7g7bAAAEVPU?format=jpg&name=small") : "";
 
                 html += `
                     <div id="msg-${i}" class="msg-item flex w-full mt-4 ${!isArt ? 'justify-end' : 'justify-start'}">
@@ -569,12 +561,15 @@
                 const link = mediaMap[cleanName] || mediaMap[superKey];
                 const urls = getMediaUrls(link);
                 const isImg = superKey.match(/(jpg|jpeg|png|gif|webp)/i) || item.content?.includes('(사진)');
+                const isAudio = rawName.includes('음성');
 
                 html += `
                     <div class="gallery-item" onclick="showPopup('${urls.id}', '${isImg ? 'image' : 'video'}')">
                         <img src="${urls.image}" loading="lazy" onerror="handleImgError(this, '${rawName}', '${urls.id}')">
                         <div class="absolute top-1 right-1 text-white drop-shadow-md">
-                            ${!isImg ? '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' : ''}
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                ${isAudio ? '<path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>' : (isImg ? '' : '<path d="M8 5v14l11-7z"/>')}
+                            </svg>
                         </div>
                     </div>`;
             });

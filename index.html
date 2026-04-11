@@ -257,7 +257,7 @@
 
     <script>
         // Google Apps Script API URL
-        const API_URL = "https://script.google.com/macros/s/AKfycbxe2ljEEAyQADHXDGn3mQEDSB1R2Z4UiA8-C9x-OraaPVDB0EdKaaGLt6mHV4HhoxnX2w/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbyBzjGjCq7bI2ad4z6s3DYe95KPnMgG9v4fnTr-6ssbiNDpmjnuuemwHvL4udDG8bRw0g/exec";
 
         // 구분 옵션에 '썰', '일러스트', '기타' 추가
         const options = {
@@ -358,7 +358,7 @@
 
         // 새롭게 추가된 강제 새로고침 함수
         function forceRefresh() {
-            localStorage.removeItem('pota_cache_v2'); // 캐시 삭제
+            localStorage.removeItem('pota_cache_v3'); // 캐시 삭제
             document.getElementById('post-list').innerHTML = `
                 <div class="text-center py-20 text-[#666]">
                     <i class="ph ph-circle-notch text-3xl spinner mb-3 text-[#e52828]"></i>
@@ -372,7 +372,7 @@
             const syncStatus = document.getElementById('sync-status');
             syncStatus.classList.remove('hidden'); // 동기화 아이콘 표시
             
-            const cachedData = localStorage.getItem('pota_cache_v2');
+            const cachedData = localStorage.getItem('pota_cache_v3');
             
             if (cachedData) {
                 try {
@@ -387,7 +387,7 @@
                     renderList();
                 } catch (e) {
                     console.error("캐시 파싱 실패, 캐시를 초기화합니다.", e);
-                    localStorage.removeItem('pota_cache_v2');
+                    localStorage.removeItem('pota_cache_v3');
                 }
             }
 
@@ -426,7 +426,7 @@
 
                     return {
                         id: String(row["ID"]), 
-                        title: row["제목"], author: row["작가"], url: row["URL"], date: displayDate,
+                        title: row["제목"], author: row["작가"], url: row["URL"] || row["원본링크"] || "", date: displayDate,
                         category: row["구분"], price: row["결제"], age: ageValue,
                         type: row["형태"], genre: row["장르"], mood: rawMood,
                         top: row["공"], bottom: row["수"], ending: row["엔딩"],
@@ -438,9 +438,9 @@
                 if (!cachedData || JSON.stringify(state.posts) !== JSON.stringify(processedData)) {
                     state.posts = processedData;
                     try {
-                        localStorage.setItem('pota_cache_v2', JSON.stringify(processedData));
+                        localStorage.setItem('pota_cache_v3', JSON.stringify(processedData));
                     } catch (storageError) {
-                        localStorage.removeItem('pota_cache_v2');
+                        localStorage.removeItem('pota_cache_v3');
                     }
                     renderFilters(); 
                     renderList(); 
@@ -452,8 +452,12 @@
                 
             } catch (error) {
                 syncStatus.classList.add('hidden');
+                const msg = String(error.message || '');
+                const friendlyMsg = msg.includes('insufficient_quota')
+                    ? 'AI API 사용 한도가 부족합니다. Gemini 또는 OpenAI의 Billing/Usage를 확인해주세요.'
+                    : msg;
                 if (!cachedData) {
-                    document.getElementById('post-list').innerHTML = `<div class="text-center py-20 text-red-500 text-sm"><i class="ph ph-warning text-2xl mb-2 inline-block"></i><br>데이터를 불러오지 못했습니다.<br>${error.message}</div>`;
+                    document.getElementById('post-list').innerHTML = `<div class="text-center py-20 text-red-500 text-sm"><i class="ph ph-warning text-2xl mb-2 inline-block"></i><br>데이터를 불러오지 못했습니다.<br>${friendlyMsg}</div>`;
                 }
             }
         }
@@ -851,7 +855,7 @@
                 const result = await res.json();
                 if(result.success) {
                     showCustomAlert("데이터가 성공적으로 저장되었습니다.", () => {
-                        localStorage.removeItem('pota_cache_v2'); 
+                        localStorage.removeItem('pota_cache_v3'); 
                         closeAdminModal(); // 모달창만 닫기
                         fetchPosts(); // 페이지 새로고침 없이 백그라운드 데이터 재조회 (관리자 모드 유지)
                     });
@@ -884,7 +888,7 @@
                     });
                     const result = await resApi.json();
                     if (result.success) { 
-                        localStorage.removeItem('pota_cache_v2'); 
+                        localStorage.removeItem('pota_cache_v3'); 
                         fetchPosts(); // 페이지 새로고침 없이 삭제 후 목록 갱신 (관리자 모드 유지)
                     } else showCustomAlert("삭제 실패: " + result.message);
                 } catch (e) { showCustomAlert("오류 발생: " + e.message); }

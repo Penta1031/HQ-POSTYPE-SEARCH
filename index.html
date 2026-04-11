@@ -261,10 +261,10 @@
 
         // 구분 옵션에 '썰', '일러스트', '기타' 추가
         const options = {
-            category: ["소설", "만화", "썰", "일러스트", "기타"],
+            category: ["글", "그림", "썰", "일러스트", "기타"],
             price: ["무료", "유료"],
             age: ["전연령", "성인"],
-            type: ["소설", "만화", "기타"],
+            type: ["글", "그림", "기타"],
             genre: ["리얼물", "리맨물", "장르물", "수인물", "조직물", "센가물", "알오물", "군부물", "육아물", "네임버스"],
             mood: ["로코", "게헤", "헤게", "청게", "캠게", "섹파", "싱글대디", "이별", "연예계", "계약", "재회", "오컬트", "F1", "사극", "회귀", "짭근친", "임출육", "노란장판", "혐관"],
             top: ["미남공", "다정공", "집착공", "울보공"],
@@ -501,7 +501,7 @@
                     <div class="flex flex-wrap gap-1.5 flex-1">
                         <button class="filter-btn ${state.filters[s.id] === 'all' ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="setSingleFilter('${s.id}', 'all')">전체</button>
                         ${s.items.map(item => `
-                            <button class="filter-btn ${state.filters[s.id] === item ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="setSingleFilter('${s.id}', '${item}')">${item === '소설' && s.id === 'category' ? '글' : (item === '만화' && s.id === 'category' ? '그림' : item)}</button>
+                            <button class="filter-btn ${state.filters[s.id] === item ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="setSingleFilter('${s.id}', '${item}')">${item}</button>
                         `).join('')}
                     </div>
                 </div>`;
@@ -608,8 +608,7 @@
                     </div>
                 ` : "";
 
-                // 카테고리 라벨 처리 (소설->글, 만화->그림, 나머지는 그대로 출력)
-                const categoryLabel = item.category === '소설' ? '글' : (item.category === '만화' ? '그림' : (item.category || '기타'));
+                const categoryLabel = item.category || '기타';
 
                 return `
                     <div class="flex flex-col border border-[#222] bg-[#161616] rounded-lg p-3 hover:border-[#333] transition-colors relative">
@@ -715,8 +714,8 @@
             } else {
                 title.innerHTML = '<i class="ph ph-plus-circle text-[#e52828] mr-1"></i> 신규 작품 추가';
                 document.getElementById('modal-form').querySelectorAll('input[type="text"], input[type="url"]').forEach(i => i.value = '');
-                state.form.category = "소설"; state.form.price = "무료"; state.form.age = "전연령";
-                state.form.type = "소설"; state.form.ending = ""; 
+                state.form.category = "글"; state.form.price = "무료"; state.form.age = "전연령";
+                state.form.type = "글"; state.form.ending = ""; 
                 
                 // 수정된 부분: 로컬(한국 시간 기준)로 오늘 날짜 가져오기
                 const now = new Date();
@@ -736,7 +735,6 @@
                 { id: 'category', label: '구분', items: options.category },
                 { id: 'price', label: '결제', items: options.price },
                 { id: 'age', label: '연령', items: options.age },
-                { id: 'type', label: '형태', items: options.type },
                 { id: 'ending', label: '스포일러/엔딩 <span class="text-[#555] font-normal text-[9px] ml-1">(선택 해제 가능)</span>', items: options.ending }
             ];
             singleContainer.innerHTML = singles.map(s => `
@@ -817,23 +815,33 @@
 
             const isEdit = !!state.editingId;
             const action = isEdit ? "update" : "add";
-            
+
+            const selectedGenres = Array.from(state.form.tags).filter(t => options.genre.includes(t));
+            const selectedKeywords = Array.from(state.form.tags).filter(t => options.mood.includes(t));
+            const selectedTops = Array.from(state.form.tags).filter(t => options.top.includes(t));
+            const selectedBottoms = Array.from(state.form.tags).filter(t => options.bottom.includes(t));
+            const hasAiTags = selectedGenres.length || selectedKeywords.length || selectedTops.length || selectedBottoms.length || !!state.form.ending;
+
             const data = {
+                "수집상태": hasAiTags ? "OK" : "READY_AI",
                 "제목": titleInput,
                 "작가": authorInput,
                 "URL": urlInput,
+                "원본링크": urlInput,
                 "발행일": document.getElementById('form-date').value,
                 "구분": state.form.category,
                 "결제": state.form.price,
                 "연령": state.form.age,
                 "형태": state.form.type,
                 "엔딩": state.form.ending,
-                "장르": Array.from(state.form.tags).filter(t => options.genre.includes(t)).join(', '),
-                "분위기": Array.from(state.form.tags).filter(t => options.mood.includes(t)).join(', '),
-                "공": Array.from(state.form.tags).filter(t => options.top.includes(t)).join(', '),
-                "수": Array.from(state.form.tags).filter(t => options.bottom.includes(t)).join(', ')
+                "장르": selectedGenres.join(', '),
+                "분위기": selectedKeywords.join(', '),
+                "공": selectedTops.join(', '),
+                "수": selectedBottoms.join(', '),
+                "AI원본응답": "",
+                "신규키워드제안": ""
             };
-            
+
             data["키워드"] = data["분위기"];
 
             let sendId = state.editingId;
@@ -854,7 +862,7 @@
                 });
                 const result = await res.json();
                 if(result.success) {
-                    showCustomAlert("데이터가 성공적으로 저장되었습니다.", () => {
+                    showCustomAlert(hasAiTags ? "데이터가 저장되었습니다." : "데이터가 저장되었습니다. READY_AI 상태로 등록되어 배치 태깅 대상이 됩니다.", () => {
                         localStorage.removeItem('pota_cache_v3'); 
                         closeAdminModal(); // 모달창만 닫기
                         fetchPosts(); // 페이지 새로고침 없이 백그라운드 데이터 재조회 (관리자 모드 유지)

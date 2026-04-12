@@ -8,48 +8,48 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         ::-webkit-scrollbar { display: none; }
-        body { 
-            -ms-overflow-style: none; 
-            scrollbar-width: none; 
-            background-color: #121212; 
-            color: #ffffff; 
-            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, sans-serif; 
+        body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, sans-serif;
         }
-        
-        .filter-btn { 
-            background-color: #222222; 
-            color: #aaaaaa; 
-            transition: all 0.2s ease-in-out; 
+
+        .filter-btn {
+            background-color: #222222;
+            color: #aaaaaa;
+            transition: all 0.2s ease-in-out;
             border: 1px solid transparent;
             border-radius: 4px;
             white-space: nowrap;
         }
-        .filter-btn.active { 
-            background-color: #e52828 !important; 
-            color: #ffffff !important; 
-            font-weight: 700; 
-            border-color: #e52828; 
+        .filter-btn.active {
+            background-color: #e52828 !important;
+            color: #ffffff !important;
+            font-weight: 700;
+            border-color: #e52828;
         }
 
-        .modal-overlay { 
-            background-color: rgba(0,0,0,0.85); 
-            backdrop-filter: blur(4px); 
+        .modal-overlay {
+            background-color: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px);
         }
-        
-        .input-field { 
-            background-color: #1e1e1e; 
-            border: 1px solid #2a2a2a; 
-            border-radius: 6px; 
-            padding: 10px; 
-            font-size: 13px; 
-            color: white; 
-            width: 100%; 
-            outline: none; 
+
+        .input-field {
+            background-color: #1e1e1e;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 13px;
+            color: white;
+            width: 100%;
+            outline: none;
             transition: border-color 0.2s;
         }
         .input-field:focus { border-color: #e52828; }
         .label-text { font-size: 11px; color: #777; margin-bottom: 4px; font-weight: bold; }
-        
+
         .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .spinner { animation: spin 1s linear infinite; }
@@ -92,7 +92,7 @@
         <div class="px-4">
             <div class="relative">
                 <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777] text-lg"></i>
-                <input type="text" id="search-input" placeholder="제목 · 작가 · 키워드 검색" 
+                <input type="text" id="search-input" placeholder="제목 · 작가 · 키워드 검색"
                     class="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-full py-2.5 pl-10 pr-4 text-[13px] text-white placeholder-[#777] focus:outline-none focus:border-[#e52828] transition-colors shadow-inner">
             </div>
             <div class="mt-2 text-[11px] text-[#777] flex items-center justify-end pl-1">
@@ -161,12 +161,13 @@
                 <h2 id="modal-title" class="text-white font-bold text-base">포타 정보 수정</h2>
                 <button onclick="closeAdminModal()" class="text-[#888] hover:text-white transition-colors"><i class="ph ph-x text-xl"></i></button>
             </div>
-            
+
             <div id="modal-form" class="p-5 overflow-y-auto space-y-4">
                 <div class="grid grid-cols-2 gap-3">
                     <div><p class="label-text">제목</p><input type="text" id="form-title" class="input-field" placeholder="작품명"></div>
                     <div><p class="label-text">작가</p><input type="text" id="form-author" class="input-field" placeholder="작가명"></div>
                 </div>
+
                 <div><p class="label-text">URL</p><input type="url" id="form-url" class="input-field" placeholder="https://..."></div>
                 <div><p class="label-text">발행일</p><input type="date" id="form-date" class="input-field"></div>
 
@@ -181,10 +182,12 @@
                             <option value="keyword">키워드</option>
                             <option value="top">공</option>
                             <option value="bottom">수</option>
+                            <option value="ending">스포일러/엔딩</option>
                         </select>
                         <input type="text" id="new-filter-value" placeholder="옵션명" class="flex-1 bg-[#222] text-[11px] rounded px-2 py-1 outline-none border border-[#333] text-white">
                         <button onclick="addNewFilterOption()" class="bg-[#444] hover:bg-[#555] px-3 py-1 rounded text-[11px] font-bold text-white transition-colors">추가</button>
                     </div>
+                    <p class="text-[10px] text-[#666] mt-2">이 버튼은 taxonomy에 저장되도록 연결되어 있습니다.</p>
                 </div>
             </div>
 
@@ -206,7 +209,7 @@
             </div>
             <div class="p-5 text-[13px] text-[#ccc] space-y-4 leading-relaxed bg-[#1a1a1a]">
                 <p><strong class="text-white">1. 다중 검색 지원</strong><br>검색창에 작품명, 작가명, 장르, 키워드 등을 자유롭게 입력해 보세요.</p>
-                <p><strong class="text-white">2. 상세 필터 기능</strong><br>[상세 필터] 탭에서 원하는 결제/연령/장르/키워드/공/수/엔딩을 복합적으로 적용할 수 있습니다.</p>
+                <p><strong class="text-white">2. 상세 필터 기능</strong><br>[상세 필터] 탭에서 원하는 구분/결제/연령/장르/키워드/공/수/스포일러를 복합적으로 적용할 수 있습니다.</p>
                 <p><strong class="text-white">3. 스포일러 확인</strong><br>엔딩 정보는 기본적으로 가려져 있습니다. 작품 목록의 <span class="bg-[#222] border border-[#444] px-1.5 py-0.5 rounded text-[10px]"><i class="ph ph-eye inline"></i> 엔딩 보기</span> 버튼을 눌러 확인하세요.</p>
             </div>
             <div class="p-4 bg-[#1e1e1e] border-t border-[#222]">
@@ -243,7 +246,7 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbyBzjGjCq7bI2ad4z6s3DYe95KPnMgG9v4fnTr-6ssbiNDpmjnuuemwHvL4udDG8bRw0g/exec";
 
-        const options = {
+        const DEFAULT_OPTIONS = {
             category: ["글", "그림", "기타"],
             price: ["무료", "유료"],
             age: ["전연령", "성인"],
@@ -254,20 +257,30 @@
             ending: ["해피엔딩", "새드엔딩", "오픈엔딩"]
         };
 
+        const options = {
+            category: [...DEFAULT_OPTIONS.category],
+            price: [...DEFAULT_OPTIONS.price],
+            age: [...DEFAULT_OPTIONS.age],
+            genre: [...DEFAULT_OPTIONS.genre],
+            keyword: [...DEFAULT_OPTIONS.keyword],
+            top: [...DEFAULT_OPTIONS.top],
+            bottom: [...DEFAULT_OPTIONS.bottom],
+            ending: [...DEFAULT_OPTIONS.ending]
+        };
+
         const state = {
             posts: [],
             searchQuery: '',
             sortBy: 'latest',
             filters: {
-                category: 'all',
-                price: 'all',
-                age: 'all',
+                category: 'all', price: 'all', age: 'all',
                 tags: new Set()
             },
             isAdmin: false,
             editingId: null,
             form: { tags: new Set() },
-            visibleLimit: 30
+            visibleLimit: 30,
+            taxonomyLoaded: false
         };
 
         let confirmCallback = null;
@@ -276,13 +289,13 @@
             const modal = document.getElementById('custom-alert-modal');
             const box = document.getElementById('custom-alert-box');
             document.getElementById('custom-alert-msg').innerText = msg;
-            
+
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 box.classList.remove('scale-95');
             }, 10);
-            
+
             modal.dataset.callback = callback ? 'true' : 'false';
             if (callback) window._alertCallback = callback;
         }
@@ -290,10 +303,10 @@
         function closeCustomAlert() {
             const modal = document.getElementById('custom-alert-modal');
             const box = document.getElementById('custom-alert-box');
-            
+
             modal.classList.add('opacity-0');
             box.classList.add('scale-95');
-            
+
             setTimeout(() => {
                 modal.classList.add('hidden');
                 if (modal.dataset.callback === 'true' && window._alertCallback) {
@@ -308,7 +321,7 @@
             const box = document.getElementById('custom-confirm-box');
             document.getElementById('custom-confirm-msg').innerText = msg;
             confirmCallback = callback;
-            
+
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
@@ -319,10 +332,10 @@
         function closeCustomConfirm(result) {
             const modal = document.getElementById('custom-confirm-modal');
             const box = document.getElementById('custom-confirm-box');
-            
+
             modal.classList.add('opacity-0');
             box.classList.add('scale-95');
-            
+
             setTimeout(() => {
                 modal.classList.add('hidden');
                 if (confirmCallback) {
@@ -337,6 +350,10 @@
             return String(str).split(',').map(s => s.trim()).filter(Boolean);
         }
 
+        function uniqueArray(arr) {
+            return [...new Set(arr.filter(Boolean))];
+        }
+
         function normalizeCategory(value) {
             const v = String(value || "").trim();
             if (!v) return "기타";
@@ -345,44 +362,120 @@
             return "기타";
         }
 
+        function resetOptionsToDefault() {
+            Object.keys(DEFAULT_OPTIONS).forEach(key => {
+                options[key] = [...DEFAULT_OPTIONS[key]];
+            });
+        }
+
+        function pushOption(type, value) {
+            const clean = String(value || "").trim();
+            if (!clean) return;
+            if (!options[type].includes(clean)) options[type].push(clean);
+        }
+
+        async function postAction(action, payload = {}) {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action, ...payload })
+            });
+            return await res.json();
+        }
+
+        async function fetchTaxonomy() {
+            try {
+                const result = await postAction('getTaxonomy');
+                if (!result.success || !Array.isArray(result.items)) throw new Error(result.message || 'taxonomy 조회 실패');
+
+                resetOptionsToDefault();
+
+                const groupMap = {
+                    category: 'category',
+                    price: 'price',
+                    age: 'age',
+                    genre: 'genre',
+                    keyword: 'keyword',
+                    top: 'top',
+                    bottom: 'bottom',
+                    ending: 'ending'
+                };
+
+                result.items.forEach(item => {
+                    const group = groupMap[item.group];
+                    if (!group) return;
+                    if (item.active === 'Y' || item.active === true) pushOption(group, item.label);
+                });
+
+                options.category = uniqueArray(["글", "그림", "기타", ...options.category.filter(v => ["글", "그림", "기타"].includes(v))]);
+                options.price = uniqueArray(options.price);
+                options.age = uniqueArray(options.age);
+                options.genre = uniqueArray(options.genre);
+                options.keyword = uniqueArray(options.keyword);
+                options.top = uniqueArray(options.top);
+                options.bottom = uniqueArray(options.bottom);
+                options.ending = uniqueArray(options.ending);
+
+                state.taxonomyLoaded = true;
+            } catch (e) {
+                state.taxonomyLoaded = false;
+            }
+        }
+
+        function deriveOptionsFromPosts() {
+            state.posts.forEach(p => {
+                splitTags(p.genre).forEach(t => pushOption('genre', t));
+                splitTags(p.keyword).forEach(t => pushOption('keyword', t));
+                splitTags(p.top).forEach(t => pushOption('top', t));
+                splitTags(p.bottom).forEach(t => pushOption('bottom', t));
+                if (p.ending) pushOption('ending', p.ending);
+            });
+
+            options.genre = uniqueArray(options.genre);
+            options.keyword = uniqueArray(options.keyword);
+            options.top = uniqueArray(options.top);
+            options.bottom = uniqueArray(options.bottom);
+            options.ending = uniqueArray(options.ending);
+        }
+
         function forceRefresh() {
-            localStorage.removeItem('pota_cache_v5');
+            localStorage.removeItem('pota_cache_v6');
             document.getElementById('post-list').innerHTML = `
                 <div class="text-center py-20 text-[#666]">
                     <i class="ph ph-circle-notch text-3xl spinner mb-3 text-[#e52828]"></i>
                     <div class="text-sm">데이터를 새로 불러오는 중...</div>
                 </div>
             `;
-            fetchPosts();
+            fetchPosts(true);
         }
 
-        async function fetchPosts() {
+        async function fetchPosts(force = false) {
             const syncStatus = document.getElementById('sync-status');
             syncStatus.classList.remove('hidden');
-            
-            const cachedData = localStorage.getItem('pota_cache_v5');
-            
+
+            const cachedData = force ? null : localStorage.getItem('pota_cache_v6');
+
             if (cachedData) {
                 try {
                     state.posts = JSON.parse(cachedData);
-                    state.posts.forEach(p => {
-                        splitTags(p.genre).forEach(t => { if(!options.genre.includes(t)) options.genre.push(t); });
-                        splitTags(p.keyword).forEach(t => { if(!options.keyword.includes(t)) options.keyword.push(t); });
-                        splitTags(p.top).forEach(t => { if(!options.top.includes(t)) options.top.push(t); });
-                        splitTags(p.bottom).forEach(t => { if(!options.bottom.includes(t)) options.bottom.push(t); });
-                    });
+                    resetOptionsToDefault();
+                    deriveOptionsFromPosts();
                     renderFilters();
                     renderList();
                 } catch (e) {
-                    localStorage.removeItem('pota_cache_v5');
+                    localStorage.removeItem('pota_cache_v6');
                 }
             }
 
             try {
-                const response = await fetch(API_URL);
+                const [response] = await Promise.all([
+                    fetch(API_URL),
+                    fetchTaxonomy()
+                ]);
+
                 const rawData = await response.json();
                 if (rawData.error) throw new Error(rawData.error);
-                
+
                 const processedData = rawData.map(row => {
                     if (!row["제목"] && !row["ID"]) return null;
 
@@ -393,16 +486,9 @@
                     const keywordValue = row["키워드"] !== undefined ? row["키워드"] : (row["분위기"] || "");
 
                     const genreList = splitTags(row["장르"]);
-                    genreList.forEach(t => { if(!options.genre.includes(t)) options.genre.push(t); });
-
                     const keywordList = splitTags(keywordValue);
-                    keywordList.forEach(t => { if(!options.keyword.includes(t)) options.keyword.push(t); });
-
                     const topList = splitTags(row["공"]);
-                    topList.forEach(t => { if(!options.top.includes(t)) options.top.push(t); });
-
                     const bottomList = splitTags(row["수"]);
-                    bottomList.forEach(t => { if(!options.bottom.includes(t)) options.bottom.push(t); });
 
                     const allTags = [
                         categoryValue, row["결제"], ageValue, row["엔딩"],
@@ -435,21 +521,25 @@
                     };
                 }).filter(Boolean);
 
-                if (!cachedData || JSON.stringify(state.posts) !== JSON.stringify(processedData)) {
-                    state.posts = processedData;
-                    try {
-                        localStorage.setItem('pota_cache_v5', JSON.stringify(processedData));
-                    } catch (storageError) {
-                        localStorage.removeItem('pota_cache_v5');
-                    }
-                    renderFilters();
-                    renderList();
+                state.posts = processedData;
+
+                if (!state.taxonomyLoaded) {
+                    resetOptionsToDefault();
+                    deriveOptionsFromPosts();
                 } else {
-                    renderFilters();
+                    deriveOptionsFromPosts();
                 }
 
-                syncStatus.classList.add('hidden'); 
-                
+                try {
+                    localStorage.setItem('pota_cache_v6', JSON.stringify(processedData));
+                } catch (storageError) {
+                    localStorage.removeItem('pota_cache_v6');
+                }
+
+                renderFilters();
+                renderList();
+                syncStatus.classList.add('hidden');
+
             } catch (error) {
                 syncStatus.classList.add('hidden');
                 const msg = String(error.message || '');
@@ -461,11 +551,11 @@
 
         function setSort(val) {
             state.sortBy = val;
-            state.visibleLimit = 30; 
+            state.visibleLimit = 30;
             const latestBtn = document.getElementById('sort-latest');
             const oldestBtn = document.getElementById('sort-oldest');
             const alphaBtn = document.getElementById('sort-alpha');
-            
+
             [latestBtn, oldestBtn, alphaBtn].forEach(btn => {
                 if(btn) btn.classList.remove('text-white', 'font-bold');
             });
@@ -473,7 +563,7 @@
             if (val === 'latest' && latestBtn) latestBtn.classList.add('text-white', 'font-bold');
             else if (val === 'oldest' && oldestBtn) oldestBtn.classList.add('text-white', 'font-bold');
             else if (val === 'alpha' && alphaBtn) alphaBtn.classList.add('text-white', 'font-bold');
-            
+
             renderList();
         }
 
@@ -498,7 +588,7 @@
                     <div class="flex flex-wrap gap-1.5 flex-1">
                         <button class="filter-btn ${state.filters[s.id] === 'all' ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="setSingleFilter('${s.id}', 'all')">전체</button>
                         ${s.items.map(item => `
-                            <button class="filter-btn ${state.filters[s.id] === item ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="setSingleFilter('${s.id}', '${item}')">${item}</button>
+                            <button class="filter-btn ${state.filters[s.id] === item ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="setSingleFilter('${s.id}', '${item.replace(/'/g, "\\'")}')">${item}</button>
                         `).join('')}
                     </div>
                 </div>`;
@@ -553,14 +643,14 @@
                     const matchAuthor = safeAuthor.includes(q);
                     const matchEtc = [safeKeyword, safeGenre, safeTop, safeBottom].some(v => v.includes(q));
                     const matchTags = item.tags && item.tags.some(t => String(t || "").toLowerCase().includes(q));
-                    
+
                     if (!(matchTitle || matchAuthor || matchEtc || matchTags)) return false;
                 }
-                
+
                 if (state.filters.category !== 'all' && item.category !== state.filters.category) return false;
                 if (state.filters.price !== 'all' && item.price !== state.filters.price) return false;
                 if (state.filters.age !== 'all' && item.age !== state.filters.age) return false;
-                
+
                 if (state.filters.tags.size > 0) {
                     const hasAll = Array.from(state.filters.tags).every(t => item.tags.includes(t));
                     if (!hasAll) return false;
@@ -625,7 +715,7 @@
                             </div>
                             <span class="text-[10px] text-[#666] tracking-wider">${item.date}</span>
                         </div>
-                        
+
                         <div class="flex justify-between items-start gap-2">
                             <div class="flex-1">
                                 <h3 class="text-[14px] font-bold text-white mb-1 cursor-pointer hover:text-[#e52828] transition-colors line-clamp-2" onclick="window.open('${item.url}', '_blank')">
@@ -637,7 +727,7 @@
                                 <i class="ph-bold ph-caret-right text-sm group-hover:translate-x-[2px] transition-transform"></i>
                             </button>
                         </div>
-                        
+
                         <div class="flex flex-wrap gap-1 items-center mt-1">${tagsHtml}${endingHtml}</div>
                         ${adminUI}
                     </div>`;
@@ -656,26 +746,26 @@
             container.innerHTML = listHtml;
         }
 
-        function setSingleFilter(key, val) { 
-            state.filters[key] = val; 
-            state.visibleLimit = 30; 
-            renderFilters(); 
-            renderList(); 
+        function setSingleFilter(key, val) {
+            state.filters[key] = val;
+            state.visibleLimit = 30;
+            renderFilters();
+            renderList();
         }
 
-        function toggleTagFilter(tag) { 
-            if(state.filters.tags.has(tag)) state.filters.tags.delete(tag); 
-            else state.filters.tags.add(tag); 
-            state.visibleLimit = 30; 
-            renderFilters(); 
-            renderList(); 
+        function toggleTagFilter(tag) {
+            if(state.filters.tags.has(tag)) state.filters.tags.delete(tag);
+            else state.filters.tags.add(tag);
+            state.visibleLimit = 30;
+            renderFilters();
+            renderList();
         }
 
-        function resetFilters() { 
-            state.filters = { category: 'all', price: 'all', age: 'all', tags: new Set() }; 
-            state.visibleLimit = 30; 
-            renderFilters(); 
-            renderList(); 
+        function resetFilters() {
+            state.filters = { category: 'all', price: 'all', age: 'all', tags: new Set() };
+            state.visibleLimit = 30;
+            renderFilters();
+            renderList();
         }
 
         function toggleAdminMode() {
@@ -683,12 +773,12 @@
             if (state.isAdmin) {
                 document.getElementById('admin-icon').classList.replace('ph-lock-key', 'ph-lock-key-open');
                 document.getElementById('admin-icon').classList.add('text-[#e52828]');
-                document.getElementById('admin-panel').classList.remove('hidden'); 
+                document.getElementById('admin-panel').classList.remove('hidden');
                 showCustomAlert("관리자 모드가 활성화 되었습니다.\n작품을 추가, 수정, 삭제할 수 있습니다.");
             } else {
                 document.getElementById('admin-icon').classList.replace('ph-lock-key-open', 'ph-lock-key');
                 document.getElementById('admin-icon').classList.remove('text-[#e52828]');
-                document.getElementById('admin-panel').classList.add('hidden'); 
+                document.getElementById('admin-panel').classList.add('hidden');
             }
             renderList();
         }
@@ -701,9 +791,9 @@
             state.form.tags = new Set();
             const modal = document.getElementById('admin-modal');
             const title = document.getElementById('modal-title');
-            
+
             modal.classList.remove('hidden');
-            
+
             if(type === 'edit') {
                 title.innerHTML = '<i class="ph ph-pencil-simple text-[#e52828] mr-1"></i> 포타 정보 수정';
                 const post = state.posts.find(p => p.id === id);
@@ -726,7 +816,7 @@
                 state.form.price = "무료";
                 state.form.age = "전연령";
                 state.form.ending = "";
-                
+
                 const now = new Date();
                 const yyyy = now.getFullYear();
                 const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -739,7 +829,7 @@
         function renderModalSelects() {
             const singleContainer = document.getElementById('modal-single-selects');
             const multiContainer = document.getElementById('modal-multi-selects');
-            
+
             const singles = [
                 { id: 'category', label: '구분', items: options.category },
                 { id: 'price', label: '결제', items: options.price },
@@ -750,7 +840,7 @@
                 <div>
                     <p class="label-text">${s.label}</p>
                     <div class="flex flex-wrap gap-1.5">
-                        ${s.items.map(item => `<button type="button" class="filter-btn ${state.form[s.id] === item ? 'active' : ''} px-2.5 py-1 text-[10px]" onclick="if('${s.id}' === 'ending' && state.form.${s.id} === '${item}') { state.form.${s.id} = ''; } else { state.form.${s.id} = '${item}'; } renderModalSelects();">${item}</button>`).join('')}
+                        ${s.items.map(item => `<button type="button" class="filter-btn ${state.form[s.id] === item ? 'active' : ''} px-2.5 py-1 text-[10px]" onclick="if('${s.id}' === 'ending' && state.form.${s.id} === '${item.replace(/'/g, "\\'")}') { state.form.${s.id} = ''; } else { state.form.${s.id} = '${item.replace(/'/g, "\\'")}'; } renderModalSelects();">${item}</button>`).join('')}
                     </div>
                 </div>
             `).join('');
@@ -778,35 +868,60 @@
             `).join('');
         }
 
-        function toggleFormTag(tag) { 
-            if(state.form.tags.has(tag)) state.form.tags.delete(tag); 
-            else state.form.tags.add(tag); 
-            renderModalSelects(); 
+        function toggleFormTag(tag) {
+            if(state.form.tags.has(tag)) state.form.tags.delete(tag);
+            else state.form.tags.add(tag);
+            renderModalSelects();
         }
-        
-        function addNewFilterOption() {
+
+        async function addNewFilterOption() {
             const type = document.getElementById('new-filter-type').value;
             const val = document.getElementById('new-filter-value').value.trim();
             if(!val) return;
-            if(!options[type].includes(val)) {
-                options[type].push(val);
-                showCustomAlert(`'${val}' 옵션이 추가되었습니다.\n저장 시 해당 작품에 같이 반영됩니다.`);
+
+            try {
+                const result = await postAction('addTaxonomyOption', {
+                    group: type,
+                    label: val
+                });
+
+                if (!result.success) {
+                    throw new Error(result.message || '저장 실패');
+                }
+
+                pushOption(type, val);
                 document.getElementById('new-filter-value').value = '';
+                showCustomAlert(`'${val}' 옵션이 추가되었습니다.`);
                 renderModalSelects();
-                renderFilters(); 
-            } else {
-                showCustomAlert(`이미 존재하는 옵션입니다.`);
+                renderFilters();
+            } catch (e) {
+                showCustomAlert("필터 옵션 저장 실패: " + e.message + "\n다음 단계에서 GAS taxonomy 저장 액션을 연결해야 합니다.");
             }
         }
 
-        function deleteFilterOption(type, val) {
-            showCustomConfirm(`'${val}' 필터 옵션을 숨기시겠습니까?\n기존 데이터는 유지되고 옵션 버튼만 사라집니다.`, (res) => {
+        async function deleteFilterOption(type, val) {
+            showCustomConfirm(`'${val}' 필터 옵션을 숨기시겠습니까?`, async (res) => {
                 if (!res) return;
-                options[type] = options[type].filter(o => o !== val);
-                state.filters.tags.delete(val);
-                state.form.tags.delete(val);
-                renderModalSelects();
-                renderFilters();
+
+                try {
+                    const result = await postAction('deactivateTaxonomyOption', {
+                        group: type,
+                        label: val
+                    });
+
+                    if (!result.success) {
+                        throw new Error(result.message || '숨김 처리 실패');
+                    }
+
+                    options[type] = options[type].filter(o => o !== val);
+                    state.filters.tags.delete(val);
+                    state.form.tags.delete(val);
+
+                    renderModalSelects();
+                    renderFilters();
+                } catch (e) {
+                    showCustomAlert("필터 옵션 숨김 실패: " + e.message + "\n다음 단계에서 GAS taxonomy 비활성화 액션을 연결해야 합니다.");
+                }
             });
         }
 
@@ -854,7 +969,7 @@
             if (sendId !== null && !isNaN(Number(sendId)) && String(sendId).trim() !== "") {
                 sendId = Number(sendId);
             }
-            
+
             const btn = document.getElementById('submit-btn');
             const originalBtnHtml = btn.innerHTML;
             btn.innerHTML = `<i class="ph ph-spinner spinner inline-block"></i> 저장 중...`;
@@ -869,15 +984,15 @@
                 const result = await res.json();
                 if(result.success) {
                     showCustomAlert(hasAiTags ? "데이터가 저장되었습니다." : "데이터가 저장되었습니다. READY_AI 상태로 등록되어 배치 태깅 대상이 됩니다.", () => {
-                        localStorage.removeItem('pota_cache_v5'); 
+                        localStorage.removeItem('pota_cache_v6');
                         closeAdminModal();
-                        fetchPosts();
+                        fetchPosts(true);
                     });
                 } else {
                     showCustomAlert("저장 실패: " + result.message);
                 }
-            } catch(e) { 
-                showCustomAlert("서버와의 연결에 실패했습니다."); 
+            } catch(e) {
+                showCustomAlert("서버와의 연결에 실패했습니다.");
             } finally {
                 btn.innerHTML = originalBtnHtml;
                 btn.disabled = false;
@@ -888,12 +1003,12 @@
             e.stopPropagation();
             showCustomConfirm("정말 이 포스트를 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.", async (res) => {
                 if (!res) return;
-                
+
                 let deleteId = id;
                 if (deleteId !== null && !isNaN(Number(deleteId)) && String(deleteId).trim() !== "") {
                     deleteId = Number(deleteId);
                 }
-                
+
                 try {
                     const resApi = await fetch(API_URL, {
                         method: 'POST',
@@ -901,18 +1016,18 @@
                         body: JSON.stringify({ action: "delete", id: deleteId })
                     });
                     const result = await resApi.json();
-                    if (result.success) { 
-                        localStorage.removeItem('pota_cache_v5'); 
-                        fetchPosts();
+                    if (result.success) {
+                        localStorage.removeItem('pota_cache_v6');
+                        fetchPosts(true);
                     } else showCustomAlert("삭제 실패: " + result.message);
                 } catch (e) { showCustomAlert("오류 발생: " + e.message); }
             });
         }
 
-        document.getElementById('search-input').addEventListener('input', (e) => { 
-            state.searchQuery = e.target.value; 
-            state.visibleLimit = 30; 
-            renderList(); 
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            state.searchQuery = e.target.value;
+            state.visibleLimit = 30;
+            renderList();
         });
 
         function switchTab(tab) {

@@ -1,1051 +1,1081 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>혚쾌 포타 검색기</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>
-        ::-webkit-scrollbar { display: none; }
-        body {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-            background-color: #121212;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>혚쾌 포타 검색기</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="icon" href="data:," />
+  <style>
+    ::-webkit-scrollbar { display: none; }
+    body {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      background-color: #121212;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, sans-serif;
+    }
 
-        .filter-btn {
-            background-color: #222222;
-            color: #aaaaaa;
-            transition: all 0.2s ease-in-out;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            white-space: nowrap;
-        }
-        .filter-btn.active {
-            background-color: #e52828 !important;
-            color: #ffffff !important;
-            font-weight: 700;
-            border-color: #e52828;
-        }
+    .filter-btn {
+      background-color: #222222;
+      color: #aaaaaa;
+      transition: all 0.2s ease-in-out;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .filter-btn.active {
+      background-color: #e52828 !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      border-color: #e52828;
+    }
 
-        .modal-overlay {
-            background-color: rgba(0,0,0,0.85);
-            backdrop-filter: blur(4px);
-        }
+    .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(4px);
+    }
 
-        .input-field {
-            background-color: #1e1e1e;
-            border: 1px solid #2a2a2a;
-            border-radius: 6px;
-            padding: 10px;
-            font-size: 13px;
-            color: white;
-            width: 100%;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .input-field:focus { border-color: #e52828; }
-        .label-text { font-size: 11px; color: #777; margin-bottom: 4px; font-weight: bold; }
+    .input-field {
+      background-color: #1e1e1e;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 13px;
+      color: white;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-field:focus { border-color: #e52828; }
 
-        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .spinner { animation: spin 1s linear infinite; }
+    .label-text {
+      font-size: 11px;
+      color: #777;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
 
-        .delete-opt-btn {
-            background-color: rgba(0,0,0,0.3);
-            color: #555;
-            padding: 0 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-left: 1px solid #333;
-            transition: all 0.2s;
-        }
-        .delete-opt-btn:hover {
-            background-color: #ef4444;
-            color: white;
-        }
-    </style>
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .spinner { animation: spin 1s linear infinite; }
+
+    .delete-opt-btn {
+      background-color: rgba(0,0,0,0.3);
+      color: #555;
+      padding: 0 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-left: 1px solid #333;
+      transition: all 0.2s;
+    }
+    .delete-opt-btn:hover {
+      background-color: #ef4444;
+      color: white;
+    }
+  </style>
 </head>
 <body class="min-h-screen pb-20">
 
-    <div class="max-w-md mx-auto relative bg-[#121212] min-h-screen border-x border-[#222]">
+  <div class="max-w-md mx-auto relative bg-[#121212] min-h-screen border-x border-[#222]">
 
-        <a href="#" class="block bg-[#3a1616] text-[#e52828] text-[11px] py-2 text-center font-bold flex items-center justify-center gap-1 hover:bg-[#4a1c1c] transition-colors">
-            <i class="ph ph-house text-sm"></i> 메인 홈페이지로 이동
-        </a>
+    <a href="#" class="block bg-[#3a1616] text-[#e52828] text-[11px] py-2 text-center font-bold flex items-center justify-center gap-1 hover:bg-[#4a1c1c] transition-colors">
+      <i class="ph ph-house text-sm"></i> 메인 홈페이지로 이동
+    </a>
 
-        <header class="px-4 py-4 flex justify-between items-center">
-            <h1 class="text-[22px] font-black tracking-tighter text-[#e52828] uppercase font-sans">
-                혚쾌 포타 검색기
-            </h1>
-            <div class="flex items-center gap-3">
-                <button onclick="toggleAdminMode()" id="admin-btn" class="text-[#ccc] hover:text-white transition-colors" aria-label="관리자 모드 전환">
-                    <i class="ph ph-lock-key text-xl" id="admin-icon"></i>
-                </button>
-            </div>
-        </header>
+    <header class="px-4 py-4 flex justify-between items-center">
+      <h1 class="text-[22px] font-black tracking-tighter text-[#e52828] uppercase font-sans">
+        혚쾌 포타 검색기
+      </h1>
+      <div class="flex items-center gap-3">
+        <button onclick="toggleAdminMode()" id="admin-btn" class="text-[#ccc] hover:text-white transition-colors" aria-label="관리자 모드 전환">
+          <i class="ph ph-lock-key text-xl" id="admin-icon"></i>
+        </button>
+      </div>
+    </header>
 
-        <div class="px-4">
-            <div class="relative">
-                <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777] text-lg"></i>
-                <input type="text" id="search-input" placeholder="제목 · 작가 · 키워드 검색"
-                    class="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-full py-2.5 pl-10 pr-4 text-[13px] text-white placeholder-[#777] focus:outline-none focus:border-[#e52828] transition-colors shadow-inner">
-            </div>
-            <div class="mt-2 text-[11px] text-[#777] flex items-center justify-end pl-1">
-                <div class="flex items-center gap-3 shrink-0 ml-2">
-                    <div id="sync-status" class="text-[#555] hidden">
-                        <i class="ph ph-arrows-clockwise spinner inline-block"></i> 동기화 중...
-                    </div>
-                    <button onclick="forceRefresh()" class="flex items-center gap-1 hover:text-white transition-colors font-medium">
-                        <i class="ph ph-arrows-clockwise text-sm"></i> 새로고침
-                    </button>
-                    <button onclick="openGuideModal()" class="flex items-center gap-1 hover:text-white transition-colors font-medium">
-                        <i class="ph ph-info text-sm"></i> 이용 가이드
-                    </button>
-                </div>
-            </div>
+    <div class="px-4">
+      <div class="relative">
+        <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777] text-lg"></i>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="제목 · 작가 · 키워드 검색"
+          class="w-full bg-[#1e1e1e] border border-[#2a2a2a] rounded-full py-2.5 pl-10 pr-4 text-[13px] text-white placeholder-[#777] focus:outline-none focus:border-[#e52828] transition-colors shadow-inner"
+        />
+      </div>
+      <div class="mt-2 text-[11px] text-[#777] flex items-center justify-end pl-1">
+        <div class="flex items-center gap-3 shrink-0 ml-2">
+          <div id="sync-status" class="text-[#555] hidden">
+            <i class="ph ph-arrows-clockwise spinner inline-block"></i> 동기화 중...
+          </div>
+          <button onclick="forceRefresh()" class="flex items-center gap-1 hover:text-white transition-colors font-medium">
+            <i class="ph ph-arrows-clockwise text-sm"></i> 새로고침
+          </button>
+          <button onclick="openGuideModal()" class="flex items-center gap-1 hover:text-white transition-colors font-medium">
+            <i class="ph ph-info text-sm"></i> 이용 가이드
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex border-b border-[#222] mt-3">
+      <button id="tab-list" class="flex-1 py-3 text-[14px] font-bold text-white border-b-2 border-[#e52828] flex items-center justify-center gap-1.5 transition-colors" onclick="switchTab('list')">
+        <i class="ph ph-folder-open text-lg"></i> 작품 목록
+      </button>
+      <button id="tab-filter" class="flex-1 py-3 text-[14px] font-medium text-[#777] border-b-2 border-transparent flex items-center justify-center gap-1.5 transition-colors" onclick="switchTab('filter')">
+        <i class="ph ph-faders text-lg"></i> 상세 필터
+      </button>
+    </div>
+
+    <div id="admin-panel" class="hidden px-4 py-3 bg-[#3a1616]/30 border-b border-[#e52828]/30 flex justify-between items-center">
+      <span class="text-[12px] text-[#e52828] font-bold flex items-center gap-1">
+        <i class="ph-fill ph-shield-check text-sm"></i> 관리자 모드
+      </span>
+      <div class="flex gap-2">
+        <button onclick="forceRefresh()" class="bg-[#222] border border-[#444] text-[#ccc] text-[11px] px-3 py-1.5 rounded font-bold hover:bg-[#333] hover:text-white transition-colors flex items-center gap-1 shadow">
+          <i class="ph ph-arrows-clockwise"></i> 새로고침
+        </button>
+        <button onclick="openAdminModal('add')" class="bg-[#e52828] text-white text-[11px] px-3 py-1.5 rounded font-bold hover:bg-red-600 transition-colors flex items-center gap-1 shadow">
+          <i class="ph ph-plus-circle"></i> 새 글 추가
+        </button>
+      </div>
+    </div>
+
+    <div id="filter-section" class="px-4 flex flex-col bg-[#161616] border-b border-[#222]" style="display:none;"></div>
+
+    <div class="px-4 py-4 flex justify-between items-center">
+      <div class="text-[13px] text-[#999]">전체 <span id="visible-count" class="text-white font-bold">0</span>개</div>
+      <div class="flex gap-3 text-[12px] text-[#777] items-center">
+        <button onclick="setSort('latest')" id="sort-latest" class="hover:text-white transition-colors font-bold text-white">최신순</button>
+        <div class="w-[1px] h-2.5 bg-[#333]"></div>
+        <button onclick="setSort('oldest')" id="sort-oldest" class="hover:text-white transition-colors">과거순</button>
+        <div class="w-[1px] h-2.5 bg-[#333]"></div>
+        <button onclick="setSort('alpha')" id="sort-alpha" class="hover:text-white transition-colors">가나다순</button>
+      </div>
+    </div>
+
+    <div id="post-list" class="px-4 flex flex-col gap-4 pb-8 min-h-[300px]">
+      <div class="text-center py-20 text-[#666]">
+        <i class="ph ph-circle-notch text-3xl spinner mb-3 text-[#e52828]"></i>
+        <div class="text-sm">데이터를 불러오는 중...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 관리자 모달 -->
+  <div id="admin-modal" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+    <div class="bg-[#161616] w-full max-w-md rounded-xl border border-[#333] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col transform transition-all">
+      <div class="p-4 border-b border-[#222] flex justify-between items-center bg-[#1e1e1e]">
+        <h2 id="modal-title" class="text-white font-bold text-base">포타 정보 수정</h2>
+        <button onclick="closeAdminModal()" class="text-[#888] hover:text-white transition-colors"><i class="ph ph-x text-xl"></i></button>
+      </div>
+
+      <div id="modal-form" class="p-5 overflow-y-auto space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <p class="label-text">제목</p>
+            <input type="text" id="form-title" class="input-field" placeholder="작품명">
+          </div>
+          <div>
+            <p class="label-text">작가</p>
+            <input type="text" id="form-author" class="input-field" placeholder="작가명">
+          </div>
         </div>
 
-        <div class="flex border-b border-[#222] mt-3">
-            <button id="tab-list" class="flex-1 py-3 text-[14px] font-bold text-white border-b-2 border-[#e52828] flex items-center justify-center gap-1.5 transition-colors" onclick="switchTab('list')">
-                <i class="ph ph-folder-open text-lg"></i> 작품 목록
+        <div>
+          <p class="label-text">URL</p>
+          <input type="url" id="form-url" class="input-field" placeholder="https://...">
+        </div>
+
+        <div>
+          <p class="label-text">발행일</p>
+          <input type="date" id="form-date" class="input-field">
+        </div>
+
+        <div id="modal-single-selects" class="space-y-4 pt-2"></div>
+        <div id="modal-multi-selects" class="space-y-4 pt-2"></div>
+
+        <div class="pt-4 border-t border-[#222]">
+          <p class="label-text">필터 옵션 추가</p>
+          <div class="flex gap-2">
+            <select id="new-filter-type" class="bg-[#222] text-[11px] rounded px-2 py-1 outline-none text-[#ccc] border border-[#333]">
+              <option value="genre">장르</option>
+              <option value="keyword">키워드</option>
+              <option value="top">공</option>
+              <option value="bottom">수</option>
+              <option value="ending">스포일러/엔딩</option>
+            </select>
+            <input type="text" id="new-filter-value" placeholder="옵션명" class="flex-1 bg-[#222] text-[11px] rounded px-2 py-1 outline-none border border-[#333] text-white">
+            <button onclick="addNewFilterOption()" class="bg-[#444] hover:bg-[#555] px-3 py-1 rounded text-[11px] font-bold text-white transition-colors">추가</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-[#1e1e1e] border-t border-[#222] flex gap-2">
+        <button onclick="closeAdminModal()" class="flex-1 py-3 text-[13px] font-bold text-[#888] hover:text-white transition-colors bg-[#222] rounded-lg">취소</button>
+        <button onclick="submitForm()" id="submit-btn" class="flex-1 py-3 text-[13px] font-bold bg-[#e52828] hover:bg-red-600 text-white rounded-lg transition-colors flex items-center justify-center gap-1">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 가이드 -->
+  <div id="guide-modal" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
+    <div class="bg-[#161616] w-full max-w-sm rounded-xl border border-[#333] shadow-2xl overflow-hidden flex flex-col transform transition-all">
+      <div class="p-4 border-b border-[#222] flex justify-between items-center bg-[#1e1e1e]">
+        <h2 class="text-white font-bold text-base flex items-center gap-1.5">
+          <i class="ph-fill ph-info text-[#e52828]"></i> 검색기 이용 가이드
+        </h2>
+        <button onclick="closeGuideModal()" class="text-[#888] hover:text-white transition-colors"><i class="ph ph-x text-xl"></i></button>
+      </div>
+      <div class="p-5 text-[13px] text-[#ccc] space-y-4 leading-relaxed bg-[#1a1a1a]">
+        <p><strong class="text-white">1. 다중 검색 지원</strong><br>검색창에 작품명, 작가명, 장르, 키워드 등을 자유롭게 입력해 보세요.</p>
+        <p><strong class="text-white">2. 상세 필터 기능</strong><br>[상세 필터] 탭에서 원하는 구분/결제/연령/장르/키워드/공/수/스포일러를 복합적으로 적용할 수 있습니다.</p>
+        <p><strong class="text-white">3. 스포일러 확인</strong><br>엔딩 정보는 기본적으로 가려져 있습니다. 작품 목록의 엔딩 보기 버튼을 눌러 확인하세요.</p>
+      </div>
+      <div class="p-4 bg-[#1e1e1e] border-t border-[#222]">
+        <button onclick="closeGuideModal()" class="w-full py-2.5 text-[13px] font-bold bg-[#333] text-white rounded-lg hover:bg-[#444] transition-colors">확인했습니다</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alert -->
+  <div id="custom-alert-modal" class="fixed inset-0 z-[100] modal-overlay hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-200">
+    <div class="bg-[#1e1e1e] border border-[#333] rounded-xl p-6 max-w-[300px] w-full shadow-2xl transform scale-95 transition-transform duration-200" id="custom-alert-box">
+      <div class="text-center mb-5">
+        <i class="ph-fill ph-bell-ringing text-[#e52828] text-3xl mb-2 inline-block"></i>
+        <p id="custom-alert-msg" class="text-white text-[14px] font-medium leading-snug break-keep"></p>
+      </div>
+      <button onclick="closeCustomAlert()" class="w-full bg-[#e52828] hover:bg-red-600 transition-colors text-white py-2.5 rounded-lg text-[13px] font-bold shadow-md">확인</button>
+    </div>
+  </div>
+
+  <!-- Confirm -->
+  <div id="custom-confirm-modal" class="fixed inset-0 z-[100] modal-overlay hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-200">
+    <div class="bg-[#1e1e1e] border border-[#333] rounded-xl p-6 max-w-[300px] w-full shadow-2xl transform scale-95 transition-transform duration-200" id="custom-confirm-box">
+      <div class="text-center mb-5">
+        <i class="ph-fill ph-warning-circle text-yellow-500 text-3xl mb-2 inline-block"></i>
+        <p id="custom-confirm-msg" class="text-white text-[14px] font-medium leading-snug break-keep"></p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="closeCustomConfirm(false)" class="flex-1 bg-[#333] hover:bg-[#444] transition-colors text-white py-2.5 rounded-lg text-[13px] font-bold">취소</button>
+        <button onclick="closeCustomConfirm(true)" class="flex-1 bg-[#e52828] hover:bg-red-600 transition-colors text-white py-2.5 rounded-lg text-[13px] font-bold shadow-md">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "여기에_새_웹앱_URL_넣기";
+
+    const DEFAULT_OPTIONS = {
+      category: ["글", "그림", "기타"],
+      price: ["무료", "유료"],
+      age: ["전연령", "성인"],
+      genre: [],
+      keyword: [],
+      top: [],
+      bottom: [],
+      ending: []
+    };
+
+    const options = {
+      category: [...DEFAULT_OPTIONS.category],
+      price: [...DEFAULT_OPTIONS.price],
+      age: [...DEFAULT_OPTIONS.age],
+      genre: [...DEFAULT_OPTIONS.genre],
+      keyword: [...DEFAULT_OPTIONS.keyword],
+      top: [...DEFAULT_OPTIONS.top],
+      bottom: [...DEFAULT_OPTIONS.bottom],
+      ending: [...DEFAULT_OPTIONS.ending]
+    };
+
+    const state = {
+      posts: [],
+      searchQuery: '',
+      sortBy: 'latest',
+      filters: {
+        category: 'all',
+        price: 'all',
+        age: 'all',
+        tags: new Set()
+      },
+      isAdmin: false,
+      editingId: null,
+      form: { tags: new Set() },
+      visibleLimit: 30
+    };
+
+    let confirmCallback = null;
+
+    function showCustomAlert(msg, callback = null) {
+      const modal = document.getElementById('custom-alert-modal');
+      const box = document.getElementById('custom-alert-box');
+      document.getElementById('custom-alert-msg').innerText = msg;
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        box.classList.remove('scale-95');
+      }, 10);
+
+      modal.dataset.callback = callback ? 'true' : 'false';
+      if (callback) window._alertCallback = callback;
+    }
+
+    function closeCustomAlert() {
+      const modal = document.getElementById('custom-alert-modal');
+      const box = document.getElementById('custom-alert-box');
+
+      modal.classList.add('opacity-0');
+      box.classList.add('scale-95');
+
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        if (modal.dataset.callback === 'true' && window._alertCallback) {
+          window._alertCallback();
+          window._alertCallback = null;
+        }
+      }, 200);
+    }
+
+    function showCustomConfirm(msg, callback) {
+      const modal = document.getElementById('custom-confirm-modal');
+      const box = document.getElementById('custom-confirm-box');
+      document.getElementById('custom-confirm-msg').innerText = msg;
+      confirmCallback = callback;
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        box.classList.remove('scale-95');
+      }, 10);
+    }
+
+    function closeCustomConfirm(result) {
+      const modal = document.getElementById('custom-confirm-modal');
+      const box = document.getElementById('custom-confirm-box');
+
+      modal.classList.add('opacity-0');
+      box.classList.add('scale-95');
+
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        if (confirmCallback) {
+          confirmCallback(result);
+          confirmCallback = null;
+        }
+      }, 200);
+    }
+
+    function splitTags(str) {
+      if (!str) return [];
+      return String(str).split(',').map(s => s.trim()).filter(Boolean);
+    }
+
+    function uniqueArray(arr) {
+      return [...new Set(arr.filter(Boolean))];
+    }
+
+    function normalizeCategory(value) {
+      const v = String(value || "").trim();
+      if (!v) return "기타";
+      if (["글", "소설", "썰", "텍스트", "단편", "중편", "장편"].includes(v)) return "글";
+      if (["그림", "일러스트", "만화", "코믹", "웹툰", "comic", "illustration"].includes(v)) return "그림";
+      return "기타";
+    }
+
+    function resetOptionsToDefault() {
+      Object.keys(DEFAULT_OPTIONS).forEach(key => {
+        options[key] = [...DEFAULT_OPTIONS[key]];
+      });
+    }
+
+    function pushOption(type, value) {
+      const clean = String(value || "").trim();
+      if (!clean) return;
+      if (!options[type].includes(clean)) options[type].push(clean);
+    }
+
+    async function postAction(action, payload = {}) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action, ...payload })
+      });
+
+      const json = await res.json();
+      console.log('postAction response:', action, json);
+
+      if (!json.success) {
+        throw new Error(json.message || '요청 실패');
+      }
+
+      return json;
+    }
+
+    async function fetchTaxonomy() {
+      const result = await postAction('getTaxonomy');
+      resetOptionsToDefault();
+
+      const groupMap = {
+        category: 'category',
+        price: 'price',
+        age: 'age',
+        genre: 'genre',
+        keyword: 'keyword',
+        top: 'top',
+        bottom: 'bottom',
+        ending: 'ending'
+      };
+
+      result.items.forEach(item => {
+        const group = groupMap[item.group];
+        if (!group) return;
+        pushOption(group, item.label);
+      });
+
+      options.category = ["글", "그림", "기타"];
+      options.price = uniqueArray(options.price);
+      options.age = uniqueArray(options.age);
+      options.genre = uniqueArray(options.genre);
+      options.keyword = uniqueArray(options.keyword);
+      options.top = uniqueArray(options.top);
+      options.bottom = uniqueArray(options.bottom);
+      options.ending = uniqueArray(options.ending);
+    }
+
+    function deriveOptionsFromPosts() {
+      state.posts.forEach(p => {
+        splitTags(p.genre).forEach(t => pushOption('genre', t));
+        splitTags(p.keyword).forEach(t => pushOption('keyword', t));
+        splitTags(p.top).forEach(t => pushOption('top', t));
+        splitTags(p.bottom).forEach(t => pushOption('bottom', t));
+        if (p.ending) pushOption('ending', p.ending);
+      });
+
+      options.genre = uniqueArray(options.genre);
+      options.keyword = uniqueArray(options.keyword);
+      options.top = uniqueArray(options.top);
+      options.bottom = uniqueArray(options.bottom);
+      options.ending = uniqueArray(options.ending);
+    }
+
+    function forceRefresh() {
+      localStorage.removeItem('pota_cache_v7');
+      document.getElementById('post-list').innerHTML = `
+        <div class="text-center py-20 text-[#666]">
+          <i class="ph ph-circle-notch text-3xl spinner mb-3 text-[#e52828]"></i>
+          <div class="text-sm">데이터를 새로 불러오는 중...</div>
+        </div>
+      `;
+      fetchPosts(true);
+    }
+
+    async function fetchPosts(force = false) {
+      const syncStatus = document.getElementById('sync-status');
+      syncStatus.classList.remove('hidden');
+
+      const cachedData = force ? null : localStorage.getItem('pota_cache_v7');
+
+      if (cachedData) {
+        try {
+          state.posts = JSON.parse(cachedData);
+          resetOptionsToDefault();
+          deriveOptionsFromPosts();
+          renderFilters();
+          renderList();
+        } catch (e) {
+          localStorage.removeItem('pota_cache_v7');
+        }
+      }
+
+      try {
+        const [worksResponse] = await Promise.all([
+          fetch(API_URL),
+          fetchTaxonomy()
+        ]);
+
+        const rawData = await worksResponse.json();
+        if (rawData.error) throw new Error(rawData.error);
+
+        const processedData = rawData.map(row => {
+          if (!row["제목"] && !row["ID"]) return null;
+
+          let ageValue = row["연령"];
+          if (ageValue === "일반") ageValue = "전연령";
+
+          const categoryValue = normalizeCategory(row["구분"]);
+          const keywordValue = row["키워드"] || "";
+
+          const genreList = splitTags(row["장르"]);
+          const keywordList = splitTags(keywordValue);
+          const topList = splitTags(row["공"]);
+          const bottomList = splitTags(row["수"]);
+
+          const allTags = [
+            categoryValue, row["결제"], ageValue, row["엔딩"],
+            ...genreList, ...keywordList, ...topList, ...bottomList
+          ].filter(Boolean);
+
+          let displayDate = row["발행일"] || "";
+          if (displayDate.includes('T')) {
+            const d = new Date(displayDate);
+            displayDate = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+          }
+
+          return {
+            id: String(row["ID"]),
+            title: row["제목"] || "",
+            author: row["작가"] || "",
+            url: row["URL"] || row["원본링크"] || "",
+            date: displayDate,
+            category: categoryValue,
+            price: row["결제"] || "",
+            age: ageValue || "",
+            genre: row["장르"] || "",
+            keyword: keywordValue || "",
+            top: row["공"] || "",
+            bottom: row["수"] || "",
+            ending: row["엔딩"] || "",
+            status: row["수집상태"] || "",
+            tags: allTags,
+            isAdult: ageValue === "성인"
+          };
+        }).filter(Boolean);
+
+        state.posts = processedData;
+        deriveOptionsFromPosts();
+
+        localStorage.setItem('pota_cache_v7', JSON.stringify(processedData));
+
+        renderFilters();
+        renderList();
+        syncStatus.classList.add('hidden');
+      } catch (error) {
+        syncStatus.classList.add('hidden');
+        console.error(error);
+        if (!cachedData) {
+          document.getElementById('post-list').innerHTML = `
+            <div class="text-center py-20 text-red-500 text-sm">
+              <i class="ph ph-warning text-2xl mb-2 inline-block"></i><br>
+              데이터를 불러오지 못했습니다.<br>${error.message}
+            </div>
+          `;
+        }
+      }
+    }
+
+    function setSort(val) {
+      state.sortBy = val;
+      state.visibleLimit = 30;
+
+      ['sort-latest', 'sort-oldest', 'sort-alpha'].forEach(id => {
+        document.getElementById(id)?.classList.remove('text-white', 'font-bold');
+      });
+
+      if (val === 'latest') document.getElementById('sort-latest')?.classList.add('text-white', 'font-bold');
+      if (val === 'oldest') document.getElementById('sort-oldest')?.classList.add('text-white', 'font-bold');
+      if (val === 'alpha') document.getElementById('sort-alpha')?.classList.add('text-white', 'font-bold');
+
+      renderList();
+    }
+
+    window.loadMore = function() {
+      state.visibleLimit += 30;
+      renderList();
+    };
+
+    function renderFilters() {
+      const container = document.getElementById('filter-section');
+      let html = '';
+
+      const singles = [
+        { id: 'category', label: '구분', items: options.category },
+        { id: 'price', label: '결제', items: options.price },
+        { id: 'age', label: '연령', items: options.age }
+      ];
+
+      singles.forEach(s => {
+        html += `
+          <div class="py-1.5 border-b border-[#2a2a2a] flex gap-2 items-start text-nowrap">
+            <div class="text-[10px] text-[#777] font-medium w-[40px] shrink-0 pt-0.5">${s.label}</div>
+            <div class="flex flex-wrap gap-1.5 flex-1">
+              <button class="filter-btn ${state.filters[s.id] === 'all' ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="setSingleFilter('${s.id}', 'all')">전체</button>
+              ${s.items.map(item => `
+                <button class="filter-btn ${state.filters[s.id] === item ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="setSingleFilter('${s.id}', '${item.replace(/'/g, "\\'")}')">${item}</button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      const multis = [
+        { id: 'genre', label: '장르', items: options.genre },
+        { id: 'keyword', label: '키워드', items: options.keyword },
+        { id: 'top', label: '공', items: options.top },
+        { id: 'bottom', label: '수', items: options.bottom },
+        { id: 'ending', label: '스포일러/엔딩', items: options.ending }
+      ];
+
+      multis.forEach(m => {
+        html += `
+          <div class="py-1.5 border-b border-[#2a2a2a] flex gap-2 items-start">
+            <div class="text-[10px] text-[#777] font-medium w-[40px] shrink-0 pt-0.5">${m.label}</div>
+            <div class="flex flex-wrap gap-1.5 flex-1">
+              ${m.items.map(item => `
+                <button class="filter-btn ${state.filters.tags.has(item) ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="toggleTagFilter('${item.replace(/'/g, "\\'")}')">${item}</button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+        <div class="flex justify-between items-center py-2 mt-1">
+          <button onclick="resetFilters()" class="text-[#888] hover:text-white transition-colors text-[11px] flex items-center gap-1 font-medium bg-[#222] px-2 py-1 rounded">
+            <i class="ph ph-arrow-counter-clockwise"></i> 필터 초기화
+          </button>
+          <button onclick="switchTab('list')" class="text-[#e52828] text-[11px] font-bold flex items-center gap-1">
+            필터 접기 <i class="ph ph-caret-up"></i>
+          </button>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    window.revealEnding = function(btn, endingWord) {
+      const parent = btn.parentElement;
+      parent.innerHTML = `<span class="text-red-300 bg-[#e52828]/20 border border-red-900/50 text-[10px] px-2 py-0.5 rounded ml-1 font-bold shadow-sm inline-block animate-pulse" style="animation-iteration-count: 1;">#${endingWord}</span>`;
+    };
+
+    function renderList() {
+      const container = document.getElementById('post-list');
+
+      const filteredData = state.posts.filter(item => {
+        if (state.searchQuery) {
+          const q = state.searchQuery.toLowerCase().trim();
+          const pool = [
+            item.title, item.author, item.keyword, item.genre, item.top, item.bottom
+          ].join(' ').toLowerCase();
+
+          if (!pool.includes(q)) return false;
+        }
+
+        if (state.filters.category !== 'all' && item.category !== state.filters.category) return false;
+        if (state.filters.price !== 'all' && item.price !== state.filters.price) return false;
+        if (state.filters.age !== 'all' && item.age !== state.filters.age) return false;
+
+        if (state.filters.tags.size > 0) {
+          const hasAll = Array.from(state.filters.tags).every(t => item.tags.includes(t));
+          if (!hasAll) return false;
+        }
+
+        return true;
+      });
+
+      const sortedData = [...filteredData].sort((a, b) => {
+        if (state.sortBy === 'alpha') return (a.title || "").localeCompare(b.title || "", 'ko');
+        const dateA = a.date || "0000-00-00";
+        const dateB = b.date || "0000-00-00";
+        if (state.sortBy === 'latest') return dateB.localeCompare(dateA);
+        return dateA.localeCompare(dateB);
+      });
+
+      document.getElementById('visible-count').textContent = sortedData.length;
+
+      if (sortedData.length === 0) {
+        container.innerHTML = `<div class="text-center py-16 text-[#666] text-sm"><i class="ph ph-magnifying-glass text-3xl mb-2 inline-block opacity-50"></i><br>검색 결과가 없습니다.</div>`;
+        return;
+      }
+
+      const dataToRender = sortedData.slice(0, state.visibleLimit);
+
+      let listHtml = dataToRender.map(item => {
+        const endingKeywords = options.ending;
+        const postEnding = item.ending && endingKeywords.includes(item.ending) ? item.ending : null;
+
+        const otherTags = item.tags.filter(t => ![item.category, item.price, item.age].includes(t) && !endingKeywords.includes(t));
+        const tagsHtml = otherTags.map(tag => `<span class="text-[#888] bg-[#1a1a1e] border border-[#333] text-[10px] px-1.5 py-0.5 rounded">#${tag}</span>`).join('');
+
+        const endingHtml = postEnding ? `
+          <span class="inline-block relative">
+            <button onclick="revealEnding(this, '${postEnding}')" class="text-[#888] bg-[#222] border border-[#444] hover:bg-[#333] hover:text-white transition-colors text-[10px] px-1.5 py-0.5 rounded ml-1 flex items-center gap-1 shadow-sm">
+              <i class="ph ph-eye"></i> 엔딩 보기
             </button>
-            <button id="tab-filter" class="flex-1 py-3 text-[14px] font-medium text-[#777] border-b-2 border-transparent flex items-center justify-center gap-1.5 transition-colors" onclick="switchTab('filter')">
-                <i class="ph ph-faders text-lg"></i> 상세 필터
+          </span>
+        ` : '';
+
+        const adminUI = state.isAdmin ? `
+          <div class="mt-3 pt-2 border-t border-[#222] flex justify-between items-center gap-2">
+            <div class="text-[10px] text-[#666]">${item.status || ''}</div>
+            <div class="flex justify-end gap-2">
+              <button onclick="openAdminModal('edit', '${item.id}')" class="text-[#888] text-[11px] px-3 py-1 rounded bg-[#222] hover:bg-[#333] transition-colors">
+                <i class="ph ph-pencil-simple inline"></i> 수정
+              </button>
+              <button onclick="deletePost(event, '${item.id}')" class="text-red-500 text-[11px] px-3 py-1 rounded bg-[#3a1616]/50 hover:bg-[#3a1616] transition-colors">
+                <i class="ph ph-trash inline"></i> 삭제
+              </button>
+            </div>
+          </div>
+        ` : '';
+
+        return `
+          <div class="flex flex-col border border-[#222] bg-[#161616] rounded-lg p-3 hover:border-[#333] transition-colors relative">
+            <div class="flex justify-between items-center mb-2">
+              <div class="flex gap-1.5">
+                <span class="text-[9px] text-[#e52828] border border-[#e52828]/50 px-1 py-[1px] rounded font-medium bg-[#3a1616]/30">${item.category || '기타'}</span>
+                ${item.isAdult
+                  ? '<span class="text-[9px] text-[#ef4444] border border-[#ef4444]/30 px-1 py-[1px] rounded font-medium bg-[#ef4444]/10">19</span>'
+                  : '<span class="text-[9px] text-green-400 border border-green-400/30 px-1 py-[1px] rounded font-medium bg-green-400/10">전연령</span>'}
+                <span class="text-[9px] ${item.price === '무료' ? 'text-blue-400 border-blue-400/30 bg-blue-400/10' : 'text-[#888] border-[#444] bg-[#222]'} border px-1 py-[1px] rounded font-medium">${item.price || ''}</span>
+              </div>
+              <span class="text-[10px] text-[#666] tracking-wider">${item.date || ''}</span>
+            </div>
+
+            <div class="flex justify-between items-start gap-2">
+              <div class="flex-1">
+                <h3 class="text-[14px] font-bold text-white mb-1 cursor-pointer hover:text-[#e52828] transition-colors line-clamp-2" onclick="window.open('${item.url}', '_blank')">
+                  ${item.title || ''}
+                </h3>
+                <div class="text-[11px] text-[#999] mb-1.5 font-medium">by <span class="text-[#bbb]">${item.author || ''}</span></div>
+              </div>
+              <button onclick="window.open('${item.url}', '_blank')" class="w-8 h-8 rounded-full bg-[#1e1e1e] border border-[#333] flex items-center justify-center text-[#888] hover:bg-[#e52828] hover:text-white hover:border-[#e52828] transition-all shrink-0 mt-0.5 shadow-sm group" aria-label="링크로 이동">
+                <i class="ph-bold ph-caret-right text-sm group-hover:translate-x-[2px] transition-transform"></i>
+              </button>
+            </div>
+
+            <div class="flex flex-wrap gap-1 items-center mt-1">${tagsHtml}${endingHtml}</div>
+            ${adminUI}
+          </div>
+        `;
+      }).join('');
+
+      if (sortedData.length > state.visibleLimit) {
+        listHtml += `
+          <div class="pt-2 pb-2 text-center">
+            <button onclick="loadMore()" class="bg-[#222] hover:bg-[#333] text-[#aaa] hover:text-white px-6 py-2.5 rounded-full text-sm font-medium transition-colors w-full border border-[#333] flex justify-center items-center gap-2">
+              <i class="ph ph-caret-down"></i> 더보기 (${state.visibleLimit} / ${sortedData.length})
             </button>
-        </div>
+          </div>
+        `;
+      }
 
-        <div id="admin-panel" class="hidden px-4 py-3 bg-[#3a1616]/30 border-b border-[#e52828]/30 flex justify-between items-center">
-            <span class="text-[12px] text-[#e52828] font-bold flex items-center gap-1">
-                <i class="ph-fill ph-shield-check text-sm"></i> 관리자 모드
-            </span>
-            <div class="flex gap-2">
-                <button onclick="forceRefresh()" class="bg-[#222] border border-[#444] text-[#ccc] text-[11px] px-3 py-1.5 rounded font-bold hover:bg-[#333] hover:text-white transition-colors flex items-center gap-1 shadow">
-                    <i class="ph ph-arrows-clockwise"></i> 새로고침
+      container.innerHTML = listHtml;
+    }
+
+    function setSingleFilter(key, val) {
+      state.filters[key] = val;
+      state.visibleLimit = 30;
+      renderFilters();
+      renderList();
+    }
+
+    function toggleTagFilter(tag) {
+      if (state.filters.tags.has(tag)) state.filters.tags.delete(tag);
+      else state.filters.tags.add(tag);
+      state.visibleLimit = 30;
+      renderFilters();
+      renderList();
+    }
+
+    function resetFilters() {
+      state.filters = { category: 'all', price: 'all', age: 'all', tags: new Set() };
+      state.visibleLimit = 30;
+      renderFilters();
+      renderList();
+    }
+
+    function toggleAdminMode() {
+      state.isAdmin = !state.isAdmin;
+      if (state.isAdmin) {
+        document.getElementById('admin-icon').classList.replace('ph-lock-key', 'ph-lock-key-open');
+        document.getElementById('admin-icon').classList.add('text-[#e52828]');
+        document.getElementById('admin-panel').classList.remove('hidden');
+        showCustomAlert("관리자 모드가 활성화 되었습니다.\n작품을 추가, 수정, 삭제할 수 있습니다.");
+      } else {
+        document.getElementById('admin-icon').classList.replace('ph-lock-key-open', 'ph-lock-key');
+        document.getElementById('admin-icon').classList.remove('text-[#e52828]');
+        document.getElementById('admin-panel').classList.add('hidden');
+      }
+      renderList();
+    }
+
+    function openGuideModal() {
+      document.getElementById('guide-modal').classList.remove('hidden');
+    }
+
+    function closeGuideModal() {
+      document.getElementById('guide-modal').classList.add('hidden');
+    }
+
+    function openAdminModal(type, id = null) {
+      state.editingId = id;
+      state.form.tags = new Set();
+
+      const modal = document.getElementById('admin-modal');
+      const title = document.getElementById('modal-title');
+      modal.classList.remove('hidden');
+
+      if (type === 'edit') {
+        title.innerHTML = '<i class="ph ph-pencil-simple text-[#e52828] mr-1"></i> 포타 정보 수정';
+        const post = state.posts.find(p => p.id === id);
+
+        document.getElementById('form-title').value = post.title || '';
+        document.getElementById('form-author').value = post.author || '';
+        document.getElementById('form-url').value = post.url || '';
+        document.getElementById('form-date').value = post.date || '';
+
+        state.form.category = post.category || '글';
+        state.form.price = post.price || '무료';
+        state.form.age = post.age || '전연령';
+        state.form.ending = post.ending || '';
+
+        splitTags(post.genre).forEach(t => state.form.tags.add(t));
+        splitTags(post.keyword).forEach(t => state.form.tags.add(t));
+        splitTags(post.top).forEach(t => state.form.tags.add(t));
+        splitTags(post.bottom).forEach(t => state.form.tags.add(t));
+      } else {
+        title.innerHTML = '<i class="ph ph-plus-circle text-[#e52828] mr-1"></i> 신규 작품 추가';
+        document.getElementById('modal-form').querySelectorAll('input[type="text"], input[type="url"]').forEach(i => i.value = '');
+
+        state.form.category = '글';
+        state.form.price = '무료';
+        state.form.age = '전연령';
+        state.form.ending = '';
+
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        document.getElementById('form-date').value = `${yyyy}-${mm}-${dd}`;
+      }
+
+      renderModalSelects();
+    }
+
+    function renderModalSelects() {
+      const singleContainer = document.getElementById('modal-single-selects');
+      const multiContainer = document.getElementById('modal-multi-selects');
+
+      const singles = [
+        { id: 'category', label: '구분', items: options.category },
+        { id: 'price', label: '결제', items: options.price },
+        { id: 'age', label: '연령', items: options.age },
+        { id: 'ending', label: '스포일러/엔딩 <span class="text-[#555] font-normal text-[9px] ml-1">(선택 해제 가능)</span>', items: options.ending }
+      ];
+
+      singleContainer.innerHTML = singles.map(s => `
+        <div>
+          <p class="label-text">${s.label}</p>
+          <div class="flex flex-wrap gap-1.5">
+            ${s.items.map(item => `
+              <button type="button" class="filter-btn ${state.form[s.id] === item ? 'active' : ''} px-2.5 py-1 text-[10px]"
+                onclick="if('${s.id}' === 'ending' && state.form.${s.id} === '${item.replace(/'/g, "\\'")}'){ state.form.${s.id} = ''; } else { state.form.${s.id} = '${item.replace(/'/g, "\\'")}'; } renderModalSelects();">
+                ${item}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      const multis = [
+        { id: 'genre', label: '장르', items: options.genre },
+        { id: 'keyword', label: '키워드', items: options.keyword },
+        { id: 'top', label: '공', items: options.top },
+        { id: 'bottom', label: '수', items: options.bottom }
+      ];
+
+      multiContainer.innerHTML = multis.map(m => `
+        <div>
+          <p class="label-text">${m.label}</p>
+          <div class="flex flex-wrap gap-1.5">
+            ${m.items.map(item => `
+              <div class="inline-flex items-center bg-[#222] rounded overflow-hidden border border-transparent ${state.form.tags.has(item) ? '!border-[#e52828]' : ''}">
+                <button type="button" class="filter-btn ${state.form.tags.has(item) ? 'active' : ''} px-2.5 py-1 text-[10px] rounded-none border-none" onclick="toggleFormTag('${item.replace(/'/g, "\\'")}')">${item}</button>
+                <button type="button" onclick="deleteFilterOption('${m.id}', '${item.replace(/'/g, "\\'")}')" class="delete-opt-btn text-[10px] py-1 h-full">
+                  <i class="ph ph-x"></i>
                 </button>
-                <button onclick="openAdminModal('add')" class="bg-[#e52828] text-white text-[11px] px-3 py-1.5 rounded font-bold hover:bg-red-600 transition-colors flex items-center gap-1 shadow">
-                    <i class="ph ph-plus-circle"></i> 새 글 추가
-                </button>
-            </div>
+              </div>
+            `).join('')}
+          </div>
         </div>
+      `).join('');
+    }
 
-        <div id="filter-section" class="px-4 flex flex-col bg-[#161616] border-b border-[#222]" style="display: none;"></div>
+    function toggleFormTag(tag) {
+      if (state.form.tags.has(tag)) state.form.tags.delete(tag);
+      else state.form.tags.add(tag);
+      renderModalSelects();
+    }
 
-        <div class="px-4 py-4 flex justify-between items-center">
-            <div class="text-[13px] text-[#999]">전체 <span id="visible-count" class="text-white font-bold">0</span>개</div>
-            <div class="flex gap-3 text-[12px] text-[#777] items-center">
-                <button onclick="setSort('latest')" id="sort-latest" class="hover:text-white transition-colors font-bold text-white">최신순</button>
-                <div class="w-[1px] h-2.5 bg-[#333]"></div>
-                <button onclick="setSort('oldest')" id="sort-oldest" class="hover:text-white transition-colors">과거순</button>
-                <div class="w-[1px] h-2.5 bg-[#333]"></div>
-                <button onclick="setSort('alpha')" id="sort-alpha" class="hover:text-white transition-colors">가나다순</button>
-            </div>
-        </div>
+    async function addNewFilterOption() {
+      const type = document.getElementById('new-filter-type').value;
+      const val = document.getElementById('new-filter-value').value.trim();
+      if (!val) return;
 
-        <div id="post-list" class="px-4 flex flex-col gap-4 pb-8 min-h-[300px]">
-            <div class="text-center py-20 text-[#666]">
-                <i class="ph ph-circle-notch text-3xl spinner mb-3 text-[#e52828]"></i>
-                <div class="text-sm">데이터를 불러오는 중...</div>
-            </div>
-        </div>
-    </div>
+      try {
+        const result = await postAction('addTaxonomyOption', { group: type, label: val });
+        pushOption(type, val);
+        document.getElementById('new-filter-value').value = '';
+        showCustomAlert(result.message || `'${val}' 옵션이 추가되었습니다.`);
+        renderModalSelects();
+        renderFilters();
+      } catch (e) {
+        showCustomAlert("필터 옵션 추가 실패: " + e.message);
+      }
+    }
 
-    <!-- 관리자 추가/수정 모달 -->
-    <div id="admin-modal" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
-        <div class="bg-[#161616] w-full max-w-md rounded-xl border border-[#333] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col transform transition-all">
-            <div class="p-4 border-b border-[#222] flex justify-between items-center bg-[#1e1e1e]">
-                <h2 id="modal-title" class="text-white font-bold text-base">포타 정보 수정</h2>
-                <button onclick="closeAdminModal()" class="text-[#888] hover:text-white transition-colors"><i class="ph ph-x text-xl"></i></button>
-            </div>
+    async function deleteFilterOption(type, val) {
+      showCustomConfirm(`'${val}' 필터 옵션을 숨기시겠습니까?`, async (res) => {
+        if (!res) return;
 
-            <div id="modal-form" class="p-5 overflow-y-auto space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                    <div><p class="label-text">제목</p><input type="text" id="form-title" class="input-field" placeholder="작품명"></div>
-                    <div><p class="label-text">작가</p><input type="text" id="form-author" class="input-field" placeholder="작가명"></div>
-                </div>
+        try {
+          const result = await postAction('deactivateTaxonomyOption', { group: type, label: val });
+          options[type] = options[type].filter(o => o !== val);
+          state.filters.tags.delete(val);
+          state.form.tags.delete(val);
 
-                <div><p class="label-text">URL</p><input type="url" id="form-url" class="input-field" placeholder="https://..."></div>
-                <div><p class="label-text">발행일</p><input type="date" id="form-date" class="input-field"></div>
-
-                <div id="modal-single-selects" class="space-y-4 pt-2"></div>
-                <div id="modal-multi-selects" class="space-y-4 pt-2"></div>
-
-                <div class="pt-4 border-t border-[#222]">
-                    <p class="label-text">필터 옵션 추가</p>
-                    <div class="flex gap-2">
-                        <select id="new-filter-type" class="bg-[#222] text-[11px] rounded px-2 py-1 outline-none text-[#ccc] border border-[#333]">
-                            <option value="genre">장르</option>
-                            <option value="keyword">키워드</option>
-                            <option value="top">공</option>
-                            <option value="bottom">수</option>
-                            <option value="ending">스포일러/엔딩</option>
-                        </select>
-                        <input type="text" id="new-filter-value" placeholder="옵션명" class="flex-1 bg-[#222] text-[11px] rounded px-2 py-1 outline-none border border-[#333] text-white">
-                        <button onclick="addNewFilterOption()" class="bg-[#444] hover:bg-[#555] px-3 py-1 rounded text-[11px] font-bold text-white transition-colors">추가</button>
-                    </div>
-                    <p class="text-[10px] text-[#666] mt-2">이 버튼은 taxonomy에 저장되도록 연결되어 있습니다.</p>
-                </div>
-            </div>
-
-            <div class="p-4 bg-[#1e1e1e] border-t border-[#222] flex gap-2">
-                <button onclick="closeAdminModal()" class="flex-1 py-3 text-[13px] font-bold text-[#888] hover:text-white transition-colors bg-[#222] rounded-lg">취소</button>
-                <button onclick="submitForm()" id="submit-btn" class="flex-1 py-3 text-[13px] font-bold bg-[#e52828] hover:bg-red-600 text-white rounded-lg transition-colors flex items-center justify-center gap-1">저장하기</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 가이드 모달 -->
-    <div id="guide-modal" class="fixed inset-0 z-50 modal-overlay hidden flex items-center justify-center p-4">
-        <div class="bg-[#161616] w-full max-w-sm rounded-xl border border-[#333] shadow-2xl overflow-hidden flex flex-col transform transition-all">
-            <div class="p-4 border-b border-[#222] flex justify-between items-center bg-[#1e1e1e]">
-                <h2 class="text-white font-bold text-base flex items-center gap-1.5">
-                    <i class="ph-fill ph-info text-[#e52828]"></i> 검색기 이용 가이드
-                </h2>
-                <button onclick="closeGuideModal()" class="text-[#888] hover:text-white transition-colors"><i class="ph ph-x text-xl"></i></button>
-            </div>
-            <div class="p-5 text-[13px] text-[#ccc] space-y-4 leading-relaxed bg-[#1a1a1a]">
-                <p><strong class="text-white">1. 다중 검색 지원</strong><br>검색창에 작품명, 작가명, 장르, 키워드 등을 자유롭게 입력해 보세요.</p>
-                <p><strong class="text-white">2. 상세 필터 기능</strong><br>[상세 필터] 탭에서 원하는 구분/결제/연령/장르/키워드/공/수/스포일러를 복합적으로 적용할 수 있습니다.</p>
-                <p><strong class="text-white">3. 스포일러 확인</strong><br>엔딩 정보는 기본적으로 가려져 있습니다. 작품 목록의 <span class="bg-[#222] border border-[#444] px-1.5 py-0.5 rounded text-[10px]"><i class="ph ph-eye inline"></i> 엔딩 보기</span> 버튼을 눌러 확인하세요.</p>
-            </div>
-            <div class="p-4 bg-[#1e1e1e] border-t border-[#222]">
-                <button onclick="closeGuideModal()" class="w-full py-2.5 text-[13px] font-bold bg-[#333] text-white rounded-lg hover:bg-[#444] transition-colors">확인했습니다</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 커스텀 알림(Alert) 모달 -->
-    <div id="custom-alert-modal" class="fixed inset-0 z-[100] modal-overlay hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-200">
-        <div class="bg-[#1e1e1e] border border-[#333] rounded-xl p-6 max-w-[300px] w-full shadow-2xl transform scale-95 transition-transform duration-200" id="custom-alert-box">
-            <div class="text-center mb-5">
-                <i class="ph-fill ph-bell-ringing text-[#e52828] text-3xl mb-2 inline-block"></i>
-                <p id="custom-alert-msg" class="text-white text-[14px] font-medium leading-snug break-keep"></p>
-            </div>
-            <button onclick="closeCustomAlert()" class="w-full bg-[#e52828] hover:bg-red-600 transition-colors text-white py-2.5 rounded-lg text-[13px] font-bold shadow-md">확인</button>
-        </div>
-    </div>
-
-    <!-- 커스텀 확인(Confirm) 모달 -->
-    <div id="custom-confirm-modal" class="fixed inset-0 z-[100] modal-overlay hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-200">
-        <div class="bg-[#1e1e1e] border border-[#333] rounded-xl p-6 max-w-[300px] w-full shadow-2xl transform scale-95 transition-transform duration-200" id="custom-confirm-box">
-            <div class="text-center mb-5">
-                <i class="ph-fill ph-warning-circle text-yellow-500 text-3xl mb-2 inline-block"></i>
-                <p id="custom-confirm-msg" class="text-white text-[14px] font-medium leading-snug break-keep"></p>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="closeCustomConfirm(false)" class="flex-1 bg-[#333] hover:bg-[#444] transition-colors text-white py-2.5 rounded-lg text-[13px] font-bold">취소</button>
-                <button onclick="closeCustomConfirm(true)" class="flex-1 bg-[#e52828] hover:bg-red-600 transition-colors text-white py-2.5 rounded-lg text-[13px] font-bold shadow-md">확인</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbyBzjGjCq7bI2ad4z6s3DYe95KPnMgG9v4fnTr-6ssbiNDpmjnuuemwHvL4udDG8bRw0g/exec";
-
-        const DEFAULT_OPTIONS = {
-            category: ["글", "그림", "기타"],
-            price: ["무료", "유료"],
-            age: ["전연령", "성인"],
-            genre: ["리얼물", "리맨물", "장르물", "수인물", "조직물", "센가물", "알오물", "군부물", "육아물", "네임버스"],
-            keyword: ["로코", "게헤", "헤게", "청게", "캠게", "섹파", "싱글대디", "이별", "연예계", "계약", "재회", "오컬트", "F1", "사극", "회귀", "짭근친", "임출육", "노란장판", "혐관"],
-            top: ["미남공", "다정공", "집착공", "울보공"],
-            bottom: ["미인수", "단정수", "병약수", "강수"],
-            ending: ["해피엔딩", "새드엔딩", "오픈엔딩"]
-        };
-
-        const options = {
-            category: [...DEFAULT_OPTIONS.category],
-            price: [...DEFAULT_OPTIONS.price],
-            age: [...DEFAULT_OPTIONS.age],
-            genre: [...DEFAULT_OPTIONS.genre],
-            keyword: [...DEFAULT_OPTIONS.keyword],
-            top: [...DEFAULT_OPTIONS.top],
-            bottom: [...DEFAULT_OPTIONS.bottom],
-            ending: [...DEFAULT_OPTIONS.ending]
-        };
-
-        const state = {
-            posts: [],
-            searchQuery: '',
-            sortBy: 'latest',
-            filters: {
-                category: 'all', price: 'all', age: 'all',
-                tags: new Set()
-            },
-            isAdmin: false,
-            editingId: null,
-            form: { tags: new Set() },
-            visibleLimit: 30,
-            taxonomyLoaded: false
-        };
-
-        let confirmCallback = null;
-
-        function showCustomAlert(msg, callback = null) {
-            const modal = document.getElementById('custom-alert-modal');
-            const box = document.getElementById('custom-alert-box');
-            document.getElementById('custom-alert-msg').innerText = msg;
-
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                box.classList.remove('scale-95');
-            }, 10);
-
-            modal.dataset.callback = callback ? 'true' : 'false';
-            if (callback) window._alertCallback = callback;
+          showCustomAlert(result.message || '필터 옵션을 숨겼습니다.');
+          renderModalSelects();
+          renderFilters();
+        } catch (e) {
+          showCustomAlert("필터 옵션 숨김 실패: " + e.message);
         }
+      });
+    }
 
-        function closeCustomAlert() {
-            const modal = document.getElementById('custom-alert-modal');
-            const box = document.getElementById('custom-alert-box');
+    function closeAdminModal() {
+      document.getElementById('admin-modal').classList.add('hidden');
+    }
 
-            modal.classList.add('opacity-0');
-            box.classList.add('scale-95');
+    async function submitForm() {
+      const titleInput = document.getElementById('form-title').value.trim();
+      const authorInput = document.getElementById('form-author').value.trim();
+      const urlInput = document.getElementById('form-url').value.trim();
 
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                if (modal.dataset.callback === 'true' && window._alertCallback) {
-                    window._alertCallback();
-                    window._alertCallback = null;
-                }
-            }, 200);
-        }
+      if (!titleInput || !authorInput || !urlInput) {
+        showCustomAlert("제목, 작가, URL은 필수 입력 항목입니다.");
+        return;
+      }
 
-        function showCustomConfirm(msg, callback) {
-            const modal = document.getElementById('custom-confirm-modal');
-            const box = document.getElementById('custom-confirm-box');
-            document.getElementById('custom-confirm-msg').innerText = msg;
-            confirmCallback = callback;
+      const isEdit = !!state.editingId;
+      const action = isEdit ? "update" : "add";
 
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                box.classList.remove('scale-95');
-            }, 10);
-        }
+      const selectedGenres = Array.from(state.form.tags).filter(t => options.genre.includes(t));
+      const selectedKeywords = Array.from(state.form.tags).filter(t => options.keyword.includes(t));
+      const selectedTops = Array.from(state.form.tags).filter(t => options.top.includes(t));
+      const selectedBottoms = Array.from(state.form.tags).filter(t => options.bottom.includes(t));
+      const hasAiTags = selectedGenres.length || selectedKeywords.length || selectedTops.length || selectedBottoms.length || !!state.form.ending;
 
-        function closeCustomConfirm(result) {
-            const modal = document.getElementById('custom-confirm-modal');
-            const box = document.getElementById('custom-confirm-box');
+      const data = {
+        "수집상태": hasAiTags ? "OK" : "READY_AI",
+        "제목": titleInput,
+        "작가": authorInput,
+        "URL": urlInput,
+        "원본링크": urlInput,
+        "발행일": document.getElementById('form-date').value,
+        "구분": state.form.category,
+        "결제": state.form.price,
+        "연령": state.form.age,
+        "엔딩": state.form.ending,
+        "장르": selectedGenres.join(', '),
+        "키워드": selectedKeywords.join(', '),
+        "공": selectedTops.join(', '),
+        "수": selectedBottoms.join(', '),
+        "AI원본응답": "",
+        "신규키워드제안": ""
+      };
 
-            modal.classList.add('opacity-0');
-            box.classList.add('scale-95');
+      let sendId = state.editingId;
+      if (sendId !== null && !isNaN(Number(sendId)) && String(sendId).trim() !== "") {
+        sendId = Number(sendId);
+      }
 
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                if (confirmCallback) {
-                    confirmCallback(result);
-                    confirmCallback = null;
-                }
-            }, 200);
-        }
+      const btn = document.getElementById('submit-btn');
+      const originalBtnHtml = btn.innerHTML;
+      btn.innerHTML = `<i class="ph ph-spinner spinner inline-block"></i> 저장 중...`;
+      btn.disabled = true;
 
-        function splitTags(str) {
-            if (!str) return [];
-            return String(str).split(',').map(s => s.trim()).filter(Boolean);
-        }
-
-        function uniqueArray(arr) {
-            return [...new Set(arr.filter(Boolean))];
-        }
-
-        function normalizeCategory(value) {
-            const v = String(value || "").trim();
-            if (!v) return "기타";
-            if (["글", "소설", "썰", "텍스트", "단편", "중편", "장편"].includes(v)) return "글";
-            if (["그림", "일러스트", "만화", "코믹", "웹툰", "comic", "illustration"].includes(v)) return "그림";
-            return "기타";
-        }
-
-        function resetOptionsToDefault() {
-            Object.keys(DEFAULT_OPTIONS).forEach(key => {
-                options[key] = [...DEFAULT_OPTIONS[key]];
-            });
-        }
-
-        function pushOption(type, value) {
-            const clean = String(value || "").trim();
-            if (!clean) return;
-            if (!options[type].includes(clean)) options[type].push(clean);
-        }
-
-        async function postAction(action, payload = {}) {
-            const res = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action, ...payload })
-            });
-            return await res.json();
-        }
-
-        async function fetchTaxonomy() {
-            try {
-                const result = await postAction('getTaxonomy');
-                if (!result.success || !Array.isArray(result.items)) throw new Error(result.message || 'taxonomy 조회 실패');
-
-                resetOptionsToDefault();
-
-                const groupMap = {
-                    category: 'category',
-                    price: 'price',
-                    age: 'age',
-                    genre: 'genre',
-                    keyword: 'keyword',
-                    top: 'top',
-                    bottom: 'bottom',
-                    ending: 'ending'
-                };
-
-                result.items.forEach(item => {
-                    const group = groupMap[item.group];
-                    if (!group) return;
-                    if (item.active === 'Y' || item.active === true) pushOption(group, item.label);
-                });
-
-                options.category = uniqueArray(["글", "그림", "기타", ...options.category.filter(v => ["글", "그림", "기타"].includes(v))]);
-                options.price = uniqueArray(options.price);
-                options.age = uniqueArray(options.age);
-                options.genre = uniqueArray(options.genre);
-                options.keyword = uniqueArray(options.keyword);
-                options.top = uniqueArray(options.top);
-                options.bottom = uniqueArray(options.bottom);
-                options.ending = uniqueArray(options.ending);
-
-                state.taxonomyLoaded = true;
-            } catch (e) {
-                state.taxonomyLoaded = false;
-            }
-        }
-
-        function deriveOptionsFromPosts() {
-            state.posts.forEach(p => {
-                splitTags(p.genre).forEach(t => pushOption('genre', t));
-                splitTags(p.keyword).forEach(t => pushOption('keyword', t));
-                splitTags(p.top).forEach(t => pushOption('top', t));
-                splitTags(p.bottom).forEach(t => pushOption('bottom', t));
-                if (p.ending) pushOption('ending', p.ending);
-            });
-
-            options.genre = uniqueArray(options.genre);
-            options.keyword = uniqueArray(options.keyword);
-            options.top = uniqueArray(options.top);
-            options.bottom = uniqueArray(options.bottom);
-            options.ending = uniqueArray(options.ending);
-        }
-
-        function forceRefresh() {
-            localStorage.removeItem('pota_cache_v6');
-            document.getElementById('post-list').innerHTML = `
-                <div class="text-center py-20 text-[#666]">
-                    <i class="ph ph-circle-notch text-3xl spinner mb-3 text-[#e52828]"></i>
-                    <div class="text-sm">데이터를 새로 불러오는 중...</div>
-                </div>
-            `;
+      try {
+        const result = await postAction(action, { id: sendId, data });
+        showCustomAlert(
+          hasAiTags ? "데이터가 저장되었습니다." : "데이터가 저장되었습니다. READY_AI 상태로 등록되어 배치 태깅 대상이 됩니다.",
+          () => {
+            localStorage.removeItem('pota_cache_v7');
+            closeAdminModal();
             fetchPosts(true);
+          }
+        );
+      } catch (e) {
+        showCustomAlert("저장 실패: " + e.message);
+      } finally {
+        btn.innerHTML = originalBtnHtml;
+        btn.disabled = false;
+      }
+    }
+
+    function deletePost(e, id) {
+      e.stopPropagation();
+      showCustomConfirm("정말 이 포스트를 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.", async (res) => {
+        if (!res) return;
+
+        let deleteId = id;
+        if (deleteId !== null && !isNaN(Number(deleteId)) && String(deleteId).trim() !== "") {
+          deleteId = Number(deleteId);
         }
 
-        async function fetchPosts(force = false) {
-            const syncStatus = document.getElementById('sync-status');
-            syncStatus.classList.remove('hidden');
-
-            const cachedData = force ? null : localStorage.getItem('pota_cache_v6');
-
-            if (cachedData) {
-                try {
-                    state.posts = JSON.parse(cachedData);
-                    resetOptionsToDefault();
-                    deriveOptionsFromPosts();
-                    renderFilters();
-                    renderList();
-                } catch (e) {
-                    localStorage.removeItem('pota_cache_v6');
-                }
-            }
-
-            try {
-                const [response] = await Promise.all([
-                    fetch(API_URL),
-                    fetchTaxonomy()
-                ]);
-
-                const rawData = await response.json();
-                if (rawData.error) throw new Error(rawData.error);
-
-                const processedData = rawData.map(row => {
-                    if (!row["제목"] && !row["ID"]) return null;
-
-                    let ageValue = row["연령"];
-                    if (ageValue === "일반") ageValue = "전연령";
-
-                    const categoryValue = normalizeCategory(row["구분"]);
-                    const keywordValue = row["키워드"] !== undefined ? row["키워드"] : (row["분위기"] || "");
-
-                    const genreList = splitTags(row["장르"]);
-                    const keywordList = splitTags(keywordValue);
-                    const topList = splitTags(row["공"]);
-                    const bottomList = splitTags(row["수"]);
-
-                    const allTags = [
-                        categoryValue, row["결제"], ageValue, row["엔딩"],
-                        ...genreList, ...keywordList, ...topList, ...bottomList
-                    ].filter(Boolean);
-
-                    let displayDate = row["발행일"] || "";
-                    if (displayDate.includes('T')) {
-                        const d = new Date(displayDate);
-                        displayDate = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-                    }
-
-                    return {
-                        id: String(row["ID"]),
-                        title: row["제목"] || "",
-                        author: row["작가"] || "",
-                        url: row["URL"] || row["원본링크"] || "",
-                        date: displayDate,
-                        category: categoryValue,
-                        price: row["결제"] || "",
-                        age: ageValue || "",
-                        genre: row["장르"] || "",
-                        keyword: keywordValue || "",
-                        top: row["공"] || "",
-                        bottom: row["수"] || "",
-                        ending: row["엔딩"] || "",
-                        status: row["수집상태"] || "",
-                        tags: allTags,
-                        isAdult: ageValue === "성인"
-                    };
-                }).filter(Boolean);
-
-                state.posts = processedData;
-
-                if (!state.taxonomyLoaded) {
-                    resetOptionsToDefault();
-                    deriveOptionsFromPosts();
-                } else {
-                    deriveOptionsFromPosts();
-                }
-
-                try {
-                    localStorage.setItem('pota_cache_v6', JSON.stringify(processedData));
-                } catch (storageError) {
-                    localStorage.removeItem('pota_cache_v6');
-                }
-
-                renderFilters();
-                renderList();
-                syncStatus.classList.add('hidden');
-
-            } catch (error) {
-                syncStatus.classList.add('hidden');
-                const msg = String(error.message || '');
-                if (!cachedData) {
-                    document.getElementById('post-list').innerHTML = `<div class="text-center py-20 text-red-500 text-sm"><i class="ph ph-warning text-2xl mb-2 inline-block"></i><br>데이터를 불러오지 못했습니다.<br>${msg}</div>`;
-                }
-            }
+        try {
+          await postAction("delete", { id: deleteId });
+          localStorage.removeItem('pota_cache_v7');
+          fetchPosts(true);
+        } catch (e2) {
+          showCustomAlert("삭제 실패: " + e2.message);
         }
-
-        function setSort(val) {
-            state.sortBy = val;
-            state.visibleLimit = 30;
-            const latestBtn = document.getElementById('sort-latest');
-            const oldestBtn = document.getElementById('sort-oldest');
-            const alphaBtn = document.getElementById('sort-alpha');
-
-            [latestBtn, oldestBtn, alphaBtn].forEach(btn => {
-                if(btn) btn.classList.remove('text-white', 'font-bold');
-            });
-
-            if (val === 'latest' && latestBtn) latestBtn.classList.add('text-white', 'font-bold');
-            else if (val === 'oldest' && oldestBtn) oldestBtn.classList.add('text-white', 'font-bold');
-            else if (val === 'alpha' && alphaBtn) alphaBtn.classList.add('text-white', 'font-bold');
-
-            renderList();
-        }
-
-        window.loadMore = function() {
-            state.visibleLimit += 30;
-            renderList();
-        }
-
-        function renderFilters() {
-            const container = document.getElementById('filter-section');
-            let html = '';
-
-            const singles = [
-                { id: 'category', label: '구분', items: options.category },
-                { id: 'price', label: '결제', items: options.price },
-                { id: 'age', label: '연령', items: options.age }
-            ];
-            singles.forEach(s => {
-                html += `
-                <div class="py-1.5 border-b border-[#2a2a2a] flex gap-2 items-start text-nowrap">
-                    <div class="text-[10px] text-[#777] font-medium w-[40px] shrink-0 pt-0.5">${s.label}</div>
-                    <div class="flex flex-wrap gap-1.5 flex-1">
-                        <button class="filter-btn ${state.filters[s.id] === 'all' ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="setSingleFilter('${s.id}', 'all')">전체</button>
-                        ${s.items.map(item => `
-                            <button class="filter-btn ${state.filters[s.id] === item ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="setSingleFilter('${s.id}', '${item.replace(/'/g, "\\'")}')">${item}</button>
-                        `).join('')}
-                    </div>
-                </div>`;
-            });
-
-            const multis = [
-                { id: 'genre', label: '장르', items: options.genre },
-                { id: 'keyword', label: '키워드', items: options.keyword },
-                { id: 'top', label: '공', items: options.top },
-                { id: 'bottom', label: '수', items: options.bottom },
-                { id: 'ending', label: '스포일러/엔딩', items: options.ending }
-            ];
-            multis.forEach(m => {
-                html += `
-                <div class="py-1.5 border-b border-[#2a2a2a] flex gap-2 items-start">
-                    <div class="text-[10px] text-[#777] font-medium w-[40px] shrink-0 pt-0.5">${m.label}</div>
-                    <div class="flex flex-wrap gap-1.5 flex-1">
-                        ${m.items.map(item => `
-                            <button class="filter-btn ${state.filters.tags.has(item) ? 'active' : ''} px-2.5 py-0.5 text-[10px]" onclick="toggleTagFilter('${item.replace(/'/g, "\\'")}')">${item}</button>
-                        `).join('')}
-                    </div>
-                </div>`;
-            });
-
-            html += `
-            <div class="flex justify-between items-center py-2 mt-1">
-                <button onclick="resetFilters()" class="text-[#888] hover:text-white transition-colors text-[11px] flex items-center gap-1 font-medium bg-[#222] px-2 py-1 rounded"><i class="ph ph-arrow-counter-clockwise"></i> 필터 초기화</button>
-                <button onclick="switchTab('list')" class="text-[#e52828] text-[11px] font-bold flex items-center gap-1">필터 접기 <i class="ph ph-caret-up"></i></button>
-            </div>`;
-
-            container.innerHTML = html;
-        }
-
-        window.revealEnding = function(btn, endingWord) {
-            const parent = btn.parentElement;
-            parent.innerHTML = `<span class="text-red-300 bg-[#e52828]/20 border border-red-900/50 text-[10px] px-2 py-0.5 rounded ml-1 font-bold shadow-sm inline-block animate-pulse" style="animation-iteration-count: 1;">#${endingWord}</span>`;
-        };
-
-        function renderList() {
-            const container = document.getElementById('post-list');
-            const filteredData = state.posts.filter(item => {
-                if (state.searchQuery) {
-                    const q = state.searchQuery.toLowerCase().trim();
-                    const safeTitle = String(item.title || "").toLowerCase();
-                    const safeAuthor = String(item.author || "").toLowerCase();
-                    const safeKeyword = String(item.keyword || "").toLowerCase();
-                    const safeGenre = String(item.genre || "").toLowerCase();
-                    const safeTop = String(item.top || "").toLowerCase();
-                    const safeBottom = String(item.bottom || "").toLowerCase();
-
-                    const matchTitle = safeTitle.includes(q);
-                    const matchAuthor = safeAuthor.includes(q);
-                    const matchEtc = [safeKeyword, safeGenre, safeTop, safeBottom].some(v => v.includes(q));
-                    const matchTags = item.tags && item.tags.some(t => String(t || "").toLowerCase().includes(q));
-
-                    if (!(matchTitle || matchAuthor || matchEtc || matchTags)) return false;
-                }
-
-                if (state.filters.category !== 'all' && item.category !== state.filters.category) return false;
-                if (state.filters.price !== 'all' && item.price !== state.filters.price) return false;
-                if (state.filters.age !== 'all' && item.age !== state.filters.age) return false;
-
-                if (state.filters.tags.size > 0) {
-                    const hasAll = Array.from(state.filters.tags).every(t => item.tags.includes(t));
-                    if (!hasAll) return false;
-                }
-                return true;
-            });
-
-            const sortedData = [...filteredData].sort((a, b) => {
-                if (state.sortBy === 'alpha') {
-                    return (a.title || "").localeCompare(b.title || "", 'ko');
-                }
-                const dateA = a.date || "0000-00-00";
-                const dateB = b.date || "0000-00-00";
-                if (state.sortBy === 'latest') return dateB.localeCompare(dateA);
-                return dateA.localeCompare(dateB);
-            });
-
-            document.getElementById('visible-count').textContent = sortedData.length;
-            if (sortedData.length === 0) {
-                container.innerHTML = `<div class="text-center py-16 text-[#666] text-sm"><i class="ph ph-magnifying-glass text-3xl mb-2 inline-block opacity-50"></i><br>검색 결과가 없습니다.</div>`;
-                return;
-            }
-
-            const dataToRender = sortedData.slice(0, state.visibleLimit);
-
-            let listHtml = dataToRender.map(item => {
-                const endingKeywords = options.ending;
-                const postEnding = item.ending && endingKeywords.includes(item.ending) ? item.ending : null;
-
-                const otherTags = item.tags.filter(t => ![item.category, item.price, item.age].includes(t) && !endingKeywords.includes(t));
-                let tagsHtml = otherTags.map(tag => `<span class="text-[#888] bg-[#1a1a1e] border border-[#333] text-[10px] px-1.5 py-0.5 rounded">#${tag}</span>`).join('');
-
-                let endingHtml = '';
-                if (postEnding) {
-                    endingHtml = `
-                    <span class="inline-block relative">
-                        <button onclick="revealEnding(this, '${postEnding}')" class="text-[#888] bg-[#222] border border-[#444] hover:bg-[#333] hover:text-white transition-colors text-[10px] px-1.5 py-0.5 rounded ml-1 flex items-center gap-1 shadow-sm">
-                            <i class="ph ph-eye"></i> 엔딩 보기
-                        </button>
-                    </span>`;
-                }
-
-                const adminUI = state.isAdmin ? `
-                    <div class="mt-3 pt-2 border-t border-[#222] flex justify-between items-center gap-2">
-                        <div class="text-[10px] text-[#666]">${item.status || ''}</div>
-                        <div class="flex justify-end gap-2">
-                            <button onclick="openAdminModal('edit', '${item.id}')" class="text-[#888] text-[11px] px-3 py-1 rounded bg-[#222] hover:bg-[#333] transition-colors"><i class="ph ph-pencil-simple inline"></i> 수정</button>
-                            <button onclick="deletePost(event, '${item.id}')" class="text-red-500 text-[11px] px-3 py-1 rounded bg-[#3a1616]/50 hover:bg-[#3a1616] transition-colors"><i class="ph ph-trash inline"></i> 삭제</button>
-                        </div>
-                    </div>
-                ` : "";
-
-                const categoryLabel = item.category || '기타';
-
-                return `
-                    <div class="flex flex-col border border-[#222] bg-[#161616] rounded-lg p-3 hover:border-[#333] transition-colors relative">
-                        <div class="flex justify-between items-center mb-2">
-                            <div class="flex gap-1.5">
-                                <span class="text-[9px] text-[#e52828] border border-[#e52828]/50 px-1 py-[1px] rounded font-medium bg-[#3a1616]/30">${categoryLabel}</span>
-                                ${item.isAdult ? '<span class="text-[9px] text-[#ef4444] border border-[#ef4444]/30 px-1 py-[1px] rounded font-medium bg-[#ef4444]/10">19</span>' : '<span class="text-[9px] text-green-400 border border-green-400/30 px-1 py-[1px] rounded font-medium bg-green-400/10">전연령</span>'}
-                                <span class="text-[9px] ${item.price === '무료' ? 'text-blue-400 border-blue-400/30 bg-blue-400/10' : 'text-[#888] border-[#444] bg-[#222]'} border px-1 py-[1px] rounded font-medium">${item.price}</span>
-                            </div>
-                            <span class="text-[10px] text-[#666] tracking-wider">${item.date}</span>
-                        </div>
-
-                        <div class="flex justify-between items-start gap-2">
-                            <div class="flex-1">
-                                <h3 class="text-[14px] font-bold text-white mb-1 cursor-pointer hover:text-[#e52828] transition-colors line-clamp-2" onclick="window.open('${item.url}', '_blank')">
-                                    ${item.title}
-                                </h3>
-                                <div class="text-[11px] text-[#999] mb-1.5 font-medium">by <span class="text-[#bbb]">${item.author}</span></div>
-                            </div>
-                            <button onclick="window.open('${item.url}', '_blank')" class="w-8 h-8 rounded-full bg-[#1e1e1e] border border-[#333] flex items-center justify-center text-[#888] hover:bg-[#e52828] hover:text-white hover:border-[#e52828] transition-all shrink-0 mt-0.5 shadow-sm group" aria-label="링크로 이동">
-                                <i class="ph-bold ph-caret-right text-sm group-hover:translate-x-[2px] transition-transform"></i>
-                            </button>
-                        </div>
-
-                        <div class="flex flex-wrap gap-1 items-center mt-1">${tagsHtml}${endingHtml}</div>
-                        ${adminUI}
-                    </div>`;
-            }).join('');
-
-            if (sortedData.length > state.visibleLimit) {
-                listHtml += `
-                    <div class="pt-2 pb-2 text-center">
-                        <button onclick="loadMore()" class="bg-[#222] hover:bg-[#333] text-[#aaa] hover:text-white px-6 py-2.5 rounded-full text-sm font-medium transition-colors w-full border border-[#333] flex justify-center items-center gap-2">
-                            <i class="ph ph-caret-down"></i> 더보기 (${state.visibleLimit} / ${sortedData.length})
-                        </button>
-                    </div>
-                `;
-            }
-
-            container.innerHTML = listHtml;
-        }
-
-        function setSingleFilter(key, val) {
-            state.filters[key] = val;
-            state.visibleLimit = 30;
-            renderFilters();
-            renderList();
-        }
-
-        function toggleTagFilter(tag) {
-            if(state.filters.tags.has(tag)) state.filters.tags.delete(tag);
-            else state.filters.tags.add(tag);
-            state.visibleLimit = 30;
-            renderFilters();
-            renderList();
-        }
-
-        function resetFilters() {
-            state.filters = { category: 'all', price: 'all', age: 'all', tags: new Set() };
-            state.visibleLimit = 30;
-            renderFilters();
-            renderList();
-        }
-
-        function toggleAdminMode() {
-            state.isAdmin = !state.isAdmin;
-            if (state.isAdmin) {
-                document.getElementById('admin-icon').classList.replace('ph-lock-key', 'ph-lock-key-open');
-                document.getElementById('admin-icon').classList.add('text-[#e52828]');
-                document.getElementById('admin-panel').classList.remove('hidden');
-                showCustomAlert("관리자 모드가 활성화 되었습니다.\n작품을 추가, 수정, 삭제할 수 있습니다.");
-            } else {
-                document.getElementById('admin-icon').classList.replace('ph-lock-key-open', 'ph-lock-key');
-                document.getElementById('admin-icon').classList.remove('text-[#e52828]');
-                document.getElementById('admin-panel').classList.add('hidden');
-            }
-            renderList();
-        }
-
-        function openGuideModal() { document.getElementById('guide-modal').classList.remove('hidden'); }
-        function closeGuideModal() { document.getElementById('guide-modal').classList.add('hidden'); }
-
-        function openAdminModal(type, id = null) {
-            state.editingId = id;
-            state.form.tags = new Set();
-            const modal = document.getElementById('admin-modal');
-            const title = document.getElementById('modal-title');
-
-            modal.classList.remove('hidden');
-
-            if(type === 'edit') {
-                title.innerHTML = '<i class="ph ph-pencil-simple text-[#e52828] mr-1"></i> 포타 정보 수정';
-                const post = state.posts.find(p => p.id === id);
-                document.getElementById('form-title').value = post.title;
-                document.getElementById('form-author').value = post.author;
-                document.getElementById('form-url').value = post.url;
-                document.getElementById('form-date').value = post.date;
-                state.form.category = post.category;
-                state.form.price = post.price;
-                state.form.age = post.age;
-                state.form.ending = post.ending || "";
-                splitTags(post.genre).forEach(t => state.form.tags.add(t));
-                splitTags(post.keyword).forEach(t => state.form.tags.add(t));
-                splitTags(post.top).forEach(t => state.form.tags.add(t));
-                splitTags(post.bottom).forEach(t => state.form.tags.add(t));
-            } else {
-                title.innerHTML = '<i class="ph ph-plus-circle text-[#e52828] mr-1"></i> 신규 작품 추가';
-                document.getElementById('modal-form').querySelectorAll('input[type="text"], input[type="url"]').forEach(i => i.value = '');
-                state.form.category = "글";
-                state.form.price = "무료";
-                state.form.age = "전연령";
-                state.form.ending = "";
-
-                const now = new Date();
-                const yyyy = now.getFullYear();
-                const mm = String(now.getMonth() + 1).padStart(2, '0');
-                const dd = String(now.getDate()).padStart(2, '0');
-                document.getElementById('form-date').value = `${yyyy}-${mm}-${dd}`;
-            }
-            renderModalSelects();
-        }
-
-        function renderModalSelects() {
-            const singleContainer = document.getElementById('modal-single-selects');
-            const multiContainer = document.getElementById('modal-multi-selects');
-
-            const singles = [
-                { id: 'category', label: '구분', items: options.category },
-                { id: 'price', label: '결제', items: options.price },
-                { id: 'age', label: '연령', items: options.age },
-                { id: 'ending', label: '스포일러/엔딩 <span class="text-[#555] font-normal text-[9px] ml-1">(선택 해제 가능)</span>', items: options.ending }
-            ];
-            singleContainer.innerHTML = singles.map(s => `
-                <div>
-                    <p class="label-text">${s.label}</p>
-                    <div class="flex flex-wrap gap-1.5">
-                        ${s.items.map(item => `<button type="button" class="filter-btn ${state.form[s.id] === item ? 'active' : ''} px-2.5 py-1 text-[10px]" onclick="if('${s.id}' === 'ending' && state.form.${s.id} === '${item.replace(/'/g, "\\'")}') { state.form.${s.id} = ''; } else { state.form.${s.id} = '${item.replace(/'/g, "\\'")}'; } renderModalSelects();">${item}</button>`).join('')}
-                    </div>
-                </div>
-            `).join('');
-
-            const multis = [
-                { id: 'genre', label: '장르', items: options.genre },
-                { id: 'keyword', label: '키워드', items: options.keyword },
-                { id: 'top', label: '공', items: options.top },
-                { id: 'bottom', label: '수', items: options.bottom }
-            ];
-            multiContainer.innerHTML = multis.map(m => `
-                <div>
-                    <p class="label-text">${m.label}</p>
-                    <div class="flex flex-wrap gap-1.5">
-                        ${m.items.map(item => `
-                            <div class="inline-flex items-center bg-[#222] rounded overflow-hidden border border-transparent ${state.form.tags.has(item) ? '!border-[#e52828]' : ''}">
-                                <button type="button" class="filter-btn ${state.form.tags.has(item) ? 'active' : ''} px-2.5 py-1 text-[10px] rounded-none border-none" onclick="toggleFormTag('${item.replace(/'/g, "\\'")}')">${item}</button>
-                                <button type="button" onclick="deleteFilterOption('${m.id}', '${item.replace(/'/g, "\\'")}')" class="delete-opt-btn text-[10px] py-1 h-full">
-                                    <i class="ph ph-x"></i>
-                                </button>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function toggleFormTag(tag) {
-            if(state.form.tags.has(tag)) state.form.tags.delete(tag);
-            else state.form.tags.add(tag);
-            renderModalSelects();
-        }
-
-        async function addNewFilterOption() {
-            const type = document.getElementById('new-filter-type').value;
-            const val = document.getElementById('new-filter-value').value.trim();
-            if(!val) return;
-
-            try {
-                const result = await postAction('addTaxonomyOption', {
-                    group: type,
-                    label: val
-                });
-
-                if (!result.success) {
-                    throw new Error(result.message || '저장 실패');
-                }
-
-                pushOption(type, val);
-                document.getElementById('new-filter-value').value = '';
-                showCustomAlert(`'${val}' 옵션이 추가되었습니다.`);
-                renderModalSelects();
-                renderFilters();
-            } catch (e) {
-                showCustomAlert("필터 옵션 저장 실패: " + e.message + "\n다음 단계에서 GAS taxonomy 저장 액션을 연결해야 합니다.");
-            }
-        }
-
-        async function deleteFilterOption(type, val) {
-            showCustomConfirm(`'${val}' 필터 옵션을 숨기시겠습니까?`, async (res) => {
-                if (!res) return;
-
-                try {
-                    const result = await postAction('deactivateTaxonomyOption', {
-                        group: type,
-                        label: val
-                    });
-
-                    if (!result.success) {
-                        throw new Error(result.message || '숨김 처리 실패');
-                    }
-
-                    options[type] = options[type].filter(o => o !== val);
-                    state.filters.tags.delete(val);
-                    state.form.tags.delete(val);
-
-                    renderModalSelects();
-                    renderFilters();
-                } catch (e) {
-                    showCustomAlert("필터 옵션 숨김 실패: " + e.message + "\n다음 단계에서 GAS taxonomy 비활성화 액션을 연결해야 합니다.");
-                }
-            });
-        }
-
-        function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
-
-        async function submitForm() {
-            const titleInput = document.getElementById('form-title').value.trim();
-            const authorInput = document.getElementById('form-author').value.trim();
-            const urlInput = document.getElementById('form-url').value.trim();
-
-            if (!titleInput || !authorInput || !urlInput) {
-                showCustomAlert("제목, 작가, URL은 필수 입력 항목입니다.");
-                return;
-            }
-
-            const isEdit = !!state.editingId;
-            const action = isEdit ? "update" : "add";
-
-            const selectedGenres = Array.from(state.form.tags).filter(t => options.genre.includes(t));
-            const selectedKeywords = Array.from(state.form.tags).filter(t => options.keyword.includes(t));
-            const selectedTops = Array.from(state.form.tags).filter(t => options.top.includes(t));
-            const selectedBottoms = Array.from(state.form.tags).filter(t => options.bottom.includes(t));
-            const hasAiTags = selectedGenres.length || selectedKeywords.length || selectedTops.length || selectedBottoms.length || !!state.form.ending;
-
-            const data = {
-                "수집상태": hasAiTags ? "OK" : "READY_AI",
-                "제목": titleInput,
-                "작가": authorInput,
-                "URL": urlInput,
-                "원본링크": urlInput,
-                "발행일": document.getElementById('form-date').value,
-                "구분": state.form.category,
-                "결제": state.form.price,
-                "연령": state.form.age,
-                "엔딩": state.form.ending,
-                "장르": selectedGenres.join(', '),
-                "키워드": selectedKeywords.join(', '),
-                "공": selectedTops.join(', '),
-                "수": selectedBottoms.join(', '),
-                "AI원본응답": "",
-                "신규키워드제안": ""
-            };
-
-            let sendId = state.editingId;
-            if (sendId !== null && !isNaN(Number(sendId)) && String(sendId).trim() !== "") {
-                sendId = Number(sendId);
-            }
-
-            const btn = document.getElementById('submit-btn');
-            const originalBtnHtml = btn.innerHTML;
-            btn.innerHTML = `<i class="ph ph-spinner spinner inline-block"></i> 저장 중...`;
-            btn.disabled = true;
-
-            try {
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ action: action, id: sendId, data: data })
-                });
-                const result = await res.json();
-                if(result.success) {
-                    showCustomAlert(hasAiTags ? "데이터가 저장되었습니다." : "데이터가 저장되었습니다. READY_AI 상태로 등록되어 배치 태깅 대상이 됩니다.", () => {
-                        localStorage.removeItem('pota_cache_v6');
-                        closeAdminModal();
-                        fetchPosts(true);
-                    });
-                } else {
-                    showCustomAlert("저장 실패: " + result.message);
-                }
-            } catch(e) {
-                showCustomAlert("서버와의 연결에 실패했습니다.");
-            } finally {
-                btn.innerHTML = originalBtnHtml;
-                btn.disabled = false;
-            }
-        }
-
-        function deletePost(e, id) {
-            e.stopPropagation();
-            showCustomConfirm("정말 이 포스트를 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.", async (res) => {
-                if (!res) return;
-
-                let deleteId = id;
-                if (deleteId !== null && !isNaN(Number(deleteId)) && String(deleteId).trim() !== "") {
-                    deleteId = Number(deleteId);
-                }
-
-                try {
-                    const resApi = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain' },
-                        body: JSON.stringify({ action: "delete", id: deleteId })
-                    });
-                    const result = await resApi.json();
-                    if (result.success) {
-                        localStorage.removeItem('pota_cache_v6');
-                        fetchPosts(true);
-                    } else showCustomAlert("삭제 실패: " + result.message);
-                } catch (e) { showCustomAlert("오류 발생: " + e.message); }
-            });
-        }
-
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            state.searchQuery = e.target.value;
-            state.visibleLimit = 30;
-            renderList();
-        });
-
-        function switchTab(tab) {
-            const filterSec = document.getElementById('filter-section');
-            const btnList = document.getElementById('tab-list');
-            const btnFilter = document.getElementById('tab-filter');
-            if (tab === 'filter') {
-                filterSec.style.display = 'flex';
-                btnList.classList.replace('font-bold', 'font-medium'); btnList.classList.replace('text-white', 'text-[#777]'); btnList.classList.replace('border-[#e52828]', 'border-transparent');
-                btnFilter.classList.replace('font-medium', 'font-bold'); btnFilter.classList.replace('text-[#777]', 'text-white'); btnFilter.classList.replace('border-transparent', 'border-[#e52828]');
-            } else {
-                filterSec.style.display = 'none';
-                btnList.classList.replace('font-medium', 'font-bold'); btnList.classList.replace('text-[#777]', 'text-white'); btnList.classList.replace('border-transparent', 'border-[#e52828]');
-                btnFilter.classList.replace('font-bold', 'font-medium'); btnFilter.classList.replace('text-white', 'text-[#777]'); btnFilter.classList.replace('border-[#e52828]', 'border-transparent');
-            }
-        }
-
-        fetchPosts();
-    </script>
+      });
+    }
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      state.searchQuery = e.target.value;
+      state.visibleLimit = 30;
+      renderList();
+    });
+
+    function switchTab(tab) {
+      const filterSec = document.getElementById('filter-section');
+      const btnList = document.getElementById('tab-list');
+      const btnFilter = document.getElementById('tab-filter');
+
+      if (tab === 'filter') {
+        filterSec.style.display = 'flex';
+        btnList.classList.replace('font-bold', 'font-medium');
+        btnList.classList.replace('text-white', 'text-[#777]');
+        btnList.classList.replace('border-[#e52828]', 'border-transparent');
+
+        btnFilter.classList.replace('font-medium', 'font-bold');
+        btnFilter.classList.replace('text-[#777]', 'text-white');
+        btnFilter.classList.replace('border-transparent', 'border-[#e52828]');
+      } else {
+        filterSec.style.display = 'none';
+        btnList.classList.replace('font-medium', 'font-bold');
+        btnList.classList.replace('text-[#777]', 'text-white');
+        btnList.classList.replace('border-transparent', 'border-[#e52828]');
+
+        btnFilter.classList.replace('font-bold', 'font-medium');
+        btnFilter.classList.replace('text-white', 'text-[#777]');
+        btnFilter.classList.replace('border-[#e52828]', 'border-transparent');
+      }
+    }
+
+    fetchPosts();
+  </script>
 </body>
 </html>

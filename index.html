@@ -4651,9 +4651,18 @@
       return normalize(a.post["제목"]).localeCompare(normalize(b.post["제목"]), "ko");
     }
 
+    function isPublicPost(post) {
+      const hasVisibility = Object.prototype.hasOwnProperty.call(post, "관리자검수");
+      return !hasVisibility || postFlag(post["관리자검수"]);
+    }
+
+    function publicPosts() {
+      return state.posts.filter(isPublicPost);
+    }
+
     function updateSeriesStats() {
       const groups = new Map();
-      state.posts.forEach((post) => {
+      publicPosts().forEach((post) => {
         const series = seriesInfo(post);
         if (!series.isSeries) return;
         const key = normalizeSeriesKey(series.name || normalize(post["제목"]));
@@ -5260,7 +5269,7 @@
 
     function filteredPosts() {
       const query = normalize(state.query).toLowerCase();
-      const posts = state.posts.filter((post) => matchesPost(post, state.active, query));
+      const posts = publicPosts().filter((post) => matchesPost(post, state.active, query));
       const sorted = posts.sort((a, b) => {
         if (state.sort === "bookmarked") {
           const ab = postLibraryEntry(a).bookmarked ? 1 : 0;
@@ -5304,7 +5313,7 @@
       active[group] ||= new Set();
       active[group].add(option);
       const query = normalize(state.query).toLowerCase();
-      return state.posts.some((post) => matchesPost(post, active, query));
+      return publicPosts().some((post) => matchesPost(post, active, query));
     }
 
     function updateFilterVisibility() {
@@ -7038,7 +7047,8 @@
     function recommendRandomPost(scope = "current") {
       state.randomScope = scope;
       const current = filteredPosts();
-      const pool = scope === "all" ? state.posts : current.length ? current : state.posts;
+      const allPublicPosts = publicPosts();
+      const pool = scope === "all" ? allPublicPosts : current.length ? current : allPublicPosts;
       if (!pool.length) {
         alert("추천할 글을 아직 불러오지 못했습니다.");
         return;

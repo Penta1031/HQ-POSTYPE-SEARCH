@@ -758,6 +758,14 @@
       white-space: nowrap;
     }
 
+    .top-refresh-button.is-loading svg {
+      animation: refresh-spin .75s linear infinite;
+    }
+
+    @keyframes refresh-spin {
+      to { transform: rotate(360deg); }
+    }
+
     .layout {
       gap: 12px;
     }
@@ -3718,6 +3726,12 @@
         <h1>혚쾌 포타 검색기</h1>
         <div class="brand-actions">
           <button class="button top-library-button" id="libraryToggle" type="button">내 서재</button>
+          <button class="button lock-button top-refresh-button" id="refreshDataButton" type="button" aria-label="새로고침" title="새로고침">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M20 11a8 8 0 1 0-2.34 5.66"></path>
+              <path d="M20 4v7h-7"></path>
+            </svg>
+          </button>
           <button class="button lock-button" id="authorLoginToggle" type="button" aria-label="작가 로그인" title="작가 로그인" hidden>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 20h9"></path>
@@ -4338,6 +4352,7 @@
       filterCaret: $("#filterCaret"),
       visible: $("#visibleCount"),
       total: $("#totalCount"),
+      refreshData: $("#refreshDataButton"),
       authorLoginToggle: $("#authorLoginToggle"),
       adminDirectToggle: $("#adminDirectToggle"),
       accessChoiceModal: $("#accessChoiceModal"),
@@ -5045,6 +5060,7 @@
     }
 
     async function loadData() {
+      let loaded = false;
       els.status.textContent = "아카이브 데이터를 불러오는 중입니다.";
       try {
             await loadFilterConfig();
@@ -5053,6 +5069,7 @@
             await loadAuthorSubmissions();
             updateSeriesStats();
             els.status.textContent = "";
+            loaded = true;
       } catch (error) {
         state.posts = mergeSheetAndLocal(SAMPLE_POSTS);
         updateSeriesStats();
@@ -5065,6 +5082,25 @@
       buildAdminBulkValueOptions();
       renderAdminVocabulary();
       render();
+      return loaded;
+    }
+
+    async function refreshPublicData() {
+      if (els.refreshData.disabled) return;
+      els.refreshData.disabled = true;
+      els.refreshData.classList.add("is-loading");
+      try {
+        const loaded = await loadData();
+        if (loaded) {
+          els.status.textContent = "최신 데이터로 새로고침했습니다.";
+          window.setTimeout(() => {
+            if (els.status.textContent === "최신 데이터로 새로고침했습니다.") els.status.textContent = "";
+          }, 1800);
+        }
+      } finally {
+        els.refreshData.disabled = false;
+        els.refreshData.classList.remove("is-loading");
+      }
     }
 
     async function refreshAdminData() {
@@ -6954,7 +6990,10 @@
         }
         for (let index = 0; index < updatedPosts.length; index += 1) {
           els.status.textContent = `${label} 변경 중 ${index + 1}/${updatedPosts.length}`;
-          await sendAdminAction("update", updatedPosts[index]);
+          await requestAdminFunction("set_visibility", {
+            ...adminPostRef(updatedPosts[index]),
+            visible
+          });
         }
         state.adminSelected.clear();
         await loadData();
@@ -7058,6 +7097,7 @@
       state.query = event.target.value;
       render();
     });
+    els.refreshData.addEventListener("click", refreshPublicData);
     els.sort.addEventListener("input", (event) => {
       state.sort = event.target.value;
       render();

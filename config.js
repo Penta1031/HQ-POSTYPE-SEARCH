@@ -1,0 +1,17 @@
+window.POSTYPE_CONFIG = {
+  DATA_SOURCE: "auto",
+
+  // Supabase Dashboard > Connect 또는 Project Settings > API에서 복사해 넣기
+  // 관리자 비밀번호는 여기에 넣지 않고 Edge Function secret으로 관리합니다.
+  // 주의: URL 끝에 /rest/v1/ 이 들어가면 안 됩니다!
+  SUPABASE_URL: "https://aiuwbwtknaceghkzporx.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpdXdid3RrbmFjZWdoa3pwb3J4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MjM0MTEsImV4cCI6MjA5NzA5OTQxMX0.8SRwD8aS_UiPHMKsLw6O5wIZo4rc-Ep5bT3MljmQHIE",
+
+  SUPABASE_TABLE: "postype_archive",
+  SUPABASE_PUBLIC_VIEW: "postype_archive_public",
+  ADMIN_FUNCTION_URL: "",
+  SHOW_UNREVIEWED_POSTS: false,
+
+  // 이전 저장소의 CSV 데이터는 사용하지 않습니다.
+  LOCAL_CSV_URL: ""
+};

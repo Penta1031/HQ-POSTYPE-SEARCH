@@ -295,6 +295,8 @@
 
     body.admin-on .admin { display: block; }
 
+    body.admin-on .admin[hidden] { display: none; }
+
     .admin-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1291,7 +1293,11 @@
     .admin-hub {
       display: grid;
       gap: 12px;
-      margin: 8px 0 2px;
+      margin-top: 4px;
+    }
+
+    .admin-section-modal .modal-card {
+      width: min(100%, 440px);
     }
 
     .admin-hub-card {
@@ -3868,26 +3874,14 @@
       </div>
     </header>
 
-    <section class="admin panel" id="adminPanel">
+    <section class="admin panel" id="adminPanel" hidden>
       <div class="admin-head">
         <div>
           <strong id="adminSectionTitle">관리자 모드</strong>
           <p class="admin-note" id="adminSectionNote">원하는 관리 메뉴를 선택하세요.</p>
         </div>
       </div>
-      <div class="admin-hub" id="adminHub">
-        <button class="admin-hub-card" type="button" data-admin-section="stats">
-          <span class="admin-hub-icon">↟</span>
-          <span><strong>통계</strong><span>클릭·메모·발췌 활동별 조회수 확인</span></span>
-          <span class="admin-hub-arrow">›</span>
-        </button>
-        <button class="admin-hub-card" type="button" data-admin-section="postype">
-          <span class="admin-hub-icon">⌕</span>
-          <span><strong>포타 검색기 관리</strong><span>작품과 태그 데이터 관리</span></span>
-          <span class="admin-hub-arrow">›</span>
-        </button>
-      </div>
-      <button class="admin-back" id="adminBackButton" type="button" hidden>‹ 관리자 홈</button>
+      <button class="admin-back" id="adminBackButton" type="button">‹ 관리자 선택</button>
       <div class="admin-run-actions">
         <button class="button primary crawler-manual" id="runCrawlerButton" type="button">수동 크롤링 실행</button>
         <div class="admin-secondary-actions">
@@ -4189,6 +4183,27 @@
           <button class="button" id="adminLoginCancel" type="button">취소</button>
         </div>
       </form>
+    </section>
+  </div>
+
+  <div class="modal admin-section-modal" id="adminSectionModal" hidden>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="adminSectionChoiceTitle">
+      <div class="modal-head">
+        <h2 id="adminSectionChoiceTitle">관리자 모드</h2>
+        <button class="modal-close" id="adminSectionClose" type="button" aria-label="닫기">×</button>
+      </div>
+      <div class="admin-hub" id="adminHub">
+        <button class="admin-hub-card" type="button" data-admin-section="stats">
+          <span class="admin-hub-icon">↟</span>
+          <span><strong>통계</strong><span>클릭·메모·발췌 활동별 조회수 확인</span></span>
+          <span class="admin-hub-arrow">›</span>
+        </button>
+        <button class="admin-hub-card" type="button" data-admin-section="postype">
+          <span class="admin-hub-icon">⌕</span>
+          <span><strong>포타 검색기 관리</strong><span>작품과 태그 데이터 관리</span></span>
+          <span class="admin-hub-arrow">›</span>
+        </button>
+      </div>
     </section>
   </div>
 
@@ -4538,6 +4553,9 @@
       adminLoginClose: $("#adminLoginClose"),
       adminLoginCancel: $("#adminLoginCancel"),
       adminPasswordInput: $("#adminPasswordInput"),
+      adminPanel: $("#adminPanel"),
+      adminSectionModal: $("#adminSectionModal"),
+      adminSectionClose: $("#adminSectionClose"),
       adminSectionTitle: $("#adminSectionTitle"),
       adminSectionNote: $("#adminSectionNote"),
       adminHub: $("#adminHub"),
@@ -5730,8 +5748,9 @@
       ];
       if (els.adminSectionTitle) els.adminSectionTitle.textContent = sectionMeta[0];
       if (els.adminSectionNote) els.adminSectionNote.textContent = sectionMeta[1];
-      if (els.adminHub) els.adminHub.hidden = !hubVisible;
-      if (els.adminBackButton) els.adminBackButton.hidden = hubVisible;
+      const adminActive = document.body.classList.contains("admin-on");
+      if (els.adminPanel) els.adminPanel.hidden = hubVisible || !adminActive;
+      if (els.adminSectionModal) els.adminSectionModal.hidden = !(hubVisible && adminActive);
       const crawlerAdmin = document.querySelector("#crawlerAdmin");
       if (crawlerAdmin) crawlerAdmin.hidden = hubVisible;
       statsElements.forEach((selector) => {
@@ -5747,6 +5766,13 @@
         closeAdminEditor();
         loadPostypeStats();
       }
+    }
+
+    async function closeAdminSectionChoice() {
+      els.adminSectionModal.hidden = true;
+      document.body.classList.remove("admin-on");
+      closeAdminEditor();
+      await loadData();
     }
 
     async function runCrawler() {
@@ -7599,6 +7625,10 @@
       setAdminSection(button.dataset.adminSection);
     });
     els.adminBackButton.addEventListener("click", () => setAdminSection("hub"));
+    els.adminSectionClose.addEventListener("click", closeAdminSectionChoice);
+    els.adminSectionModal.addEventListener("click", (event) => {
+      if (event.target === els.adminSectionModal) closeAdminSectionChoice();
+    });
     els.adminRefresh.addEventListener("click", refreshAdminData);
     els.newPost.addEventListener("click", openNewPostForm);
     els.clearForm.addEventListener("click", closeAdminEditor);

@@ -1288,28 +1288,71 @@
       min-height: 43px;
     }
 
-    .admin-section-tabs {
+    .admin-hub {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 7px;
-      margin: 0 0 12px;
+      gap: 12px;
+      margin: 8px 0 2px;
     }
 
-    .admin-section-tab {
-      min-height: 42px;
-      border: 1px solid #2c3138;
-      border-radius: 10px;
-      background: #151619;
-      color: #aeb6c1;
+    .admin-hub-card {
+      display: grid;
+      grid-template-columns: 54px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      min-height: 86px;
+      border: 1px solid rgba(229, 0, 0, .38);
+      border-radius: 18px;
+      background: rgba(229, 0, 0, .10);
+      color: #f5f5f5;
+      padding: 14px 16px;
       cursor: pointer;
-      font-size: 12px;
+      text-align: left;
+    }
+
+    .admin-hub-icon {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: #e50000;
+      color: #fff;
+      font-size: 24px;
       font-weight: 500;
     }
 
-    .admin-section-tab.active {
-      border-color: #e6e8eb;
-      background: #e6e8eb;
-      color: #111316;
+    .admin-hub-card strong {
+      display: block;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .admin-hub-card span:not(.admin-hub-icon):not(.admin-hub-arrow) {
+      display: block;
+      margin-top: 4px;
+      color: #777;
+      font-size: 12px;
+    }
+
+    .admin-hub-arrow {
+      color: #e50000;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .admin-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 34px;
+      border: 0;
+      background: transparent;
+      color: #7f8792;
+      padding: 0;
+      margin: 0 0 12px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
     }
 
     .admin-head strong {
@@ -3821,10 +3864,19 @@
           <p class="admin-note">글과 필터 단어를 여기에서 관리합니다.</p>
         </div>
       </div>
-      <div class="admin-section-tabs" id="adminSectionTabs">
-        <button class="admin-section-tab active" type="button" data-admin-section="stats">통계</button>
-        <button class="admin-section-tab" type="button" data-admin-section="postype">포타 관리자</button>
+      <div class="admin-hub" id="adminHub">
+        <button class="admin-hub-card" type="button" data-admin-section="stats">
+          <span class="admin-hub-icon">↟</span>
+          <span><strong>통계</strong><span>포타 탭 조회와 글 열람 기록 확인</span></span>
+          <span class="admin-hub-arrow">›</span>
+        </button>
+        <button class="admin-hub-card" type="button" data-admin-section="postype">
+          <span class="admin-hub-icon">⌕</span>
+          <span><strong>포타 검색기 관리</strong><span>작품과 태그 데이터 관리</span></span>
+          <span class="admin-hub-arrow">›</span>
+        </button>
       </div>
+      <button class="admin-back" id="adminBackButton" type="button" hidden>‹ 관리자 홈</button>
       <div class="admin-run-actions">
         <button class="button primary crawler-manual" id="runCrawlerButton" type="button">수동 크롤링 실행</button>
         <div class="admin-secondary-actions">
@@ -4412,7 +4464,7 @@
       adminActive: {},
       query: "",
       adminQuery: "",
-      adminSection: "stats",
+      adminSection: "hub",
       sort: "date-desc",
       adminSort: "date-desc",
       randomScope: "current",
@@ -4472,7 +4524,8 @@
       adminLoginClose: $("#adminLoginClose"),
       adminLoginCancel: $("#adminLoginCancel"),
       adminPasswordInput: $("#adminPasswordInput"),
-      adminSectionTabs: $("#adminSectionTabs"),
+      adminHub: $("#adminHub"),
+      adminBackButton: $("#adminBackButton"),
       adminSearch: $("#adminSearchInput"),
       adminFilterToggle: $("#adminFilterToggle"),
       adminFilterMount: $("#adminFilterMount"),
@@ -5631,9 +5684,10 @@
       els.postypeStatsMessage.textContent = "";
     }
 
-    function setAdminSection(section = "stats") {
-      const next = section === "postype" ? "postype" : "stats";
+    function setAdminSection(section = "hub") {
+      const next = ["stats", "postype"].includes(section) ? section : "hub";
       state.adminSection = next;
+      const hubVisible = next === "hub";
       const statsVisible = next === "stats";
       const postypeVisible = next === "postype";
       const statsElements = ["#postypeStatsAdmin"];
@@ -5649,6 +5703,10 @@
         ".admin-bulkbar",
         "#adminList"
       ];
+      if (els.adminHub) els.adminHub.hidden = !hubVisible;
+      if (els.adminBackButton) els.adminBackButton.hidden = hubVisible;
+      const crawlerAdmin = document.querySelector("#crawlerAdmin");
+      if (crawlerAdmin) crawlerAdmin.hidden = hubVisible;
       statsElements.forEach((selector) => {
         const element = document.querySelector(selector);
         if (element) element.hidden = !statsVisible;
@@ -5657,11 +5715,7 @@
         const element = document.querySelector(selector);
         if (element) element.hidden = !postypeVisible;
       });
-      els.adminSectionTabs?.querySelectorAll("[data-admin-section]").forEach((button) => {
-        const active = button.dataset.adminSection === next;
-        button.classList.toggle("active", active);
-        button.setAttribute("aria-pressed", String(active));
-      });
+      if (hubVisible) closeAdminEditor();
       if (statsVisible) {
         closeAdminEditor();
         loadPostypeStats();
@@ -7131,7 +7185,7 @@
       openAuthorUploadModal();
     }
 
-    async function activateAdminMode(credential = "", section = "stats") {
+    async function activateAdminMode(credential = "", section = "hub") {
       if (document.body.classList.contains("admin-on")) {
         setAdminSection(section);
         return true;
@@ -7491,11 +7545,12 @@
     });
     els.authorLoginToggle.addEventListener("click", chooseAuthorAccess);
     els.adminDirectToggle.addEventListener("click", toggleAdminMode);
-    els.adminSectionTabs.addEventListener("click", (event) => {
+    els.adminHub.addEventListener("click", (event) => {
       const button = event.target.closest("[data-admin-section]");
       if (!button) return;
       setAdminSection(button.dataset.adminSection);
     });
+    els.adminBackButton.addEventListener("click", () => setAdminSection("hub"));
     els.adminRefresh.addEventListener("click", refreshAdminData);
     els.newPost.addEventListener("click", openNewPostForm);
     els.clearForm.addEventListener("click", closeAdminEditor);
@@ -7632,7 +7687,7 @@
     buildAdminBulkValueOptions();
     resetPostypeStatsRange();
     renderPostypeStats();
-    setAdminSection("stats");
+    setAdminSection("hub");
     resetAuthorSubmissionForm();
     trackStandalonePostypeTabView();
     loadData();

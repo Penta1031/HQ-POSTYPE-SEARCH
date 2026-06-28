@@ -6256,31 +6256,42 @@
       ctx.textBaseline = "top";
       const margin = 76;
       const textWidth = Math.min(width - margin * 2, 850);
-      const lineHeight = Math.round(fontSize * 1.78);
+      // Ridi's square share images keep the quote's line starts centered near
+      // 41% of the canvas, with generous leading that scales with the type.
+      const lineHeight = Math.round(fontSize * 2.35);
       const paragraphGap = Math.round(fontSize * .58);
       let quote = normalize(els.excerptText.value) || "발췌 텍스트를 입력해 주세요.";
       const quotePairs = { '"': '"', "“": "”" };
       if (quote.length >= 2 && quotePairs[quote[0]] === quote[quote.length - 1]) {
         quote = quote.slice(1, -1).trim();
       }
+      const maxTextLines = Math.min(9, Math.floor(640 / lineHeight) + 1);
       const lines = limitCanvasTextLines(
         wrapCanvasText(ctx, quote, textWidth, state.excerptLineBreak),
-        9
+        maxTextLines
       );
-      let y = 136;
+      const positionedLines = [];
+      let lineOffset = 0;
       lines.forEach((line) => {
         if (line) {
-          ctx.fillText(line, margin, y);
-          y += lineHeight;
+          positionedLines.push({ line, offset: lineOffset });
+          lineOffset += lineHeight;
         } else {
-          y += paragraphGap;
+          lineOffset += paragraphGap;
         }
+      });
+      const lastLineOffset = positionedLines[positionedLines.length - 1]?.offset || 0;
+      const quoteCenterY = Math.round(height * .407);
+      const quoteTop = Math.round(quoteCenterY - lastLineOffset / 2);
+      positionedLines.forEach(({ line, offset }) => {
+        ctx.fillText(line, margin, quoteTop + offset);
       });
 
       ctx.fillStyle = subColor;
       const title = normalize(els.excerptWorkTitle.value) || "작품 이름";
       const author = normalize(els.excerptAuthor.value) || "작가";
-      const metaY = Math.min(Math.max(y + 52, 640), height - 190);
+      const lastLineY = quoteTop + lastLineOffset;
+      const metaY = Math.min(Math.max(lastLineY + fontSize + 76, 640), height - 190);
       ctx.font = `400 40px ${fontFamily}`;
       ctx.fillText(title, margin, metaY);
       ctx.fillStyle = state.excerptTextColor === "black" ? "rgba(32,33,36,.56)" : "rgba(244,244,245,.58)";

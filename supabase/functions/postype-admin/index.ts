@@ -712,17 +712,21 @@ async function postypeViewStats(payload: Record<string, unknown>) {
   params.append("viewed_on", `lte.${dateTo}`);
   const rows = await rest(`hq_view_events?${params.toString()}`);
   const events = Array.isArray(rows) ? rows as Array<Record<string, unknown>> : [];
-  const dailyMap = new Map<string, { viewed_on: string; views: number; tab_views: number; content_views: number }>();
+  const dailyMap = new Map<string, { viewed_on: string; views: number; click_views: number; memo_views: number; excerpt_views: number }>();
   const contentMap = new Map<string, {
     content_type: string;
     content_id: string;
     content_title: string;
     content_url: string;
     views: number;
+    click_views: number;
+    memo_views: number;
+    excerpt_views: number;
     last_viewed_at: string;
   }>();
-  let tabViews = 0;
-  let contentViews = 0;
+  let clickViews = 0;
+  let memoViews = 0;
+  let excerptViews = 0;
   let lastViewedAt = "";
 
   events.forEach((event) => {
@@ -730,36 +734,48 @@ async function postypeViewStats(payload: Record<string, unknown>) {
     const eventType = text(event.event_type);
     const viewedAt = text(event.viewed_at);
     if (viewedAt && (!lastViewedAt || viewedAt > lastViewedAt)) lastViewedAt = viewedAt;
-    const daily = dailyMap.get(viewedOn) || { viewed_on: viewedOn, views: 0, tab_views: 0, content_views: 0 };
+    if (eventType !== "content") return;
+
+    const rawContentId = text(event.content_id) || text(event.content_url) || "unknown";
+    const actionMatch = rawContentId.match(/::(click|memo|excerpt)$/);
+    const action = (actionMatch ? actionMatch[1] : "click") as "click" | "memo" | "excerpt";
+    const contentId = actionMatch ? rawContentId.slice(0, -actionMatch[0].length) || "unknown" : rawContentId;
+    const contentTitle = text(event.content_title) || "(제목 없음)";
+    const contentUrl = text(event.content_url);
+    const haystack = [contentTitle, contentUrl, contentId, action].join(" ").toLowerCase();
+    if (query && !haystack.includes(query)) return;
+
+    if (action === "memo") memoViews += 1;
+    else if (action === "excerpt") excerptViews += 1;
+    else clickViews += 1;
+
+    const daily = dailyMap.get(viewedOn) || { viewed_on: viewedOn, views: 0, click_views: 0, memo_views: 0, excerpt_views: 0 };
     daily.views += 1;
-    if (eventType === "content") {
-      contentViews += 1;
-      daily.content_views += 1;
-      const contentId = text(event.content_id) || text(event.content_url) || "unknown";
-      const contentTitle = text(event.content_title) || "(제목 없음)";
-      const contentUrl = text(event.content_url);
-      const haystack = [contentTitle, contentUrl, contentId].join(" ").toLowerCase();
-      if (!query || haystack.includes(query)) {
-        const key = `${text(event.content_type) || "postype"}:${contentId}`;
-        const current = contentMap.get(key) || {
-          content_type: text(event.content_type) || "postype",
-          content_id: contentId,
-          content_title: contentTitle,
-          content_url: contentUrl,
-          views: 0,
-          last_viewed_at: "",
-        };
-        current.views += 1;
-        if (viewedAt && (!current.last_viewed_at || viewedAt > current.last_viewed_at)) current.last_viewed_at = viewedAt;
-        if (contentTitle && current.content_title === "(제목 없음)") current.content_title = contentTitle;
-        if (contentUrl) current.content_url = contentUrl;
-        contentMap.set(key, current);
-      }
-    } else {
-      tabViews += 1;
-      daily.tab_views += 1;
-    }
+    if (action === "memo") daily.memo_views += 1;
+    else if (action === "excerpt") daily.excerpt_views += 1;
+    else daily.click_views += 1;
     dailyMap.set(viewedOn, daily);
+
+    const key = `${text(event.content_type) || "postype"}:${contentId}`;
+    const current = contentMap.get(key) || {
+      content_type: text(event.content_type) || "postype",
+      content_id: contentId,
+      content_title: contentTitle,
+      content_url: contentUrl,
+      views: 0,
+      click_views: 0,
+      memo_views: 0,
+      excerpt_views: 0,
+      last_viewed_at: "",
+    };
+    current.views += 1;
+    if (action === "memo") current.memo_views += 1;
+    else if (action === "excerpt") current.excerpt_views += 1;
+    else current.click_views += 1;
+    if (viewedAt && (!current.last_viewed_at || viewedAt > current.last_viewed_at)) current.last_viewed_at = viewedAt;
+    if (contentTitle && current.content_title === "(제목 없음)") current.content_title = contentTitle;
+    if (contentUrl) current.content_url = contentUrl;
+    contentMap.set(key, current);
   });
 
   const content = [...contentMap.values()]
@@ -770,9 +786,10 @@ async function postypeViewStats(payload: Record<string, unknown>) {
     dateFrom,
     dateTo,
     totals: {
-      views: events.length,
-      tabViews,
-      contentViews,
+      views: clickViews + memoViews + excerptViews,
+      clickViews,
+      memoViews,
+      excerptViews,
       lastViewedAt,
     },
     daily: [...dailyMap.values()].sort((a, b) => b.viewed_on.localeCompare(a.viewed_on)),

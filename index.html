@@ -1688,6 +1688,13 @@
       flex: 1;
     }
 
+    .postype-stats-heading {
+      margin: 12px 0 0;
+      color: #f3f4f6;
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
     .postype-stats-list {
       display: grid;
       gap: 7px;
@@ -3924,12 +3931,14 @@
             <button class="button primary" id="postypeStatsRefresh" type="button">통계 새로고침</button>
           </div>
           <div class="crawler-status-grid">
-            <div class="crawler-stat"><span>탭 조회</span><strong id="postypeStatsTabViews">0건</strong></div>
-            <div class="crawler-stat"><span>글 열람</span><strong id="postypeStatsContentViews">0건</strong></div>
-            <div class="crawler-stat"><span>열람한 글</span><strong id="postypeStatsContentTotal">0개</strong></div>
-            <div class="crawler-stat"><span>최근 열람</span><strong id="postypeStatsLastViewed">-</strong></div>
+            <div class="crawler-stat"><span>전체</span><strong id="postypeStatsTabViews">0건</strong></div>
+            <div class="crawler-stat"><span>클릭</span><strong id="postypeStatsContentViews">0건</strong></div>
+            <div class="crawler-stat"><span>메모</span><strong id="postypeStatsContentTotal">0건</strong></div>
+            <div class="crawler-stat"><span>발췌</span><strong id="postypeStatsLastViewed">0건</strong></div>
           </div>
+          <h3 class="postype-stats-heading">데일리 조회수</h3>
           <div class="postype-stats-list" id="postypeStatsDaily"></div>
+          <h3 class="postype-stats-heading">데이터별 조회수</h3>
           <div class="postype-stats-list" id="postypeStatsContent"></div>
           <p class="admin-note" id="postypeStatsMessage" role="status" aria-live="polite"></p>
         </details>
@@ -4944,16 +4953,18 @@
       }
     }
 
-    async function trackPostypeView(post) {
+    async function trackPostypeView(post, action = "click") {
       if (!post) return false;
       const link = postStatValue(post, "\uB9C1\uD06C", "留곹겕");
       const title = postStatValue(post, "\uC81C\uBAA9", "?쒕ぉ");
       const author = postStatValue(post, "\uC791\uAC00", "?묎?");
+      const statAction = ["click", "memo", "excerpt"].includes(action) ? action : "click";
+      const baseId = trimForStats(post._postypePostId || post._supabaseId || link || post._rowNumber, 140) || "unknown";
       return insertViewEvent({
         event_type: "content",
         tab_key: "postype",
         content_type: "postype",
-        content_id: trimForStats(post._postypePostId || post._supabaseId || link || post._rowNumber, 160) || null,
+        content_id: trimForStats(`${baseId}::${statAction}`, 160) || null,
         content_title: trimForStats(title || author, 500) || null,
         content_url: trimForStats(link, 1000) || null,
         session_id: trimForStats(analyticsSessionId(), 80) || null,
@@ -5656,17 +5667,18 @@
       const stats = state.postypeStats || { totals: {}, daily: [], content: [], contentTotal: 0 };
       const totals = stats.totals || {};
       els.postypeStatsRangeLabel.textContent = `${stats.dateFrom || els.postypeStatsFrom.value} ~ ${stats.dateTo || els.postypeStatsTo.value}`;
-      els.postypeStatsTabViews.textContent = formatCount(totals.tabViews);
-      els.postypeStatsContentViews.textContent = formatCount(totals.contentViews);
-      els.postypeStatsContentTotal.textContent = formatCount(stats.contentTotal, "개");
-      els.postypeStatsLastViewed.textContent = formatStatsDateTime(totals.lastViewedAt);
+      els.postypeStatsTabViews.textContent = formatCount(totals.views);
+      els.postypeStatsContentViews.textContent = formatCount(totals.clickViews);
+      els.postypeStatsContentTotal.textContent = formatCount(totals.memoViews);
+      els.postypeStatsLastViewed.textContent = formatCount(totals.excerptViews);
 
       const daily = Array.isArray(stats.daily) ? stats.daily : [];
       els.postypeStatsDaily.innerHTML = daily.length
         ? daily.map((row) => `
           <div class="postype-stats-row">
             <span>${escapeHtml(row.viewed_on)}</span>
-            <strong>${formatCount(row.views)} · 글 ${formatCount(row.content_views)}</strong>
+            <strong>${formatCount(row.views)}</strong>
+            <small>클릭 ${formatCount(row.click_views)} · 메모 ${formatCount(row.memo_views)} · 발췌 ${formatCount(row.excerpt_views)}</small>
           </div>
         `).join("")
         : '<div class="empty">선택한 기간의 조회 기록이 없습니다.</div>';
@@ -5675,7 +5687,7 @@
       els.postypeStatsContent.innerHTML = content.length
         ? content.map((row) => `
           <div class="postype-stats-row">
-            <span><strong>${escapeHtml(row.content_title || "제목 없음")}</strong><br><small>${escapeHtml(row.content_url || row.content_id || "")}</small></span>
+            <span><strong>${escapeHtml(row.content_title || "제목 없음")}</strong><br><small>${escapeHtml(row.content_url || row.content_id || "")}</small><br><small>클릭 ${formatCount(row.click_views)} · 메모 ${formatCount(row.memo_views)} · 발췌 ${formatCount(row.excerpt_views)}</small></span>
             <strong>${formatCount(row.views)}</strong>
           </div>
         `).join("")
@@ -6269,6 +6281,7 @@
 
     function openNoteModal(post) {
       state.notePost = post;
+      trackPostypeView(post, "memo");
       const entry = postLibraryEntry(post);
       els.noteMeta.textContent = [entry.title, entry.author].filter(Boolean).join(" · ");
       els.noteText.value = entry.note || "";
@@ -6296,6 +6309,7 @@
 
     function openExcerptModal(post) {
       state.excerptPost = post;
+      trackPostypeView(post, "excerpt");
       els.excerptWorkTitle.value = normalize(post["제목"]);
       els.excerptAuthor.value = normalize(post["작가"]);
       if (!normalize(els.excerptText.value)) {
@@ -7477,7 +7491,7 @@
       if (event.origin !== window.location.origin || event.source !== window.parent) return;
       if (event.data?.type !== "hq-open-postype-admin") return;
       try {
-        const opened = await activateAdminMode(normalize(event.data.credential), "postype");
+        const opened = await activateAdminMode(normalize(event.data.credential), "hub");
         if (!opened) await toggleAdminMode();
       } catch (error) {
         alert(`포타 관리자 모드를 열지 못했습니다. ${normalize(error.message)}`);

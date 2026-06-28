@@ -2348,6 +2348,10 @@
       gap: 8px;
     }
 
+    .admin-editor .admin-save-actions #deletePost {
+      grid-column: 1 / -1;
+    }
+
     .admin-ai-import {
       display: grid;
       gap: 7px;
@@ -4064,9 +4068,10 @@
               </details>
               <span class="admin-tag-limit-note">결말이 명확한 경우만 선택</span>
             </div>
-            <p class="admin-note wide">시리즈 글의 작가·가격·성인·카테고리·필터·연재상태를 수정하면 같은 시리즈 전체에 적용됩니다.</p>
-            <div class="wide top-actions">
-              <button class="button primary" type="submit">저장</button>
+            <p class="admin-note wide">저장은 현재 글만 반영합니다. 시리즈 전체 저장은 작가·가격·성인·카테고리·필터·연재상태를 같은 시리즈 전체에 적용합니다.</p>
+            <div class="wide top-actions admin-save-actions">
+              <button class="button primary" type="submit" data-save-scope="post">저장</button>
+              <button class="button" id="adminSaveSeries" type="submit" data-save-scope="series" disabled>시리즈 전체 저장</button>
               <button class="button danger" id="deletePost" type="button">삭제</button>
             </div>
           </form>
@@ -4561,6 +4566,7 @@
       adminEditor: $("#adminEditor"),
       adminEditorTitle: $("#adminEditorTitle"),
       adminForm: $("#adminForm"),
+      adminSaveSeries: $("#adminSaveSeries"),
       adminRefresh: $("#adminRefreshButton"),
       newPost: $("#newPostButton"),
       crawlerStatusBadge: $("#crawlerStatusBadge"),
@@ -7138,6 +7144,7 @@
       els.adminForm.elements["_originalSeriesName"].value = post["시리즈명"] || "";
       syncAdminMultiSelectsFromForm();
       syncStandaloneStatus();
+      syncAdminSeriesSaveState();
       syncAdminReadLink();
     }
 
@@ -7158,6 +7165,7 @@
       els.adminForm.elements["_rowNumber"].value = "";
       syncAdminMultiSelectsFromForm();
       syncStandaloneStatus();
+      syncAdminSeriesSaveState();
       syncAdminReadLink();
       els.adminEditor.hidden = false;
     }
@@ -7165,6 +7173,7 @@
     function closeAdminEditor() {
       els.adminForm.reset();
       syncAdminMultiSelectsFromForm();
+      syncAdminSeriesSaveState();
       syncAdminReadLink();
       els.adminEditor.hidden = true;
     }
@@ -7272,6 +7281,19 @@
       if (!seriesField.value) statusField.value = "";
     }
 
+    function syncAdminSeriesSaveState() {
+      if (!els.adminSaveSeries) return;
+      const rowNumber = normalize(els.adminForm.elements["_rowNumber"]?.value);
+      const supabaseId = normalize(els.adminForm.elements["_supabaseId"]?.value);
+      const isSavedPost = Boolean(supabaseId || (rowNumber && !rowNumber.startsWith("local-")));
+      const isSeries = normalize(els.adminForm.elements["시리즈"]?.value) === "Y";
+      const seriesName = normalize(els.adminForm.elements["시리즈명"]?.value);
+      els.adminSaveSeries.disabled = !(isSavedPost && isSeries && seriesName);
+      els.adminSaveSeries.title = els.adminSaveSeries.disabled
+        ? "저장된 시리즈 글에서 시리즈명을 입력하면 사용할 수 있습니다."
+        : `‘${seriesName}’ 시리즈 전체에 공통 수정값을 저장합니다.`;
+    }
+
     async function sendAdminAction(action, payload) {
       if (hasSupabaseConfig()) {
         return requestAdminFunction(action, payload);
@@ -7289,6 +7311,8 @@
     async function savePost(event) {
       event.preventDefault();
       const data = formData();
+      const applyToSeries = event.submitter?.dataset.saveScope === "series";
+      data._applyToSeries = applyToSeries ? "Y" : "";
       const tagLimitError = validateTagLimits(data);
       if (tagLimitError) {
         alert(tagLimitError);
@@ -7296,7 +7320,8 @@
       }
       const action = data._rowNumber && !data._rowNumber.startsWith("local-") ? "update" : "create";
       const actionLabel = action === "create" ? "신규 글 추가" : "글 수정";
-      els.status.textContent = "저장 내용을 Supabase에 반영하는 중입니다.";
+      const saveLabel = applyToSeries ? "시리즈 전체 저장" : actionLabel;
+      els.status.textContent = `${saveLabel} 내용을 Supabase에 반영하는 중입니다.`;
       try {
         const result = await sendAdminAction(action, data);
         if (result && result.localOnly) {
@@ -7304,14 +7329,14 @@
           state.posts = mergeSheetAndLocal(state.posts);
           render();
           closeAdminEditor();
-          showAdminResult(`${actionLabel}이 이 브라우저에 반영됐습니다.`);
+          showAdminResult(`${saveLabel}이 이 브라우저에 반영됐습니다.`);
           return;
         }
         closeAdminEditor();
         await loadData();
-        showAdminResult(`${actionLabel}이 Supabase에 반영됐습니다.`);
+        showAdminResult(`${saveLabel}이 Supabase에 반영됐습니다.`);
       } catch (error) {
-        showAdminResult(`${actionLabel}에 실패했습니다: ${error.message}`, "error");
+        showAdminResult(`${saveLabel}에 실패했습니다: ${error.message}`, "error");
         alert(`저장에 실패했습니다. ${error.message}`);
       }
     }
@@ -7579,7 +7604,11 @@
     els.clearForm.addEventListener("click", closeAdminEditor);
     els.deletePost.addEventListener("click", deleteCurrentPost);
     els.adminForm.elements["링크"].addEventListener("input", syncAdminReadLink);
-    els.adminForm.elements["시리즈"].addEventListener("change", syncStandaloneStatus);
+    els.adminForm.elements["시리즈"].addEventListener("change", () => {
+      syncStandaloneStatus();
+      syncAdminSeriesSaveState();
+    });
+    els.adminForm.elements["시리즈명"].addEventListener("input", syncAdminSeriesSaveState);
     els.crawlerRun.addEventListener("click", runCrawler);
     els.postypeStatsRefresh.addEventListener("click", loadPostypeStats);
     els.postypeStatsReset.addEventListener("click", () => {

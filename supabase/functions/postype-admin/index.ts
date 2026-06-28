@@ -1056,7 +1056,6 @@ Deno.serve(async (request) => {
         method: "POST",
         body: JSON.stringify(row),
       });
-      await syncSeriesFilters(row);
       return json({ ok: true, rows });
     }
 
@@ -1081,7 +1080,9 @@ Deno.serve(async (request) => {
         method: "PATCH",
         body: JSON.stringify(row),
       });
-      await syncSeriesFilters(row, text(payload._originalSeriesName));
+      if (flag(payload._applyToSeries)) {
+        await syncSeriesFilters(row, text(payload._originalSeriesName));
+      }
       return json({ ok: true, rows });
     }
 

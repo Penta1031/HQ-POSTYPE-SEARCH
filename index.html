@@ -3867,14 +3867,14 @@
     <section class="admin panel" id="adminPanel">
       <div class="admin-head">
         <div>
-          <strong>관리자 모드</strong>
-          <p class="admin-note">글과 필터 단어를 여기에서 관리합니다.</p>
+          <strong id="adminSectionTitle">관리자 모드</strong>
+          <p class="admin-note" id="adminSectionNote">원하는 관리 메뉴를 선택하세요.</p>
         </div>
       </div>
       <div class="admin-hub" id="adminHub">
         <button class="admin-hub-card" type="button" data-admin-section="stats">
           <span class="admin-hub-icon">↟</span>
-          <span><strong>통계</strong><span>포타 탭 조회와 글 열람 기록 확인</span></span>
+          <span><strong>통계</strong><span>클릭·메모·발췌 활동별 조회수 확인</span></span>
           <span class="admin-hub-arrow">›</span>
         </button>
         <button class="admin-hub-card" type="button" data-admin-section="postype">
@@ -4533,6 +4533,8 @@
       adminLoginClose: $("#adminLoginClose"),
       adminLoginCancel: $("#adminLoginCancel"),
       adminPasswordInput: $("#adminPasswordInput"),
+      adminSectionTitle: $("#adminSectionTitle"),
+      adminSectionNote: $("#adminSectionNote"),
       adminHub: $("#adminHub"),
       adminBackButton: $("#adminBackButton"),
       adminSearch: $("#adminSearchInput"),
@@ -5699,6 +5701,11 @@
     function setAdminSection(section = "hub") {
       const next = ["stats", "postype"].includes(section) ? section : "hub";
       state.adminSection = next;
+      const sectionMeta = {
+        hub: ["관리자 모드", "원하는 관리 메뉴를 선택하세요."],
+        stats: ["통계", "클릭·메모·발췌 활동별 조회수를 확인합니다."],
+        postype: ["포타 검색기 관리", "작품과 태그 데이터를 관리합니다."]
+      }[next];
       const hubVisible = next === "hub";
       const statsVisible = next === "stats";
       const postypeVisible = next === "postype";
@@ -5715,6 +5722,8 @@
         ".admin-bulkbar",
         "#adminList"
       ];
+      if (els.adminSectionTitle) els.adminSectionTitle.textContent = sectionMeta[0];
+      if (els.adminSectionNote) els.adminSectionNote.textContent = sectionMeta[1];
       if (els.adminHub) els.adminHub.hidden = !hubVisible;
       if (els.adminBackButton) els.adminBackButton.hidden = hubVisible;
       const crawlerAdmin = document.querySelector("#crawlerAdmin");

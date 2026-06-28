@@ -1288,6 +1288,30 @@
       min-height: 43px;
     }
 
+    .admin-section-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin: 0 0 12px;
+    }
+
+    .admin-section-tab {
+      min-height: 42px;
+      border: 1px solid #2c3138;
+      border-radius: 10px;
+      background: #151619;
+      color: #aeb6c1;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .admin-section-tab.active {
+      border-color: #e6e8eb;
+      background: #e6e8eb;
+      color: #111316;
+    }
+
     .admin-head strong {
       font-weight: 500;
     }
@@ -3797,6 +3821,10 @@
           <p class="admin-note">글과 필터 단어를 여기에서 관리합니다.</p>
         </div>
       </div>
+      <div class="admin-section-tabs" id="adminSectionTabs">
+        <button class="admin-section-tab active" type="button" data-admin-section="stats">통계</button>
+        <button class="admin-section-tab" type="button" data-admin-section="postype">포타 관리자</button>
+      </div>
       <div class="admin-run-actions">
         <button class="button primary crawler-manual" id="runCrawlerButton" type="button">수동 크롤링 실행</button>
         <div class="admin-secondary-actions">
@@ -4384,6 +4412,7 @@
       adminActive: {},
       query: "",
       adminQuery: "",
+      adminSection: "stats",
       sort: "date-desc",
       adminSort: "date-desc",
       randomScope: "current",
@@ -4443,6 +4472,7 @@
       adminLoginClose: $("#adminLoginClose"),
       adminLoginCancel: $("#adminLoginCancel"),
       adminPasswordInput: $("#adminPasswordInput"),
+      adminSectionTabs: $("#adminSectionTabs"),
       adminSearch: $("#adminSearchInput"),
       adminFilterToggle: $("#adminFilterToggle"),
       adminFilterMount: $("#adminFilterMount"),
@@ -5599,6 +5629,43 @@
         : '<div class="empty">아직 집계된 글 열람 기록이 없습니다.</div>';
 
       els.postypeStatsMessage.textContent = "";
+    }
+
+    function setAdminSection(section = "stats") {
+      const next = section === "postype" ? "postype" : "stats";
+      state.adminSection = next;
+      const statsVisible = next === "stats";
+      const postypeVisible = next === "postype";
+      const statsElements = ["#postypeStatsAdmin"];
+      const postypeElements = [
+        ".admin-run-actions",
+        "#crawlerStatusAdmin",
+        "#authorAccountsAdmin",
+        ".admin-search",
+        "#adminFilterToggle",
+        "#adminFilterMount",
+        "#adminVocabulary",
+        ".admin-list-tools",
+        ".admin-bulkbar",
+        "#adminList"
+      ];
+      statsElements.forEach((selector) => {
+        const element = document.querySelector(selector);
+        if (element) element.hidden = !statsVisible;
+      });
+      postypeElements.forEach((selector) => {
+        const element = document.querySelector(selector);
+        if (element) element.hidden = !postypeVisible;
+      });
+      els.adminSectionTabs?.querySelectorAll("[data-admin-section]").forEach((button) => {
+        const active = button.dataset.adminSection === next;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      if (statsVisible) {
+        closeAdminEditor();
+        loadPostypeStats();
+      }
     }
 
     async function runCrawler() {
@@ -6980,6 +7047,7 @@
 
     function fillAdminForm(post, anchor) {
       document.body.classList.add("admin-on");
+      setAdminSection("postype");
       placeAdminEditor(anchor);
       els.adminEditorTitle.textContent = "글 수정";
       els.deletePost.hidden = false;
@@ -7005,6 +7073,7 @@
 
     function openNewPostForm() {
       document.body.classList.add("admin-on");
+      setAdminSection("postype");
       placeAdminEditor(document.querySelector(".admin-head"));
       els.adminForm.reset();
       els.adminEditorTitle.textContent = "신규 글 추가";
@@ -7062,8 +7131,11 @@
       openAuthorUploadModal();
     }
 
-    async function activateAdminMode(credential = "") {
-      if (document.body.classList.contains("admin-on")) return true;
+    async function activateAdminMode(credential = "", section = "stats") {
+      if (document.body.classList.contains("admin-on")) {
+        setAdminSection(section);
+        return true;
+      }
       if (!state.adminToken && credential) {
         const result = await requestAdminFunction("auth", {}, credential);
         if (!result.token) throw new Error("관리자 보안 함수가 아직 최신 버전으로 배포되지 않았습니다.");
@@ -7072,6 +7144,7 @@
       }
       if (!state.adminToken) return false;
       document.body.classList.add("admin-on");
+      setAdminSection(section);
       await loadData();
       return true;
     }
@@ -7350,7 +7423,7 @@
       if (event.origin !== window.location.origin || event.source !== window.parent) return;
       if (event.data?.type !== "hq-open-postype-admin") return;
       try {
-        const opened = await activateAdminMode(normalize(event.data.credential));
+        const opened = await activateAdminMode(normalize(event.data.credential), "postype");
         if (!opened) await toggleAdminMode();
       } catch (error) {
         alert(`포타 관리자 모드를 열지 못했습니다. ${normalize(error.message)}`);
@@ -7418,6 +7491,11 @@
     });
     els.authorLoginToggle.addEventListener("click", chooseAuthorAccess);
     els.adminDirectToggle.addEventListener("click", toggleAdminMode);
+    els.adminSectionTabs.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-admin-section]");
+      if (!button) return;
+      setAdminSection(button.dataset.adminSection);
+    });
     els.adminRefresh.addEventListener("click", refreshAdminData);
     els.newPost.addEventListener("click", openNewPostForm);
     els.clearForm.addEventListener("click", closeAdminEditor);
@@ -7554,6 +7632,7 @@
     buildAdminBulkValueOptions();
     resetPostypeStatsRange();
     renderPostypeStats();
+    setAdminSection("stats");
     resetAuthorSubmissionForm();
     trackStandalonePostypeTabView();
     loadData();

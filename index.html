@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="hq-postype-admin-build" content="stats-pagination-20260629-1">
   <title>혚쾌 포타 검색기</title>
   <style>
     :root {
@@ -24,6 +25,8 @@
     }
 
     * { box-sizing: border-box; }
+
+    [hidden] { display: none !important; }
 
     body {
       margin: 0;
@@ -1290,6 +1293,24 @@
       min-height: 43px;
     }
 
+    body.admin-stats-view .admin-run-actions,
+    body.admin-stats-view #crawlerStatusAdmin,
+    body.admin-stats-view #authorAccountsAdmin,
+    body.admin-stats-view .admin-search,
+    body.admin-stats-view #adminFilterToggle,
+    body.admin-stats-view #adminFilterMount,
+    body.admin-stats-view #adminVocabulary,
+    body.admin-stats-view .admin-list-tools,
+    body.admin-stats-view .admin-bulkbar,
+    body.admin-stats-view #adminList,
+    body.admin-stats-view #adminEditor,
+    body.admin-stats-view .contact-panel,
+    body.admin-stats-view .layout,
+    body.admin-stats-view .random-dock,
+    body.admin-stats-view #randomResult {
+      display: none !important;
+    }
+
     .admin-hub {
       display: grid;
       gap: 12px;
@@ -1694,6 +1715,55 @@
       flex: 1;
     }
 
+    .postype-stats-chart {
+      margin-top: 8px;
+      border: 1px solid #292b30;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(96, 165, 250, .08), rgba(21, 22, 25, .96));
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .postype-stats-chart svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .postype-stats-chart .chart-grid {
+      stroke: rgba(148, 163, 184, .18);
+      stroke-width: 1;
+    }
+
+    .postype-stats-chart .chart-line {
+      fill: none;
+      stroke: #ef4444;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .postype-stats-chart .chart-area {
+      fill: rgba(239, 68, 68, .14);
+    }
+
+    .postype-stats-chart .chart-dot {
+      fill: #ef4444;
+      stroke: #fee2e2;
+      stroke-width: 1.5;
+    }
+
+    .postype-stats-chart .chart-label,
+    .postype-stats-chart .chart-value {
+      fill: #94a3b8;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .postype-stats-chart .chart-value {
+      fill: #fca5a5;
+    }
+
     .postype-stats-heading {
       margin: 12px 0 0;
       color: #f3f4f6;
@@ -1705,6 +1775,45 @@
       display: grid;
       gap: 7px;
       margin-top: 8px;
+    }
+
+    .postype-stats-pagination {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      border: 1px solid #292b30;
+      border-radius: 14px;
+      background: #111214;
+      padding: 4px 7px;
+      min-height: 46px;
+    }
+
+    .postype-stats-pagination button {
+      border: 0;
+      background: transparent;
+      padding: 10px;
+      color: #f3f4f6;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .postype-stats-pagination button:first-child { text-align: left; }
+    .postype-stats-pagination button:last-child { text-align: right; }
+
+    .postype-stats-pagination button:disabled {
+      color: #4b4f57;
+      cursor: default;
+    }
+
+    .postype-stats-pagination span {
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .02em;
     }
 
     .postype-stats-row {
@@ -3882,7 +3991,7 @@
         </div>
       </div>
       <button class="admin-back" id="adminBackButton" type="button">‹ 관리자 선택</button>
-      <div class="admin-run-actions">
+      <div class="admin-run-actions" hidden>
         <button class="button primary crawler-manual" id="runCrawlerButton" type="button">수동 크롤링 실행</button>
         <div class="admin-secondary-actions">
           <button class="button" id="adminRefreshButton" type="button">데이터 새로고침</button>
@@ -3890,7 +3999,7 @@
         </div>
       </div>
       <div class="crawler-admin" id="crawlerAdmin">
-        <details class="crawler-section" id="crawlerStatusAdmin" open>
+        <details class="crawler-section" id="crawlerStatusAdmin" open hidden>
           <summary class="crawler-section-head">
             <strong>크롤링 상태</strong>
             <span id="crawlerStatusBadge">확인 중</span>
@@ -3919,7 +4028,7 @@
               <span class="label">종료일</span>
               <input id="postypeStatsTo" type="date">
             </label>
-            <label class="wide">
+            <label class="wide" hidden>
               <span class="label">글 검색</span>
               <input id="postypeStatsQuery" type="search" placeholder="제목 · 작가 · 링크 검색">
             </label>
@@ -3934,10 +4043,17 @@
             <div class="crawler-stat"><span>메모</span><strong id="postypeStatsContentTotal">0건</strong></div>
             <div class="crawler-stat"><span>발췌</span><strong id="postypeStatsLastViewed">0건</strong></div>
           </div>
+          <h3 class="postype-stats-heading">기간별 클릭수</h3>
+          <div class="postype-stats-chart" id="postypeStatsClickChart"></div>
           <h3 class="postype-stats-heading">데일리 조회수</h3>
           <div class="postype-stats-list" id="postypeStatsDaily"></div>
           <h3 class="postype-stats-heading">데이터별 조회수</h3>
           <div class="postype-stats-list" id="postypeStatsContent"></div>
+          <nav class="postype-stats-pagination" id="postypeStatsPagination" aria-label="데이터별 조회수 페이지" hidden>
+            <button id="postypeStatsPrevious" type="button">이전</button>
+            <span id="postypeStatsPageIndicator">1 / 1</span>
+            <button id="postypeStatsNext" type="button">다음</button>
+          </nav>
           <p class="admin-note" id="postypeStatsMessage" role="status" aria-live="polite"></p>
         </details>
         <details class="crawler-section" id="authorAccountsAdmin" hidden>
@@ -3960,12 +4076,12 @@
           <div class="author-submission-list" id="authorAccountList"></div>
         </details>
       </div>
-      <label class="admin-search">
+      <label class="admin-search" hidden>
         <input id="adminSearchInput" type="search" placeholder="관리자 목록에서 제목 · 작가 검색">
       </label>
-      <button class="filter-title admin-filter-toggle" id="adminFilterToggle" type="button"><strong>필터</strong><span id="adminFilterCaret">펼치기</span></button>
-      <div class="admin-filters is-collapsed" id="adminFilterMount"></div>
-      <details class="admin-vocabulary" id="adminVocabulary">
+      <button class="filter-title admin-filter-toggle" id="adminFilterToggle" type="button" hidden><strong>필터</strong><span id="adminFilterCaret">펼치기</span></button>
+      <div class="admin-filters is-collapsed" id="adminFilterMount" hidden></div>
+      <details class="admin-vocabulary" id="adminVocabulary" hidden>
         <summary>필터 단어 관리</summary>
         <div class="admin-vocabulary-body">
           <div class="admin-vocabulary-controls">
@@ -3979,7 +4095,7 @@
           <p class="admin-vocabulary-note">목록에서 삭제해도 기존 글에 저장된 값은 그대로 유지됩니다.</p>
         </div>
       </details>
-      <div class="admin-list-tools">
+      <div class="admin-list-tools" hidden>
         <span>목록 정렬</span>
         <div class="admin-sort-pills" id="adminSortButtons">
           <button class="admin-sort-pill active" type="button" data-admin-sort="date-desc">최신순</button>
@@ -3987,7 +4103,7 @@
           <button class="admin-sort-pill" type="button" data-admin-sort="title-asc">제목순</button>
         </div>
       </div>
-      <div class="admin-bulkbar">
+      <div class="admin-bulkbar" hidden>
         <label class="admin-select-all"><input id="adminSelectAll" type="checkbox"><span id="adminSelectedCount">0개 선택</span></label>
         <select class="admin-bulk-field" id="adminBulkField" aria-label="일괄 수정할 항목">
           <option value="">수정 항목 선택</option>
@@ -4004,7 +4120,7 @@
         </div>
         <button class="button danger admin-bulk-delete" id="adminBulkDelete" type="button" disabled>선택한 글 삭제</button>
       </div>
-      <div class="admin-list" id="adminList"></div>
+      <div class="admin-list" id="adminList" hidden></div>
       <div class="admin-editor" id="adminEditor" hidden>
         <section class="admin-editor-card">
           <div class="admin-editor-head">
@@ -4486,6 +4602,7 @@
     };
 
     const SAMPLE_POSTS = [];
+    const POSTYPE_STATS_PAGE_SIZE = 20;
 
     const state = {
       posts: [],
@@ -4523,6 +4640,7 @@
       authorOwnSubmissions: [],
       crawlRun: null,
       postypeStats: null,
+      postypeStatsPage: 0,
       postypeStatsQueryTimer: null
     };
 
@@ -4606,8 +4724,13 @@
       postypeStatsContentViews: $("#postypeStatsContentViews"),
       postypeStatsContentTotal: $("#postypeStatsContentTotal"),
       postypeStatsLastViewed: $("#postypeStatsLastViewed"),
+      postypeStatsClickChart: $("#postypeStatsClickChart"),
       postypeStatsDaily: $("#postypeStatsDaily"),
       postypeStatsContent: $("#postypeStatsContent"),
+      postypeStatsPagination: $("#postypeStatsPagination"),
+      postypeStatsPrevious: $("#postypeStatsPrevious"),
+      postypeStatsPageIndicator: $("#postypeStatsPageIndicator"),
+      postypeStatsNext: $("#postypeStatsNext"),
       postypeStatsMessage: $("#postypeStatsMessage"),
       clearForm: $("#clearForm"),
       deletePost: $("#deletePost"),
@@ -5668,17 +5791,22 @@
       return date.toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
     }
 
-    async function loadPostypeStats() {
+    async function loadPostypeStats(page = state.postypeStatsPage) {
       if (!state.adminToken || !els.postypeStatsRefresh) return;
+      const targetPage = Math.max(0, Number.isFinite(Number(page)) ? Math.trunc(Number(page)) : 0);
       els.postypeStatsRefresh.disabled = true;
+      if (els.postypeStatsPrevious) els.postypeStatsPrevious.disabled = true;
+      if (els.postypeStatsNext) els.postypeStatsNext.disabled = true;
       els.postypeStatsMessage.textContent = "통계를 불러오는 중입니다.";
       try {
         const result = await requestAdminFunction("view_stats", {
           dateFrom: els.postypeStatsFrom.value,
           dateTo: els.postypeStatsTo.value,
           query: els.postypeStatsQuery.value,
-          limit: 20
+          offset: targetPage * POSTYPE_STATS_PAGE_SIZE,
+          limit: POSTYPE_STATS_PAGE_SIZE
         });
+        state.postypeStatsPage = targetPage;
         state.postypeStats = result;
         renderPostypeStats();
       } catch (error) {
@@ -5686,7 +5814,19 @@
         showAdminResult(`통계를 불러오지 못했습니다: ${error.message}`, "error");
       } finally {
         els.postypeStatsRefresh.disabled = false;
+        renderPostypeStatsPagination();
       }
+    }
+
+    function renderPostypeStatsPagination() {
+      if (!els.postypeStatsPagination) return;
+      const totalItems = Number(state.postypeStats?.contentTotal || 0);
+      const totalPages = Math.max(1, Math.ceil(totalItems / POSTYPE_STATS_PAGE_SIZE));
+      const currentPage = Math.min(state.postypeStatsPage, totalPages - 1);
+      els.postypeStatsPagination.hidden = totalItems === 0;
+      els.postypeStatsPageIndicator.textContent = `${currentPage + 1} / ${totalPages}`;
+      els.postypeStatsPrevious.disabled = currentPage === 0;
+      els.postypeStatsNext.disabled = currentPage >= totalPages - 1;
     }
 
     function renderPostypeStats() {
@@ -5699,6 +5839,7 @@
       els.postypeStatsLastViewed.textContent = formatCount(totals.excerptViews);
 
       const daily = Array.isArray(stats.daily) ? stats.daily : [];
+      renderPostypeStatsClickChart(daily);
       els.postypeStatsDaily.innerHTML = daily.length
         ? daily.map((row) => `
           <div class="postype-stats-row">
@@ -5719,7 +5860,57 @@
         `).join("")
         : '<div class="empty">아직 집계된 글 열람 기록이 없습니다.</div>';
 
+      renderPostypeStatsPagination();
       els.postypeStatsMessage.textContent = "";
+    }
+
+    function renderPostypeStatsClickChart(dailyRows) {
+      if (!els.postypeStatsClickChart) return;
+      const rows = [...(Array.isArray(dailyRows) ? dailyRows : [])]
+        .filter((row) => row && row.viewed_on)
+        .sort((a, b) => String(a.viewed_on).localeCompare(String(b.viewed_on)));
+      if (!rows.length) {
+        els.postypeStatsClickChart.innerHTML = '<div class="empty">선택한 기간의 클릭 기록이 없습니다.</div>';
+        return;
+      }
+
+      const width = 360;
+      const height = 170;
+      const padX = 32;
+      const padTop = 20;
+      const padBottom = 34;
+      const plotWidth = width - padX * 2;
+      const plotHeight = height - padTop - padBottom;
+      const maxClicks = Math.max(1, ...rows.map((row) => Number(row.click_views || 0)));
+      const pointFor = (row, index) => {
+        const x = rows.length === 1 ? width / 2 : padX + (plotWidth * index) / (rows.length - 1);
+        const y = padTop + plotHeight - (Number(row.click_views || 0) / maxClicks) * plotHeight;
+        return { x, y, value: Number(row.click_views || 0), date: String(row.viewed_on) };
+      };
+      const points = rows.map(pointFor);
+      const linePoints = points.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+      const areaPoints = `${padX},${height - padBottom} ${linePoints} ${width - padX},${height - padBottom}`;
+      const guideValues = [maxClicks, Math.round(maxClicks / 2), 0];
+      const guideLines = guideValues.map((value) => {
+        const y = padTop + plotHeight - (value / maxClicks) * plotHeight;
+        return `<line class="chart-grid" x1="${padX}" y1="${y.toFixed(1)}" x2="${width - padX}" y2="${y.toFixed(1)}"></line><text class="chart-label" x="4" y="${(y + 3).toFixed(1)}">${formatCount(value, "")}</text>`;
+      }).join("");
+      const dots = points.map((point) => `<circle class="chart-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.8"><title>${escapeHtml(point.date)} 클릭 ${formatCount(point.value)}</title></circle>`).join("");
+      const first = points[0];
+      const last = points[points.length - 1];
+      const peak = points.reduce((best, point) => point.value > best.value ? point : best, points[0]);
+
+      els.postypeStatsClickChart.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="기간별 클릭수 꺾은선 그래프">
+          ${guideLines}
+          <polygon class="chart-area" points="${areaPoints}"></polygon>
+          <polyline class="chart-line" points="${linePoints}"></polyline>
+          ${dots}
+          <text class="chart-label" x="${padX}" y="${height - 10}">${escapeHtml(first.date.slice(5))}</text>
+          <text class="chart-label" x="${width - padX}" y="${height - 10}" text-anchor="end">${escapeHtml(last.date.slice(5))}</text>
+          <text class="chart-value" x="${Math.min(width - 8, peak.x + 7).toFixed(1)}" y="${Math.max(12, peak.y - 7).toFixed(1)}">${formatCount(peak.value, "")}</text>
+        </svg>
+      `;
     }
 
     function setAdminSection(section = "hub") {
@@ -5749,6 +5940,7 @@
       if (els.adminSectionTitle) els.adminSectionTitle.textContent = sectionMeta[0];
       if (els.adminSectionNote) els.adminSectionNote.textContent = sectionMeta[1];
       const adminActive = document.body.classList.contains("admin-on");
+      document.body.classList.toggle("admin-stats-view", statsVisible && adminActive);
       if (els.adminPanel) els.adminPanel.hidden = hubVisible || !adminActive;
       if (els.adminSectionModal) els.adminSectionModal.hidden = !(hubVisible && adminActive);
       const crawlerAdmin = document.querySelector("#crawlerAdmin");
@@ -5771,6 +5963,7 @@
     async function closeAdminSectionChoice() {
       els.adminSectionModal.hidden = true;
       document.body.classList.remove("admin-on");
+      document.body.classList.remove("admin-stats-view");
       closeAdminEditor();
       await loadData();
     }
@@ -7264,6 +7457,7 @@
     async function toggleAdminMode() {
       if (document.body.classList.contains("admin-on")) {
         document.body.classList.remove("admin-on");
+        document.body.classList.remove("admin-stats-view");
         closeAdminEditor();
         await loadData();
         return;
@@ -7640,18 +7834,20 @@
     });
     els.adminForm.elements["시리즈명"].addEventListener("input", syncAdminSeriesSaveState);
     els.crawlerRun.addEventListener("click", runCrawler);
-    els.postypeStatsRefresh.addEventListener("click", loadPostypeStats);
+    els.postypeStatsRefresh.addEventListener("click", () => loadPostypeStats());
     els.postypeStatsReset.addEventListener("click", () => {
       resetPostypeStatsRange();
-      loadPostypeStats();
+      loadPostypeStats(0);
     });
     [els.postypeStatsFrom, els.postypeStatsTo].forEach((input) => {
-      input.addEventListener("change", loadPostypeStats);
+      input.addEventListener("change", () => loadPostypeStats(0));
     });
     els.postypeStatsQuery.addEventListener("input", () => {
       window.clearTimeout(state.postypeStatsQueryTimer);
-      state.postypeStatsQueryTimer = window.setTimeout(loadPostypeStats, 300);
+      state.postypeStatsQueryTimer = window.setTimeout(() => loadPostypeStats(0), 300);
     });
+    els.postypeStatsPrevious.addEventListener("click", () => loadPostypeStats(state.postypeStatsPage - 1));
+    els.postypeStatsNext.addEventListener("click", () => loadPostypeStats(state.postypeStatsPage + 1));
     els.adminForm.addEventListener("submit", savePost);
     els.adminEditor.addEventListener("click", (event) => {
       if (event.target === els.adminEditor) closeAdminEditor();

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="hq-postype-admin-build" content="stats-pagination-20260629-1">
+  <meta name="hq-postype-admin-build" content="stats-search-20260629-1">
   <title>혚쾌 포타 검색기</title>
   <style>
     :root {
@@ -4028,9 +4028,9 @@
               <span class="label">종료일</span>
               <input id="postypeStatsTo" type="date">
             </label>
-            <label class="wide" hidden>
-              <span class="label">글 검색</span>
-              <input id="postypeStatsQuery" type="search" placeholder="제목 · 작가 · 링크 검색">
+            <label class="wide">
+              <span class="label">제목 / 작가 검색</span>
+              <input id="postypeStatsQuery" type="search" placeholder="제목 또는 작가 검색">
             </label>
           </div>
           <div class="postype-stats-actions">
@@ -5854,7 +5854,7 @@
       els.postypeStatsContent.innerHTML = content.length
         ? content.map((row) => `
           <div class="postype-stats-row">
-            <span><strong>${escapeHtml(row.content_title || "제목 없음")}</strong><br><small>${escapeHtml(row.content_url || row.content_id || "")}</small><br><small>클릭 ${formatCount(row.click_views)} · 메모 ${formatCount(row.memo_views)} · 발췌 ${formatCount(row.excerpt_views)}</small></span>
+            <span><strong>${escapeHtml(row.content_title || "제목 없음")}</strong><br>${row.content_author ? `<small>${escapeHtml(row.content_author)}</small><br>` : ""}<small>${escapeHtml(row.content_url || row.content_id || "")}</small><br><small>클릭 ${formatCount(row.click_views)} · 메모 ${formatCount(row.memo_views)} · 발췌 ${formatCount(row.excerpt_views)}</small></span>
             <strong>${formatCount(row.views)}</strong>
           </div>
         `).join("")

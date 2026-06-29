@@ -696,6 +696,22 @@ function numberParam(value: unknown, fallback: number, min: number, max: number)
   return Math.min(max, Math.max(min, Math.trunc(numeric)));
 }
 
+async function postypeStatsArchiveIndex() {
+  const index = new Map<string, Record<string, unknown>>();
+  const pageSize = 1000;
+
+  for (let offset = 0; offset < 10000; offset += pageSize) {
+    const rows = await rest(`${encodeURIComponent(tableName)}?select=id,postype_post_id,title,author,link&order=id.asc&limit=${pageSize}&offset=${offset}`);
+    const page = Array.isArray(rows) ? rows as Array<Record<string, unknown>> : [];
+    page.forEach((row) => {
+      [row.id, row.postype_post_id, row.link].map(text).filter(Boolean).forEach((key) => index.set(key, row));
+    });
+    if (page.length < pageSize) break;
+  }
+
+  return index;
+}
+
 async function postypeViewStats(payload: Record<string, unknown>) {
   const dateFrom = dateOnly(payload.dateFrom) || defaultStatsDate(-13);
   const dateTo = dateOnly(payload.dateTo) || defaultStatsDate(0);
@@ -710,13 +726,17 @@ async function postypeViewStats(payload: Record<string, unknown>) {
     limit: "10000",
   });
   params.append("viewed_on", `lte.${dateTo}`);
-  const rows = await rest(`hq_view_events?${params.toString()}`);
+  const [rows, archiveIndex] = await Promise.all([
+    rest(`hq_view_events?${params.toString()}`),
+    postypeStatsArchiveIndex(),
+  ]);
   const events = Array.isArray(rows) ? rows as Array<Record<string, unknown>> : [];
   const dailyMap = new Map<string, { viewed_on: string; views: number; click_views: number; memo_views: number; excerpt_views: number }>();
   const contentMap = new Map<string, {
     content_type: string;
     content_id: string;
     content_title: string;
+    content_author: string;
     content_url: string;
     views: number;
     click_views: number;
@@ -740,9 +760,11 @@ async function postypeViewStats(payload: Record<string, unknown>) {
     const actionMatch = rawContentId.match(/::(click|memo|excerpt)$/);
     const action = (actionMatch ? actionMatch[1] : "click") as "click" | "memo" | "excerpt";
     const contentId = actionMatch ? rawContentId.slice(0, -actionMatch[0].length) || "unknown" : rawContentId;
-    const contentTitle = text(event.content_title) || "(제목 없음)";
     const contentUrl = text(event.content_url);
-    const haystack = [contentTitle, contentUrl, contentId, action].join(" ").toLowerCase();
+    const archiveRow = archiveIndex.get(contentId) || archiveIndex.get(contentUrl);
+    const contentTitle = text(archiveRow?.title) || text(event.content_title) || "(제목 없음)";
+    const contentAuthor = text(archiveRow?.author);
+    const haystack = [contentTitle, contentAuthor, contentUrl, contentId, action].join(" ").toLocaleLowerCase("ko-KR");
     if (query && !haystack.includes(query)) return;
 
     if (action === "memo") memoViews += 1;
@@ -761,6 +783,7 @@ async function postypeViewStats(payload: Record<string, unknown>) {
       content_type: text(event.content_type) || "postype",
       content_id: contentId,
       content_title: contentTitle,
+      content_author: contentAuthor,
       content_url: contentUrl,
       views: 0,
       click_views: 0,
@@ -774,6 +797,7 @@ async function postypeViewStats(payload: Record<string, unknown>) {
     else current.click_views += 1;
     if (viewedAt && (!current.last_viewed_at || viewedAt > current.last_viewed_at)) current.last_viewed_at = viewedAt;
     if (contentTitle && current.content_title === "(제목 없음)") current.content_title = contentTitle;
+    if (contentAuthor) current.content_author = contentAuthor;
     if (contentUrl) current.content_url = contentUrl;
     contentMap.set(key, current);
   });

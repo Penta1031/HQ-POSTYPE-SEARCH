@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="hq-postype-admin-build" content="view-search-stats-20260719-1">
+  <meta name="hq-postype-admin-build" content="view-search-stats-20260720-1">
   <title>혚쾌 포타 검색기</title>
   <style>
     :root {
@@ -6008,7 +6008,7 @@
       if (!year || !month) return;
       const firstDay = new Date(year, month - 1, 1).getDay();
       const days = new Date(year, month, 0).getDate();
-      const maxDate = kstDate(-1);
+      const maxDate = kstDate(0);
       els.postypeCalendarMonth.textContent = `${year}년 ${month}월`;
       els.postypeCalendarNext.disabled = `${year}-${String(month).padStart(2, "0")}` >= maxDate.slice(0, 7);
       els.postypeCalendarDays.innerHTML = `${'<span></span>'.repeat(firstDay)}${Array.from({ length: days }, (_, index) => {

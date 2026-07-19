@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="hq-postype-admin-build" content="view-search-stats-20260720-1">
+  <meta name="hq-postype-admin-build" content="view-search-stats-20260720-2">
   <title>혚쾌 포타 검색기</title>
   <style>
     :root {
@@ -4092,6 +4092,7 @@
             <div class="crawler-status-grid"><div class="crawler-stat"><span>검색 횟수</span><strong id="postypeSearchTotal">0건</strong></div><div class="crawler-stat"><span>검색 방문자</span><strong id="postypeSearchVisitors">0명</strong></div><div class="crawler-stat"><span>결과 없음</span><strong id="postypeSearchZero">0건</strong></div></div>
             <div class="postype-stats-heading" style="display:flex;align-items:end"><span>많이 검색한 조건</span><label style="margin-left:auto"><span class="label">표시</span><select id="postypeSearchLimit"><option value="5">5개</option><option value="10">10개</option><option value="20" selected>20개</option></select></label></div>
             <div class="postype-search-rank" id="postypeSearchTop"></div>
+            <h3 class="postype-stats-heading">많이 선택한 개별 필터</h3><div class="postype-search-rank" id="postypeSearchFilters"></div>
             <h3 class="postype-stats-heading">검색 기록</h3><div class="postype-stats-list" id="postypeSearchRecent"></div>
           </section>
           <p class="admin-note" id="postypeStatsMessage" role="status" aria-live="polite"></p>
@@ -4798,6 +4799,7 @@
       postypeSearchZero: $("#postypeSearchZero"),
       postypeSearchLimit: $("#postypeSearchLimit"),
       postypeSearchTop: $("#postypeSearchTop"),
+      postypeSearchFilters: $("#postypeSearchFilters"),
       postypeSearchRecent: $("#postypeSearchRecent"),
       clearForm: $("#clearForm"),
       deletePost: $("#deletePost"),
@@ -5172,7 +5174,8 @@
     async function trackPostypeSearch() {
       if (!hasSupabaseConfig()) return false;
       const textQuery = normalize(state.query);
-      const filters = Object.entries(state.active).flatMap(([group, values]) => [...(values || [])].map((value) => `${group}:${value}`));
+      const filterItems = Object.entries(state.active).flatMap(([group, values]) => [...(values || [])].map((value) => ({ group, value })));
+      const filters = filterItems.map(({ group, value }) => `${group}:${value}`);
       const queryText = [textQuery, ...filters].filter(Boolean).join(" · ");
       if (!queryText) return false;
       const resultCount = filteredPosts().length;
@@ -5186,6 +5189,7 @@
           body: JSON.stringify({
             query_text: trimForStats(queryText, 500),
             query_kind: textQuery ? "text" : "filter",
+            selected_filters: filterItems,
             result_count: resultCount,
             session_id: trimForStats(analyticsSessionId(), 80) || null,
             path: trimForStats(`${location.pathname}${location.search}`, 500) || null
@@ -5972,7 +5976,7 @@
     }
 
     function renderPostypeSearchStats() {
-      const stats = state.postypeSearchStats || { totals: {}, top: [], recent: [] };
+      const stats = state.postypeSearchStats || { totals: {}, top: [], topFilters: [], recent: [] };
       const totals = stats.totals || {};
       els.postypeSearchTotal.textContent = formatCount(totals.searches);
       els.postypeSearchVisitors.textContent = formatCount(totals.visitors, "명");
@@ -5980,6 +5984,8 @@
       const kindLabel = { text: "제목·작가", filter: "필터" };
       const top = Array.isArray(stats.top) ? stats.top : [];
       els.postypeSearchTop.innerHTML = top.length ? top.map((row, index) => `<div class="postype-search-rank-row"><span>${index + 1}</span><span><span class="postype-search-kind">${escapeHtml(kindLabel[row.query_kind] || row.query_kind)}</span> <strong>${escapeHtml(row.query_text)}</strong></span><strong>${formatCount(row.searches)}</strong></div>`).join("") : '<div class="empty">선택한 기간의 검색 기록이 없습니다.</div>';
+      const topFilters = Array.isArray(stats.topFilters) ? stats.topFilters : [];
+      els.postypeSearchFilters.innerHTML = topFilters.length ? topFilters.map((row, index) => `<div class="postype-search-rank-row"><span>${index + 1}</span><span><span class="postype-search-kind">${escapeHtml(row.filter_group)}</span> <strong>${escapeHtml(row.filter_value)}</strong></span><strong>${formatCount(row.selections)}</strong></div>`).join("") : '<div class="empty">선택한 기간의 개별 필터 기록이 없습니다.</div>';
       const recent = Array.isArray(stats.recent) ? stats.recent : [];
       els.postypeSearchRecent.innerHTML = recent.length ? recent.map((row) => `<div class="postype-stats-row"><span><span class="postype-search-kind">${escapeHtml(kindLabel[row.query_kind] || row.query_kind)}</span> <strong>${escapeHtml(row.query_text)}</strong><br><small>${formatStatsDateTime(row.searched_at)}</small></span><strong>${formatCount(row.result_count)}</strong></div>`).join("") : '<div class="empty">선택한 기간의 검색 기록이 없습니다.</div>';
     }

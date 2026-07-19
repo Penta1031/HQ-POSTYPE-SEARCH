@@ -839,6 +839,7 @@ async function postypeSearchStats(payload: Record<string, unknown>) {
     dateTo,
     totals: data.totals || { searches: 0, visitors: 0, zeroResults: 0 },
     top: data.top || [],
+    topFilters: data.topFilters || [],
     recent: data.recent || [],
   };
 }

@@ -713,8 +713,9 @@ async function postypeStatsArchiveIndex() {
 }
 
 async function postypeViewStats(payload: Record<string, unknown>) {
-  const dateFrom = dateOnly(payload.dateFrom) || defaultStatsDate(-13);
-  const dateTo = dateOnly(payload.dateTo) || defaultStatsDate(0);
+  let dateTo = dateOnly(payload.dateTo) || defaultStatsDate(-1);
+  let dateFrom = dateOnly(payload.dateFrom) || dateTo;
+  if (dateFrom > dateTo) [dateFrom, dateTo] = [dateTo, dateFrom];
   const query = text(payload.query).toLowerCase();
   const offset = numberParam(payload.offset, 0, 0, 10000);
   const limit = numberParam(payload.limit, 20, 1, 100);
@@ -820,6 +821,25 @@ async function postypeViewStats(payload: Record<string, unknown>) {
     content,
     contentTotal: contentMap.size,
     hasMore: offset + limit < contentMap.size,
+  };
+}
+
+async function postypeSearchStats(payload: Record<string, unknown>) {
+  let dateTo = dateOnly(payload.dateTo) || defaultStatsDate(-1);
+  let dateFrom = dateOnly(payload.dateFrom) || dateTo;
+  if (dateFrom > dateTo) [dateFrom, dateTo] = [dateTo, dateFrom];
+  const limit = numberParam(payload.limit, 20, 1, 20);
+  const rows = await rest("rpc/postype_admin_search_stats", {
+    method: "POST",
+    body: JSON.stringify({ p_from: dateFrom, p_to: dateTo, p_limit: limit }),
+  });
+  const data = (Array.isArray(rows) ? rows[0] : rows || {}) as Record<string, unknown>;
+  return {
+    dateFrom,
+    dateTo,
+    totals: data.totals || { searches: 0, visitors: 0, zeroResults: 0 },
+    top: data.top || [],
+    recent: data.recent || [],
   };
 }
 
@@ -956,13 +976,17 @@ Deno.serve(async (request) => {
       "list", "create", "update", "set_visibility", "delete", "approve", "save_filter_options",
       "list_authors", "create_author", "reset_author_key", "toggle_author",
       "list_author_submissions", "approve_author_submission", "reject_author_submission",
-      "unify_all_series", "run_crawler", "crawl_status", "view_stats",
+      "unify_all_series", "run_crawler", "crawl_status", "view_stats", "search_stats",
     ].includes(action)) {
       return json({ ok: false, error: "Unknown action." }, 400);
     }
 
     if (action === "view_stats") {
       return json({ ok: true, ...(await postypeViewStats(payload)) });
+    }
+
+    if (action === "search_stats") {
+      return json({ ok: true, ...(await postypeSearchStats(payload)) });
     }
 
     if (action === "list_authors") {

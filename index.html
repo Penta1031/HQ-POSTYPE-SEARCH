@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="hq-postype-admin-build" content="stats-search-20260629-1">
+  <meta name="hq-postype-admin-build" content="view-search-stats-20260719-1">
   <title>혚쾌 포타 검색기</title>
   <style>
     :root {
@@ -1752,6 +1752,11 @@
       stroke: #fee2e2;
       stroke-width: 1.5;
     }
+    .postype-stats-chart .chart-hit { fill: transparent; }
+    .postype-stats-chart .chart-point { cursor: pointer; outline: none; }
+    .postype-stats-chart .chart-point.selected .chart-dot { fill: #fff; stroke: #ef4444; stroke-width: 2.5; }
+    .postype-chart-selection { display: flex; align-items: center; margin-top: 8px; border: 1px solid #292b30; border-radius: 10px; background: rgba(0,0,0,.28); padding: 9px 10px; color: #9ca3af; font-size: 10px; font-weight: 800; }
+    .postype-chart-selection strong { margin-left: auto; color: #ef4444; font-size: 12px; }
 
     .postype-stats-chart .chart-label,
     .postype-stats-chart .chart-value {
@@ -1830,6 +1835,47 @@
     .postype-stats-row span {
       overflow-wrap: anywhere;
     }
+
+    .postype-stats-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 10px;
+      border-bottom: 1px solid #292b30;
+    }
+
+    .postype-stats-tab {
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      padding: 11px 8px;
+      color: #6b7280;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .postype-stats-tab.active { border-bottom-color: #ef4444; color: #fff; }
+    .postype-stats-panel[hidden] { display: none; }
+
+    .postype-stats-datebar { display: flex; justify-content: flex-end; margin-top: 10px; }
+    .postype-stats-calendar-toggle { display: inline-flex; align-items: center; gap: 7px; }
+    .postype-stats-calendar-popover { margin: 8px 0 0 auto; max-width: 330px; border: 1px solid #292b30; border-radius: 14px; background: #101114; padding: 12px; }
+    .postype-stats-calendar-popover[hidden] { display: none; }
+    .postype-calendar-head { display: flex; align-items: center; justify-content: space-between; }
+    .postype-calendar-head button { border: 0; background: transparent; padding: 8px; color: #9ca3af; cursor: pointer; }
+    .postype-calendar-week, .postype-calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; }
+    .postype-calendar-week { margin-top: 8px; color: #6b7280; font-size: 9px; font-weight: 800; }
+    .postype-calendar-days { margin-top: 5px; gap: 2px 0; }
+    .postype-calendar-day { display: flex; width: 34px; height: 34px; margin: auto; align-items: center; justify-content: center; border: 0; border-radius: 50%; background: transparent; color: #a3a3a3; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; }
+    .postype-calendar-day.in-range { border-radius: 8px; background: rgba(239,68,68,.14); color: #fff; }
+    .postype-calendar-day.edge { background: #ef4444; color: #fff; }
+    .postype-calendar-day:disabled { opacity: .2; cursor: default; }
+    .postype-calendar-selection { display: flex; gap: 6px; margin-top: 10px; color: #737780; font-size: 9px; font-weight: 800; }
+    .postype-calendar-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; }
+    .postype-search-rank { display: grid; gap: 7px; margin-top: 8px; }
+    .postype-search-rank-row { display: grid; grid-template-columns: 22px minmax(0,1fr) auto; gap: 8px; align-items: center; border: 1px solid #292b30; border-radius: 10px; background: #151619; padding: 10px; }
+    .postype-search-kind { border-radius: 999px; background: rgba(255,255,255,.06); padding: 3px 7px; color: #9ca3af; font-size: 9px; font-weight: 900; }
 
     .crawler-section {
       display: grid;
@@ -4016,44 +4062,38 @@
         </details>
         <details class="crawler-section" id="postypeStatsAdmin" open>
           <summary class="crawler-section-head">
-            <strong>통계</strong>
-            <span id="postypeStatsRangeLabel">최근 14일</span>
+            <strong>포타 통계</strong>
+            <span id="postypeStatsRangeLabel">전일</span>
           </summary>
-          <div class="postype-stats-controls">
-            <label>
-              <span class="label">시작일</span>
-              <input id="postypeStatsFrom" type="date">
-            </label>
-            <label>
-              <span class="label">종료일</span>
-              <input id="postypeStatsTo" type="date">
-            </label>
-            <label class="wide">
-              <span class="label">제목 / 작가 검색</span>
-              <input id="postypeStatsQuery" type="search" placeholder="제목 또는 작가 검색">
-            </label>
+          <div class="postype-stats-tabs" role="tablist" aria-label="포타 통계 종류">
+            <button class="postype-stats-tab active" id="postypeViewStatsTab" type="button" role="tab" aria-selected="true" data-stats-section="views">조회 통계</button>
+            <button class="postype-stats-tab" id="postypeSearchStatsTab" type="button" role="tab" aria-selected="false" data-stats-section="searches">검색 통계</button>
           </div>
-          <div class="postype-stats-actions">
-            <button class="button" id="postypeStatsReset" type="button">최근 14일</button>
-            <button class="button primary" id="postypeStatsRefresh" type="button">통계 새로고침</button>
+          <div class="postype-stats-datebar">
+            <button class="button postype-stats-calendar-toggle" id="postypeStatsCalendarToggle" type="button" aria-expanded="false">▣ <span id="postypeStatsDateLabel">전일</span></button>
           </div>
-          <div class="crawler-status-grid">
-            <div class="crawler-stat"><span>전체</span><strong id="postypeStatsTabViews">0건</strong></div>
-            <div class="crawler-stat"><span>클릭</span><strong id="postypeStatsContentViews">0건</strong></div>
-            <div class="crawler-stat"><span>메모</span><strong id="postypeStatsContentTotal">0건</strong></div>
-            <div class="crawler-stat"><span>발췌</span><strong id="postypeStatsLastViewed">0건</strong></div>
+          <div class="postype-stats-calendar-popover" id="postypeStatsCalendar" hidden>
+            <div class="postype-calendar-head"><button id="postypeCalendarPrevious" type="button" aria-label="이전 달">‹</button><strong id="postypeCalendarMonth"></strong><button id="postypeCalendarNext" type="button" aria-label="다음 달">›</button></div>
+            <div class="postype-calendar-week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+            <div class="postype-calendar-days" id="postypeCalendarDays"></div>
+            <div class="postype-calendar-selection"><span>시작 <strong id="postypeCalendarStart"></strong></span><span>~</span><span>종료 <strong id="postypeCalendarEnd"></strong></span></div>
+            <div class="postype-calendar-actions"><button class="button" id="postypeCalendarCancel" type="button">취소</button><button class="button primary" id="postypeCalendarApply" type="button">기간 적용</button></div>
           </div>
-          <h3 class="postype-stats-heading">기간별 클릭수</h3>
-          <div class="postype-stats-chart" id="postypeStatsClickChart"></div>
-          <h3 class="postype-stats-heading">데일리 조회수</h3>
-          <div class="postype-stats-list" id="postypeStatsDaily"></div>
-          <h3 class="postype-stats-heading">데이터별 조회수</h3>
-          <div class="postype-stats-list" id="postypeStatsContent"></div>
-          <nav class="postype-stats-pagination" id="postypeStatsPagination" aria-label="데이터별 조회수 페이지" hidden>
-            <button id="postypeStatsPrevious" type="button">이전</button>
-            <span id="postypeStatsPageIndicator">1 / 1</span>
-            <button id="postypeStatsNext" type="button">다음</button>
-          </nav>
+          <input id="postypeStatsFrom" type="hidden"><input id="postypeStatsTo" type="hidden">
+          <section class="postype-stats-panel" id="postypeViewStatsPanel">
+            <div class="postype-stats-controls"><label class="wide"><span class="label">제목 / 작가 검색</span><input id="postypeStatsQuery" type="search" placeholder="제목 또는 작가 검색"></label></div>
+            <div class="crawler-status-grid"><div class="crawler-stat"><span>전체</span><strong id="postypeStatsTabViews">0건</strong></div><div class="crawler-stat"><span>클릭</span><strong id="postypeStatsContentViews">0건</strong></div><div class="crawler-stat"><span>메모</span><strong id="postypeStatsContentTotal">0건</strong></div><div class="crawler-stat"><span>발췌</span><strong id="postypeStatsLastViewed">0건</strong></div></div>
+            <h3 class="postype-stats-heading">기간별 클릭수</h3><div class="postype-stats-chart" id="postypeStatsClickChart"></div>
+            <h3 class="postype-stats-heading">데일리 조회수</h3><div class="postype-stats-list" id="postypeStatsDaily"></div>
+            <h3 class="postype-stats-heading">글별 조회수</h3><div class="postype-stats-list" id="postypeStatsContent"></div>
+            <nav class="postype-stats-pagination" id="postypeStatsPagination" aria-label="글별 조회수 페이지" hidden><button id="postypeStatsPrevious" type="button">이전</button><span id="postypeStatsPageIndicator">1 / 1</span><button id="postypeStatsNext" type="button">다음</button></nav>
+          </section>
+          <section class="postype-stats-panel" id="postypeSearchStatsPanel" hidden>
+            <div class="crawler-status-grid"><div class="crawler-stat"><span>검색 횟수</span><strong id="postypeSearchTotal">0건</strong></div><div class="crawler-stat"><span>검색 방문자</span><strong id="postypeSearchVisitors">0명</strong></div><div class="crawler-stat"><span>결과 없음</span><strong id="postypeSearchZero">0건</strong></div></div>
+            <div class="postype-stats-heading" style="display:flex;align-items:end"><span>많이 검색한 조건</span><label style="margin-left:auto"><span class="label">표시</span><select id="postypeSearchLimit"><option value="5">5개</option><option value="10">10개</option><option value="20" selected>20개</option></select></label></div>
+            <div class="postype-search-rank" id="postypeSearchTop"></div>
+            <h3 class="postype-stats-heading">검색 기록</h3><div class="postype-stats-list" id="postypeSearchRecent"></div>
+          </section>
           <p class="admin-note" id="postypeStatsMessage" role="status" aria-live="polite"></p>
         </details>
         <details class="crawler-section" id="authorAccountsAdmin" hidden>
@@ -4640,8 +4680,16 @@
       authorOwnSubmissions: [],
       crawlRun: null,
       postypeStats: null,
+      postypeSearchStats: null,
+      postypeStatsSection: "views",
       postypeStatsPage: 0,
-      postypeStatsQueryTimer: null
+      postypeStatsQueryTimer: null,
+      postypeSearchTrackTimer: null,
+      lastTrackedSearch: "",
+      statsCalendarMonth: "",
+      statsCalendarDraftFrom: "",
+      statsCalendarDraftTo: "",
+      statsCalendarSelectingEnd: false
     };
 
     const $ = (selector) => document.querySelector(selector);
@@ -4715,11 +4763,24 @@
       crawlerRun: $("#runCrawlerButton"),
       crawlerRunMessage: $("#crawlerRunMessage"),
       postypeStatsRangeLabel: $("#postypeStatsRangeLabel"),
+      postypeViewStatsTab: $("#postypeViewStatsTab"),
+      postypeSearchStatsTab: $("#postypeSearchStatsTab"),
+      postypeViewStatsPanel: $("#postypeViewStatsPanel"),
+      postypeSearchStatsPanel: $("#postypeSearchStatsPanel"),
+      postypeStatsCalendarToggle: $("#postypeStatsCalendarToggle"),
+      postypeStatsDateLabel: $("#postypeStatsDateLabel"),
+      postypeStatsCalendar: $("#postypeStatsCalendar"),
+      postypeCalendarPrevious: $("#postypeCalendarPrevious"),
+      postypeCalendarNext: $("#postypeCalendarNext"),
+      postypeCalendarMonth: $("#postypeCalendarMonth"),
+      postypeCalendarDays: $("#postypeCalendarDays"),
+      postypeCalendarStart: $("#postypeCalendarStart"),
+      postypeCalendarEnd: $("#postypeCalendarEnd"),
+      postypeCalendarCancel: $("#postypeCalendarCancel"),
+      postypeCalendarApply: $("#postypeCalendarApply"),
       postypeStatsFrom: $("#postypeStatsFrom"),
       postypeStatsTo: $("#postypeStatsTo"),
       postypeStatsQuery: $("#postypeStatsQuery"),
-      postypeStatsReset: $("#postypeStatsReset"),
-      postypeStatsRefresh: $("#postypeStatsRefresh"),
       postypeStatsTabViews: $("#postypeStatsTabViews"),
       postypeStatsContentViews: $("#postypeStatsContentViews"),
       postypeStatsContentTotal: $("#postypeStatsContentTotal"),
@@ -4732,6 +4793,12 @@
       postypeStatsPageIndicator: $("#postypeStatsPageIndicator"),
       postypeStatsNext: $("#postypeStatsNext"),
       postypeStatsMessage: $("#postypeStatsMessage"),
+      postypeSearchTotal: $("#postypeSearchTotal"),
+      postypeSearchVisitors: $("#postypeSearchVisitors"),
+      postypeSearchZero: $("#postypeSearchZero"),
+      postypeSearchLimit: $("#postypeSearchLimit"),
+      postypeSearchTop: $("#postypeSearchTop"),
+      postypeSearchRecent: $("#postypeSearchRecent"),
       clearForm: $("#clearForm"),
       deletePost: $("#deletePost"),
       openPostLink: $("#openPostLink"),
@@ -5100,6 +5167,40 @@
       } catch (_) {
         return false;
       }
+    }
+
+    async function trackPostypeSearch() {
+      if (!hasSupabaseConfig()) return false;
+      const textQuery = normalize(state.query);
+      const filters = Object.entries(state.active).flatMap(([group, values]) => [...(values || [])].map((value) => `${group}:${value}`));
+      const queryText = [textQuery, ...filters].filter(Boolean).join(" · ");
+      if (!queryText) return false;
+      const resultCount = filteredPosts().length;
+      const signature = `${textQuery}|${filters.sort().join("|")}|${resultCount}`;
+      if (signature === state.lastTrackedSearch) return false;
+      state.lastTrackedSearch = signature;
+      try {
+        const response = await fetch(`${supabaseBaseUrl()}/rest/v1/postype_search_events`, {
+          method: "POST",
+          headers: { apikey: normalize(CONFIG.SUPABASE_ANON_KEY), Authorization: `Bearer ${normalize(CONFIG.SUPABASE_ANON_KEY)}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({
+            query_text: trimForStats(queryText, 500),
+            query_kind: textQuery ? "text" : "filter",
+            result_count: resultCount,
+            session_id: trimForStats(analyticsSessionId(), 80) || null,
+            path: trimForStats(`${location.pathname}${location.search}`, 500) || null
+          }),
+          keepalive: true
+        });
+        return response.ok;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function schedulePostypeSearchTracking() {
+      window.clearTimeout(state.postypeSearchTrackTimer);
+      state.postypeSearchTrackTimer = window.setTimeout(trackPostypeSearch, 500);
     }
 
     async function trackPostypeView(post, action = "click") {
@@ -5561,6 +5662,7 @@
             state.active[group].has(option) ? state.active[group].delete(option) : state.active[group].add(option);
             button.classList.toggle("active");
             render();
+            schedulePostypeSearchTracking();
           });
           chips.appendChild(button);
         });
@@ -5775,9 +5877,10 @@
 
     function resetPostypeStatsRange() {
       if (!els.postypeStatsFrom || !els.postypeStatsTo) return;
-      els.postypeStatsFrom.value = kstDate(-13);
-      els.postypeStatsTo.value = kstDate();
+      els.postypeStatsFrom.value = kstDate(-1);
+      els.postypeStatsTo.value = kstDate(-1);
       if (els.postypeStatsQuery) els.postypeStatsQuery.value = "";
+      updatePostypeStatsDateLabel();
     }
 
     function formatCount(value, unit = "건") {
@@ -5792,28 +5895,32 @@
     }
 
     async function loadPostypeStats(page = state.postypeStatsPage) {
-      if (!state.adminToken || !els.postypeStatsRefresh) return;
+      if (!state.adminToken || !els.postypeStatsMessage) return;
       const targetPage = Math.max(0, Number.isFinite(Number(page)) ? Math.trunc(Number(page)) : 0);
-      els.postypeStatsRefresh.disabled = true;
       if (els.postypeStatsPrevious) els.postypeStatsPrevious.disabled = true;
       if (els.postypeStatsNext) els.postypeStatsNext.disabled = true;
       els.postypeStatsMessage.textContent = "통계를 불러오는 중입니다.";
       try {
-        const result = await requestAdminFunction("view_stats", {
+        const payload = {
           dateFrom: els.postypeStatsFrom.value,
           dateTo: els.postypeStatsTo.value,
           query: els.postypeStatsQuery.value,
           offset: targetPage * POSTYPE_STATS_PAGE_SIZE,
           limit: POSTYPE_STATS_PAGE_SIZE
-        });
+        };
+        const [result, searchResult] = await Promise.all([
+          requestAdminFunction("view_stats", payload),
+          requestAdminFunction("search_stats", { dateFrom: payload.dateFrom, dateTo: payload.dateTo, limit: Number(els.postypeSearchLimit?.value || 20) })
+        ]);
         state.postypeStatsPage = targetPage;
         state.postypeStats = result;
+        state.postypeSearchStats = searchResult;
         renderPostypeStats();
+        renderPostypeSearchStats();
       } catch (error) {
         els.postypeStatsMessage.textContent = `통계를 불러오지 못했습니다: ${error.message}`;
         showAdminResult(`통계를 불러오지 못했습니다: ${error.message}`, "error");
       } finally {
-        els.postypeStatsRefresh.disabled = false;
         renderPostypeStatsPagination();
       }
     }
@@ -5864,6 +5971,68 @@
       els.postypeStatsMessage.textContent = "";
     }
 
+    function renderPostypeSearchStats() {
+      const stats = state.postypeSearchStats || { totals: {}, top: [], recent: [] };
+      const totals = stats.totals || {};
+      els.postypeSearchTotal.textContent = formatCount(totals.searches);
+      els.postypeSearchVisitors.textContent = formatCount(totals.visitors, "명");
+      els.postypeSearchZero.textContent = formatCount(totals.zeroResults);
+      const kindLabel = { text: "제목·작가", filter: "필터" };
+      const top = Array.isArray(stats.top) ? stats.top : [];
+      els.postypeSearchTop.innerHTML = top.length ? top.map((row, index) => `<div class="postype-search-rank-row"><span>${index + 1}</span><span><span class="postype-search-kind">${escapeHtml(kindLabel[row.query_kind] || row.query_kind)}</span> <strong>${escapeHtml(row.query_text)}</strong></span><strong>${formatCount(row.searches)}</strong></div>`).join("") : '<div class="empty">선택한 기간의 검색 기록이 없습니다.</div>';
+      const recent = Array.isArray(stats.recent) ? stats.recent : [];
+      els.postypeSearchRecent.innerHTML = recent.length ? recent.map((row) => `<div class="postype-stats-row"><span><span class="postype-search-kind">${escapeHtml(kindLabel[row.query_kind] || row.query_kind)}</span> <strong>${escapeHtml(row.query_text)}</strong><br><small>${formatStatsDateTime(row.searched_at)}</small></span><strong>${formatCount(row.result_count)}</strong></div>`).join("") : '<div class="empty">선택한 기간의 검색 기록이 없습니다.</div>';
+    }
+
+    function setPostypeStatsSection(section) {
+      state.postypeStatsSection = section === "searches" ? "searches" : "views";
+      const search = state.postypeStatsSection === "searches";
+      els.postypeViewStatsPanel.hidden = search;
+      els.postypeSearchStatsPanel.hidden = !search;
+      els.postypeViewStatsTab.classList.toggle("active", !search);
+      els.postypeSearchStatsTab.classList.toggle("active", search);
+      els.postypeViewStatsTab.setAttribute("aria-selected", String(!search));
+      els.postypeSearchStatsTab.setAttribute("aria-selected", String(search));
+    }
+
+    function updatePostypeStatsDateLabel() {
+      const from = els.postypeStatsFrom.value;
+      const to = els.postypeStatsTo.value;
+      const label = from === to ? from : `${from} ~ ${to}`;
+      els.postypeStatsDateLabel.textContent = label;
+      els.postypeStatsRangeLabel.textContent = label;
+    }
+
+    function renderPostypeStatsCalendar() {
+      const [year, month] = state.statsCalendarMonth.split("-").map(Number);
+      if (!year || !month) return;
+      const firstDay = new Date(year, month - 1, 1).getDay();
+      const days = new Date(year, month, 0).getDate();
+      const maxDate = kstDate(-1);
+      els.postypeCalendarMonth.textContent = `${year}년 ${month}월`;
+      els.postypeCalendarNext.disabled = `${year}-${String(month).padStart(2, "0")}` >= maxDate.slice(0, 7);
+      els.postypeCalendarDays.innerHTML = `${'<span></span>'.repeat(firstDay)}${Array.from({ length: days }, (_, index) => {
+        const date = `${year}-${String(month).padStart(2, "0")}-${String(index + 1).padStart(2, "0")}`;
+        const edge = date === state.statsCalendarDraftFrom || date === state.statsCalendarDraftTo;
+        const inside = date > state.statsCalendarDraftFrom && date < state.statsCalendarDraftTo;
+        return `<button type="button" class="postype-calendar-day${edge ? " edge" : inside ? " in-range" : ""}" data-calendar-date="${date}" ${date > maxDate ? "disabled" : ""}>${index + 1}</button>`;
+      }).join("")}`;
+      els.postypeCalendarStart.textContent = state.statsCalendarDraftFrom;
+      els.postypeCalendarEnd.textContent = state.statsCalendarSelectingEnd ? "선택 중" : state.statsCalendarDraftTo;
+    }
+
+    function openPostypeStatsCalendar() {
+      const opening = els.postypeStatsCalendar.hidden;
+      els.postypeStatsCalendar.hidden = !opening;
+      els.postypeStatsCalendarToggle.setAttribute("aria-expanded", String(opening));
+      if (!opening) return;
+      state.statsCalendarDraftFrom = els.postypeStatsFrom.value;
+      state.statsCalendarDraftTo = els.postypeStatsTo.value;
+      state.statsCalendarMonth = els.postypeStatsTo.value.slice(0, 7);
+      state.statsCalendarSelectingEnd = false;
+      renderPostypeStatsCalendar();
+    }
+
     function renderPostypeStatsClickChart(dailyRows) {
       if (!els.postypeStatsClickChart) return;
       const rows = [...(Array.isArray(dailyRows) ? dailyRows : [])]
@@ -5895,13 +6064,13 @@
         const y = padTop + plotHeight - (value / maxClicks) * plotHeight;
         return `<line class="chart-grid" x1="${padX}" y1="${y.toFixed(1)}" x2="${width - padX}" y2="${y.toFixed(1)}"></line><text class="chart-label" x="4" y="${(y + 3).toFixed(1)}">${formatCount(value, "")}</text>`;
       }).join("");
-      const dots = points.map((point) => `<circle class="chart-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.8"><title>${escapeHtml(point.date)} 클릭 ${formatCount(point.value)}</title></circle>`).join("");
+      const dots = points.map((point) => `<g class="chart-point" role="button" tabindex="0" data-chart-date="${escapeHtml(point.date)}" data-chart-value="${point.value}" aria-label="${escapeHtml(point.date)} 클릭 ${formatCount(point.value)}"><circle class="chart-hit" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="12"></circle><circle class="chart-dot" cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.8"><title>${escapeHtml(point.date)} 클릭 ${formatCount(point.value)}</title></circle></g>`).join("");
       const first = points[0];
       const last = points[points.length - 1];
       const peak = points.reduce((best, point) => point.value > best.value ? point : best, points[0]);
 
       els.postypeStatsClickChart.innerHTML = `
-        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="기간별 클릭수 꺾은선 그래프">
+        <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="기간별 클릭수 꺾은선 그래프. 날짜 점을 누르면 클릭수를 확인할 수 있습니다.">
           ${guideLines}
           <polygon class="chart-area" points="${areaPoints}"></polygon>
           <polyline class="chart-line" points="${linePoints}"></polyline>
@@ -5910,7 +6079,19 @@
           <text class="chart-label" x="${width - padX}" y="${height - 10}" text-anchor="end">${escapeHtml(last.date.slice(5))}</text>
           <text class="chart-value" x="${Math.min(width - 8, peak.x + 7).toFixed(1)}" y="${Math.max(12, peak.y - 7).toFixed(1)}">${formatCount(peak.value, "")}</text>
         </svg>
+        <div class="postype-chart-selection" id="postypeChartSelection" hidden><time></time><strong></strong></div>
       `;
+      const showPoint = (point) => {
+        els.postypeStatsClickChart.querySelectorAll(".chart-point").forEach((item) => item.classList.toggle("selected", item === point));
+        const detail = els.postypeStatsClickChart.querySelector("#postypeChartSelection");
+        detail.hidden = false;
+        detail.querySelector("time").textContent = point.dataset.chartDate;
+        detail.querySelector("strong").textContent = `클릭 ${formatCount(point.dataset.chartValue)}`;
+      };
+      els.postypeStatsClickChart.querySelectorAll(".chart-point").forEach((point) => {
+        point.addEventListener("click", () => showPoint(point));
+        point.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); showPoint(point); } });
+      });
     }
 
     function setAdminSection(section = "hub") {
@@ -7755,6 +7936,7 @@
     els.search.addEventListener("input", (event) => {
       state.query = event.target.value;
       render();
+      schedulePostypeSearchTracking();
     });
     els.refreshData.addEventListener("click", refreshPublicData);
     els.sort.addEventListener("input", (event) => {
@@ -7834,14 +8016,37 @@
     });
     els.adminForm.elements["시리즈명"].addEventListener("input", syncAdminSeriesSaveState);
     els.crawlerRun.addEventListener("click", runCrawler);
-    els.postypeStatsRefresh.addEventListener("click", () => loadPostypeStats());
-    els.postypeStatsReset.addEventListener("click", () => {
-      resetPostypeStatsRange();
+    [els.postypeViewStatsTab, els.postypeSearchStatsTab].forEach((button) => button.addEventListener("click", () => setPostypeStatsSection(button.dataset.statsSection)));
+    els.postypeStatsCalendarToggle.addEventListener("click", openPostypeStatsCalendar);
+    els.postypeCalendarCancel.addEventListener("click", () => { els.postypeStatsCalendar.hidden = true; els.postypeStatsCalendarToggle.setAttribute("aria-expanded", "false"); });
+    els.postypeCalendarApply.addEventListener("click", () => {
+      if (state.statsCalendarSelectingEnd) state.statsCalendarDraftTo = state.statsCalendarDraftFrom;
+      els.postypeStatsFrom.value = state.statsCalendarDraftFrom;
+      els.postypeStatsTo.value = state.statsCalendarDraftTo;
+      els.postypeStatsCalendar.hidden = true;
+      els.postypeStatsCalendarToggle.setAttribute("aria-expanded", "false");
+      updatePostypeStatsDateLabel();
       loadPostypeStats(0);
     });
-    [els.postypeStatsFrom, els.postypeStatsTo].forEach((input) => {
-      input.addEventListener("change", () => loadPostypeStats(0));
+    els.postypeCalendarDays.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-calendar-date]");
+      if (!button || button.disabled) return;
+      const date = button.dataset.calendarDate;
+      if (!state.statsCalendarSelectingEnd) {
+        state.statsCalendarDraftFrom = date;
+        state.statsCalendarDraftTo = date;
+        state.statsCalendarSelectingEnd = true;
+      } else {
+        state.statsCalendarDraftTo = date;
+        if (state.statsCalendarDraftTo < state.statsCalendarDraftFrom) [state.statsCalendarDraftFrom, state.statsCalendarDraftTo] = [state.statsCalendarDraftTo, state.statsCalendarDraftFrom];
+        state.statsCalendarSelectingEnd = false;
+      }
+      renderPostypeStatsCalendar();
     });
+    const changeStatsMonth = (delta) => { const [year, month] = state.statsCalendarMonth.split("-").map(Number); const next = new Date(year, month - 1 + delta, 1); state.statsCalendarMonth = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`; renderPostypeStatsCalendar(); };
+    els.postypeCalendarPrevious.addEventListener("click", () => changeStatsMonth(-1));
+    els.postypeCalendarNext.addEventListener("click", () => changeStatsMonth(1));
+    els.postypeSearchLimit.addEventListener("change", () => loadPostypeStats(0));
     els.postypeStatsQuery.addEventListener("input", () => {
       window.clearTimeout(state.postypeStatsQueryTimer);
       state.postypeStatsQueryTimer = window.setTimeout(() => loadPostypeStats(0), 300);
@@ -7964,7 +8169,9 @@
     buildAdminMultiSelects();
     buildAdminBulkValueOptions();
     resetPostypeStatsRange();
+    setPostypeStatsSection("views");
     renderPostypeStats();
+    renderPostypeSearchStats();
     setAdminSection("hub");
     resetAuthorSubmissionForm();
     trackStandalonePostypeTabView();

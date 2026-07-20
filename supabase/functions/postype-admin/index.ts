@@ -713,7 +713,7 @@ async function postypeStatsArchiveIndex() {
 }
 
 async function postypeViewStats(payload: Record<string, unknown>) {
-  let dateTo = dateOnly(payload.dateTo) || defaultStatsDate(-1);
+  let dateTo = dateOnly(payload.dateTo) || defaultStatsDate(0);
   let dateFrom = dateOnly(payload.dateFrom) || dateTo;
   if (dateFrom > dateTo) [dateFrom, dateTo] = [dateTo, dateFrom];
   const query = text(payload.query).toLowerCase();
@@ -825,7 +825,7 @@ async function postypeViewStats(payload: Record<string, unknown>) {
 }
 
 async function postypeSearchStats(payload: Record<string, unknown>) {
-  let dateTo = dateOnly(payload.dateTo) || defaultStatsDate(-1);
+  let dateTo = dateOnly(payload.dateTo) || defaultStatsDate(0);
   let dateFrom = dateOnly(payload.dateFrom) || dateTo;
   if (dateFrom > dateTo) [dateFrom, dateTo] = [dateTo, dateFrom];
   const limit = numberParam(payload.limit, 20, 1, 20);

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="hq-postype-admin-build" content="view-search-stats-20260720-2">
+  <meta name="hq-postype-admin-build" content="view-search-stats-20260720-3">
   <title>혚쾌 포타 검색기</title>
   <style>
     :root {
@@ -5881,8 +5881,8 @@
 
     function resetPostypeStatsRange() {
       if (!els.postypeStatsFrom || !els.postypeStatsTo) return;
-      els.postypeStatsFrom.value = kstDate(-1);
-      els.postypeStatsTo.value = kstDate(-1);
+      els.postypeStatsFrom.value = kstDate(0);
+      els.postypeStatsTo.value = kstDate(0);
       if (els.postypeStatsQuery) els.postypeStatsQuery.value = "";
       updatePostypeStatsDateLabel();
     }

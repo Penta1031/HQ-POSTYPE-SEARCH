@@ -250,11 +250,52 @@ function cleanArchiveId(value: unknown) {
   return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
 
+function inferSeriesFromTitle(value: unknown) {
+  const title = text(value).replace(/\s+/g, " ");
+  const completionSuffix = /\s*(?:[\[(]\s*(?:完|완결|final)\s*[\])]|(?:완결|final))\s*$/i;
+  const isComplete = completionSuffix.test(title);
+  const candidate = title.replace(completionSuffix, "").trim();
+  const markerMatch = candidate.match(/^(.*?)(?:\s*[-–—_:.,]?\s*)(?:[\[(]\s*)?(上|中|下)(?:\s*[\])])?\s*$/);
+  const numberedMatch = candidate.match(
+    /^(.*?)(?:\s*[-–—_:.,]?\s*)(?:(?:ep(?:isode)?|chapter|chap|ch|part)\.?\s*)?(?:[\[(]\s*)?(\d{1,3})(?:\s*[\])])?\s*[-–—]?\s*$/i,
+  );
+  const match = markerMatch || numberedMatch;
+  if (!match) return null;
+  const volume = text(match[2]);
+  let name = text(match[1])
+    .replace(/^\s*\[[^\]]{1,20}\]\s*/, "")
+    .replace(/[\s\-_–—:.,]+$/, "")
+    .trim();
+  if (!name || /^(?:ep(?:isode)?|chapter|chap|ch|part)$/i.test(name)) name = "";
+  if (numberedMatch && /^\d+$/.test(candidate)) return null;
+  return { name, volume, status: isComplete ? "완결" : "연재중" };
+}
+
+function seriesFields(
+  title: unknown,
+  requestedSeries: unknown,
+  requestedName: unknown,
+  requestedVolume: unknown,
+  requestedStatus: unknown,
+) {
+  const inferred = inferSeriesFromTitle(title);
+  const isSeries = flag(requestedSeries) || Boolean(inferred);
+  const explicitStatus = text(requestedStatus);
+  return {
+    isSeries,
+    seriesName: isSeries ? text(requestedName).slice(0, 160) || inferred?.name || null : null,
+    seriesVolume: isSeries ? text(requestedVolume).slice(0, 40) || inferred?.volume || null : null,
+    serializationStatus: isSeries
+      ? (["연재중", "완결"].includes(explicitStatus) ? explicitStatus : inferred?.status || "연재중")
+      : "단편",
+  };
+}
+
 function authorSubmissionRow(payload: Record<string, unknown>, authorId: string) {
   const postUrl = cleanPostypePostUrl(payload.post_url);
   const title = text(payload.title).slice(0, 200);
   if (!postUrl || !title) throw new Error("포스타입 글 링크와 작품 제목을 입력해 주세요.");
-  const isSeries = flag(payload.is_series);
+  const series = seriesFields(title, payload.is_series, payload.series_name, payload.series_volume, payload.serialization_status);
   return {
     author_id: authorId,
     status: "pending_review",
@@ -270,12 +311,10 @@ function authorSubmissionRow(payload: Record<string, unknown>, authorId: string)
     top_tags: cleanTagText(payload.top_tags, 8),
     bottom_tags: cleanTagText(payload.bottom_tags, 8),
     endings: cleanTagText(payload.endings, 4),
-    is_series: isSeries,
-    series_name: isSeries ? text(payload.series_name).slice(0, 160) : null,
-    series_volume: isSeries ? text(payload.series_volume).slice(0, 40) : null,
-    serialization_status: isSeries && ["연재중", "완결"].includes(text(payload.serialization_status))
-      ? text(payload.serialization_status)
-      : isSeries ? "연재중" : "단편",
+    is_series: series.isSeries,
+    series_name: series.seriesName,
+    series_volume: series.seriesVolume,
+    serialization_status: series.serializationStatus,
     review_note: null,
     reviewed_at: null,
   };
@@ -331,7 +370,7 @@ function authorArchiveRow(
 ) {
   const title = text(payload.title).slice(0, 200);
   if (!title) throw new Error("작품 제목을 입력해 주세요.");
-  const isSeries = flag(payload.is_series);
+  const series = seriesFields(title, payload.is_series, payload.series_name, payload.series_volume, payload.serialization_status);
   const postId = postIdFromUrl(postUrl);
   return {
     ...(create ? {
@@ -353,12 +392,10 @@ function authorArchiveRow(
     top_tags: cleanTagText(payload.top_tags, 12),
     bottom_tags: cleanTagText(payload.bottom_tags, 12),
     endings: cleanTagText(payload.endings, 6),
-    is_series: isSeries,
-    series_name: isSeries ? text(payload.series_name).slice(0, 160) : null,
-    series_volume: isSeries ? text(payload.series_volume).slice(0, 40) : null,
-    serialization_status: isSeries && ["연재중", "완결"].includes(text(payload.serialization_status))
-      ? text(payload.serialization_status)
-      : isSeries ? "연재중" : "단편",
+    is_series: series.isSeries,
+    series_name: series.seriesName,
+    series_volume: series.seriesVolume,
+    serialization_status: series.serializationStatus,
     admin_reviewed: true,
     deleted_at: null,
   };
@@ -397,6 +434,7 @@ function archivePostForAuthor(row: Record<string, unknown>) {
 function postToRow(payload: Record<string, unknown>, action: string) {
   const reviewSpecified = Object.prototype.hasOwnProperty.call(payload, K.adminReviewed);
   const reviewed = flag(payload[K.adminReviewed]);
+  const series = seriesFields(payload[K.title], payload[K.isSeries], payload[K.seriesName], payload[K.seriesVolume], payload[K.serializationStatus]);
   return {
     ...(action === "create" ? { source_row_number: sourceRowNumber(payload) } : {}),
     title: text(payload[K.title]),
@@ -411,10 +449,10 @@ function postToRow(payload: Record<string, unknown>, action: string) {
     top_tags: text(payload[K.top]),
     bottom_tags: text(payload[K.bottom]),
     endings: text(payload[K.endings]),
-    is_series: flag(payload[K.isSeries]),
-    series_name: text(payload[K.seriesName]),
-    series_volume: text(payload[K.seriesVolume]),
-    serialization_status: text(payload[K.serializationStatus]),
+    is_series: series.isSeries,
+    series_name: series.seriesName,
+    series_volume: series.seriesVolume,
+    serialization_status: series.serializationStatus,
     ...(reviewSpecified ? {
       admin_reviewed: reviewed,
       admin_reviewed_at: reviewed ? new Date().toISOString() : null,
@@ -494,6 +532,12 @@ async function dispatchCrawlerWorkflow(postUrl = "") {
 
   const responseText = await response.text();
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error("GitHub 크롤러 연동 토큰이 만료되었거나 Actions 실행 권한이 없습니다. GITHUB_WORKFLOW_TOKEN을 갱신해 주세요.");
+    }
+    if (response.status === 404) {
+      throw new Error("GitHub 저장소 또는 크롤러 워크플로를 찾지 못했습니다. GITHUB_REPOSITORY와 GITHUB_WORKFLOW_ID를 확인해 주세요.");
+    }
     throw new Error(responseText || `GitHub workflow dispatch failed (${response.status}).`);
   }
 

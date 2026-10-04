@@ -4043,10 +4043,10 @@
       </div>
       <button class="admin-back" id="adminBackButton" type="button">‹ 관리자 선택</button>
       <div class="admin-run-actions" hidden>
-        <button class="button primary crawler-manual" id="runCrawlerButton" type="button">수동 크롤링 실행</button>
+        <button class="button primary crawler-manual" id="newPostButton" type="button">+ 글 수동 추가</button>
         <div class="admin-secondary-actions">
           <button class="button" id="adminRefreshButton" type="button">데이터 새로고침</button>
-          <button class="button" id="newPostButton" type="button">+ 글 수동 추가</button>
+          <button class="button" id="runCrawlerButton" type="button">수동 크롤링 실행</button>
         </div>
       </div>
       <div class="crawler-admin" id="crawlerAdmin">
@@ -4101,25 +4101,6 @@
             <h3 class="postype-stats-heading">검색 기록</h3><div class="postype-stats-list" id="postypeSearchRecent"></div>
           </section>
           <p class="admin-note" id="postypeStatsMessage" role="status" aria-live="polite"></p>
-        </details>
-        <details class="crawler-section" id="authorAccountsAdmin" hidden>
-          <summary class="crawler-section-head">
-            <strong>작가 계정·키 관리</strong>
-            <span id="authorAccountCount">0명</span>
-          </summary>
-          <form class="modal-grid" id="authorAccountForm" style="margin-top: 8px;">
-            <label><span class="label">작가명</span><input name="display_name" maxlength="80" required></label>
-            <label><span class="label">포스타입 채널 주소</span><input name="postype_channel_url" type="url" placeholder="https://www.postype.com/@작가채널" required></label>
-            <button class="button primary" type="submit">작가 키 발급</button>
-          </form>
-          <div class="author-issued-key" id="authorIssuedKeyBox" hidden>
-            <strong id="authorIssuedKeyTitle">작가 키</strong>
-            <p class="author-submission-meta">발급된 키는 관리자 모드에서 계속 확인하고 복사할 수 있습니다.</p>
-            <input id="authorIssuedKeyValue" type="password" readonly aria-label="발급된 작가 키">
-            <button class="button" id="authorIssuedKeyVisibility" type="button" aria-label="작가 키 보기">보기</button>
-            <button class="button" id="authorIssuedKeyCopy" type="button">키 복사</button>
-          </div>
-          <div class="author-submission-list" id="authorAccountList"></div>
         </details>
       </div>
       <label class="admin-search" hidden>
@@ -6120,7 +6101,6 @@
       const postypeElements = [
         ".admin-run-actions",
         "#crawlerStatusAdmin",
-        "#authorAccountsAdmin",
         ".admin-search",
         "#adminFilterToggle",
         "#adminFilterMount",
@@ -8103,9 +8083,6 @@
     els.authorUploadForm.querySelectorAll("[data-author-suggest-toggle]").forEach((toggle) => {
       toggle.addEventListener("change", () => setAuthorSuggestionVisibility(toggle));
     });
-    els.authorAccountForm.addEventListener("submit", createAuthorAccount);
-    els.authorIssuedKeyVisibility.addEventListener("click", () => toggleKeyVisibility(els.authorIssuedKeyValue, els.authorIssuedKeyVisibility));
-    els.authorIssuedKeyCopy.addEventListener("click", copyIssuedAuthorKey);
     els.libraryClose.addEventListener("click", closeLibraryModal);
     els.libraryModal.addEventListener("click", (event) => {
       if (event.target === els.libraryModal) closeLibraryModal();

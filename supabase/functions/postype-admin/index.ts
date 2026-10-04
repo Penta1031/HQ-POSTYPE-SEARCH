@@ -268,7 +268,7 @@ function inferSeriesFromTitle(value: unknown) {
     .trim();
   if (!name || /^(?:ep(?:isode)?|chapter|chap|ch|part)$/i.test(name)) name = "";
   if (numberedMatch && /^\d+$/.test(candidate)) return null;
-  return { name, volume, status: isComplete ? "완결" : "연재중" };
+  return { name, volume, status: isComplete || volume === "下" ? "완결" : "연재중" };
 }
 
 function seriesFields(

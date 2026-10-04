@@ -362,6 +362,110 @@ async function resolvePostypePostUrl(value: unknown) {
   }
 }
 
+function decodeHtml(value: unknown) {
+  return text(value)
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(Number.parseInt(code, 16)))
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function htmlAttribute(tag: string, name: string) {
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = tag.match(new RegExp(`\\s${escapedName}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, "i"));
+  return decodeHtml(match?.[1] ?? match?.[2] ?? match?.[3] ?? "");
+}
+
+function metaValues(html: string) {
+  const values = new Map<string, string>();
+  for (const match of html.matchAll(/<meta\b[^>]*>/gi)) {
+    const tag = match[0];
+    const key = (htmlAttribute(tag, "property") || htmlAttribute(tag, "name") || htmlAttribute(tag, "itemprop")).toLowerCase();
+    const content = htmlAttribute(tag, "content");
+    if (key && content && !values.has(key)) values.set(key, content);
+  }
+  return values;
+}
+
+function jsonLdObjects(value: unknown): Record<string, unknown>[] {
+  if (Array.isArray(value)) return value.flatMap(jsonLdObjects);
+  if (!value || typeof value !== "object") return [];
+  const object = value as Record<string, unknown>;
+  return [object, ...jsonLdObjects(object["@graph"]), ...jsonLdObjects(object.mainEntity)];
+}
+
+function jsonLdAuthor(value: unknown) {
+  if (Array.isArray(value)) return value.map(jsonLdAuthor).filter(Boolean).join(", ");
+  if (value && typeof value === "object") return text((value as Record<string, unknown>).name);
+  return text(value);
+}
+
+function firstNonEmpty(...values: unknown[]) {
+  return values.map((value) => decodeHtml(value)).find(Boolean) || "";
+}
+
+function cleanMetadataTitle(value: unknown) {
+  return decodeHtml(value)
+    .replace(/\s*[|·]\s*포스타입\s*$/i, "")
+    .replace(/\s*[-–—]\s*Postype\s*$/i, "")
+    .trim()
+    .slice(0, 200);
+}
+
+async function fetchPostypeMetadata(value: unknown) {
+  const postUrl = await resolvePostypePostUrl(value);
+  if (!postUrl) throw new Error("올바른 포스타입 글 링크를 입력해 주세요.");
+
+  const response = await fetch(postUrl, {
+    redirect: "follow",
+    signal: AbortSignal.timeout(12_000),
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml",
+      "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.7",
+    },
+  });
+  if (!response.ok) throw new Error(`포스타입 응답 오류 (${response.status})`);
+  const html = (await response.text()).slice(0, 3_000_000);
+  const meta = metaValues(html);
+  const ldObjects: Record<string, unknown>[] = [];
+  for (const match of html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
+    try {
+      ldObjects.push(...jsonLdObjects(JSON.parse(match[1].trim())));
+    } catch {
+      // 일부 글의 손상된 JSON-LD는 건너뛰고 메타 태그를 사용한다.
+    }
+  }
+  const article = ldObjects.find((item) => item.headline || item.datePublished || item.author) || ldObjects[0] || {};
+  const titleTag = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+  const timeTag = [...html.matchAll(/<time\b[^>]*>/gi)]
+    .map((match) => htmlAttribute(match[0], "datetime"))
+    .find(Boolean);
+  const title = cleanMetadataTitle(firstNonEmpty(article.headline, article.name, meta.get("og:title"), meta.get("twitter:title"), titleTag));
+  const author = firstNonEmpty(
+    jsonLdAuthor(article.author),
+    meta.get("author"),
+    meta.get("article:author"),
+    meta.get("twitter:creator"),
+  ).replace(/^@/, "").slice(0, 100);
+  const publishedDate = cleanDate(firstNonEmpty(
+    article.datePublished,
+    meta.get("article:published_time"),
+    meta.get("date"),
+    meta.get("datepublished"),
+    timeTag,
+  ));
+  if (!title && !author && !publishedDate) {
+    throw new Error("공개된 제목·작가·날짜 정보를 찾지 못했습니다. 유료 또는 성인 글이면 정보가 제한될 수 있습니다.");
+  }
+  return { postUrl, title, author, publishedDate };
+}
+
 function authorArchiveRow(
   payload: Record<string, unknown>,
   author: Record<string, unknown>,
@@ -1030,7 +1134,7 @@ Deno.serve(async (request) => {
       "list", "create", "update", "set_visibility", "delete", "approve", "save_filter_options",
       "list_authors", "create_author", "reset_author_key", "toggle_author",
       "list_author_submissions", "approve_author_submission", "reject_author_submission",
-      "unify_all_series", "run_crawler", "crawl_status", "view_stats", "search_stats",
+      "unify_all_series", "run_crawler", "crawl_status", "view_stats", "search_stats", "fetch_post_metadata",
     ].includes(action)) {
       return json({ ok: false, error: "Unknown action." }, 400);
     }
@@ -1041,6 +1145,10 @@ Deno.serve(async (request) => {
 
     if (action === "search_stats") {
       return json({ ok: true, ...(await postypeSearchStats(payload)) });
+    }
+
+    if (action === "fetch_post_metadata") {
+      return json({ ok: true, ...(await fetchPostypeMetadata(payload.post_url)) });
     }
 
     if (action === "list_authors") {

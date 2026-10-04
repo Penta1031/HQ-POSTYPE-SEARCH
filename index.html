@@ -2086,9 +2086,14 @@
 
     .admin-link-control {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 40px;
+      grid-template-columns: minmax(0, 1fr) auto 40px;
       gap: 7px;
       align-items: stretch;
+    }
+
+    .admin-link-fetch {
+      white-space: nowrap;
+      padding-inline: 12px;
     }
 
     .admin-link-open {
@@ -4164,6 +4169,7 @@
               <span class="label">링크</span>
               <span class="admin-link-control">
                 <input name="링크" type="url" placeholder="https://www.postype.com/@.../post/...">
+                <button class="button admin-link-fetch" id="fetchPostMetadata" type="button">정보 불러오기</button>
                 <a class="button admin-link-open" id="openPostLink" href="#" target="_blank" rel="noopener noreferrer" aria-label="포스타입 글 새 창에서 열기" title="포스타입 글 새 창에서 열기" hidden>↗</a>
               </span>
             </label>
@@ -4789,6 +4795,7 @@
       postypeSearchRecent: $("#postypeSearchRecent"),
       clearForm: $("#clearForm"),
       deletePost: $("#deletePost"),
+      fetchPostMetadata: $("#fetchPostMetadata"),
       openPostLink: $("#openPostLink"),
       libraryToggle: $("#libraryToggle"),
       authorUploadModal: $("#authorUploadModal"),
@@ -7546,6 +7553,52 @@
       els.openPostLink.href = isPostype ? url : "#";
     }
 
+    async function fetchAdminPostMetadata() {
+      const linkField = els.adminForm.elements["링크"];
+      const url = normalize(linkField.value);
+      if (!/^https:\/\/(?:(?:[^/]+\.)?postype\.com|posty\.pe)\//i.test(url)) {
+        showAdminResult("올바른 포스타입 글 링크를 입력해 주세요.", "error");
+        linkField.focus();
+        return;
+      }
+
+      const button = els.fetchPostMetadata;
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = "불러오는 중";
+      try {
+        const result = await requestAdminFunction("fetch_post_metadata", { post_url: url });
+        if (result.postUrl) linkField.value = result.postUrl;
+        if (result.title) els.adminForm.elements["제목"].value = result.title;
+        if (result.author) els.adminForm.elements["작가"].value = result.author;
+        if (result.publishedDate) els.adminForm.elements["날짜"].value = result.publishedDate;
+
+        const inferred = titleSeriesInfo(result.title);
+        if (inferred.isSeries) {
+          els.adminForm.elements["시리즈"].value = "Y";
+          els.adminForm.elements["시리즈명"].value = inferred.name;
+          els.adminForm.elements["시리즈회차"].value = inferred.volume;
+          els.adminForm.elements["연재상태"].value = inferred.status;
+        }
+        syncStandaloneStatus();
+        syncAdminSeriesSaveState();
+        syncAdminReadLink();
+
+        const missing = [];
+        if (!result.title) missing.push("제목");
+        if (!result.author) missing.push("작가");
+        if (!result.publishedDate) missing.push("날짜");
+        showAdminResult(missing.length
+          ? `불러왔습니다. ${missing.join(", ")} 정보는 확인할 수 없어 기존 값을 유지했습니다.`
+          : "제목, 작가, 날짜를 불러왔습니다.");
+      } catch (error) {
+        showAdminResult(`글 정보를 불러오지 못했습니다: ${error.message}`, "error");
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
+
     function openNewPostForm() {
       document.body.classList.add("admin-on");
       setAdminSection("postype");
@@ -8000,6 +8053,7 @@
     els.newPost.addEventListener("click", openNewPostForm);
     els.clearForm.addEventListener("click", closeAdminEditor);
     els.deletePost.addEventListener("click", deleteCurrentPost);
+    els.fetchPostMetadata.addEventListener("click", fetchAdminPostMetadata);
     els.adminForm.elements["링크"].addEventListener("input", syncAdminReadLink);
     els.adminForm.elements["시리즈"].addEventListener("change", () => {
       syncStandaloneStatus();

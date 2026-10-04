@@ -4000,6 +4000,23 @@
       font-size: 11px;
     }
 
+    .admin-ai-suggestions {
+      grid-column: 1 / -1;
+      padding: 12px 14px;
+      border: 1px solid #cdddf5;
+      border-radius: 12px;
+      background: #f3f7fd;
+      color: #46566c;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .admin-ai-suggestions strong {
+      display: block;
+      margin-bottom: 3px;
+      color: #2f5c96;
+    }
+
     @media (max-width: 760px) {
       .admin-tag-guide-principles,
       .admin-tag-guide-columns,
@@ -4196,6 +4213,7 @@
               </details>
               <span class="admin-tag-limit-note">최대 5개</span>
             </div>
+            <div class="admin-ai-suggestions" id="adminAiSuggestions" hidden></div>
             <input type="hidden" name="공">
             <input type="hidden" name="수">
             <label><span class="label">시리즈 여부</span><select name="시리즈"><option value="">단편/미표기</option><option value="Y">시리즈</option></select></label>
@@ -4797,6 +4815,7 @@
       deletePost: $("#deletePost"),
       fetchPostMetadata: $("#fetchPostMetadata"),
       openPostLink: $("#openPostLink"),
+      adminAiSuggestions: $("#adminAiSuggestions"),
       libraryToggle: $("#libraryToggle"),
       authorUploadModal: $("#authorUploadModal"),
       authorUploadClose: $("#authorUploadClose"),
@@ -7544,6 +7563,41 @@
       syncStandaloneStatus();
       syncAdminSeriesSaveState();
       syncAdminReadLink();
+      renderAdminAiSuggestions(post);
+    }
+
+    function renderAdminAiSuggestions(post = null) {
+      if (!els.adminAiSuggestions) return;
+      if (!post) {
+        els.adminAiSuggestions.hidden = true;
+        els.adminAiSuggestions.innerHTML = "";
+        return;
+      }
+      const suggestedGenres = splitTags(post["AI제안장르"]);
+      const suggestedKeywords = splitTags(post["AI제안키워드"]);
+      const selectedGenres = new Set(splitTags(post["장르"]));
+      const selectedKeywords = new Set(splitTags(post["키워드"]));
+      const newGenres = suggestedGenres.filter((value) => !selectedGenres.has(value));
+      const newKeywords = suggestedKeywords.filter((value) => !selectedKeywords.has(value));
+      const lines = [];
+      if (suggestedGenres.length) lines.push(`장르 제안: ${suggestedGenres.join(", ")}`);
+      if (suggestedKeywords.length) lines.push(`키워드 제안: ${suggestedKeywords.join(", ")}`);
+      if (newGenres.length || newKeywords.length) {
+        lines.push(`신규 필터 후보: ${[
+          newGenres.length ? `장르 ${newGenres.join(", ")}` : "",
+          newKeywords.length ? `키워드 ${newKeywords.join(", ")}` : ""
+        ].filter(Boolean).join(" / ")}`);
+      }
+      const meta = [
+        normalize(post["AI상태"]),
+        normalize(post["AI신뢰도"]) ? `신뢰도 ${normalize(post["AI신뢰도"])}` : "",
+        normalize(post["AI근거"])
+      ].filter(Boolean).join(" · ");
+      if (meta) lines.push(meta);
+      els.adminAiSuggestions.hidden = !lines.length;
+      els.adminAiSuggestions.innerHTML = lines.length
+        ? `<strong>AI 분류 제안</strong>${lines.map((line) => `<div>${escapeHtml(line)}</div>`).join("")}`
+        : "";
     }
 
     function syncAdminReadLink() {
@@ -7611,6 +7665,7 @@
       syncStandaloneStatus();
       syncAdminSeriesSaveState();
       syncAdminReadLink();
+      renderAdminAiSuggestions();
       els.adminEditor.hidden = false;
     }
 
@@ -7619,6 +7674,7 @@
       syncAdminMultiSelectsFromForm();
       syncAdminSeriesSaveState();
       syncAdminReadLink();
+      renderAdminAiSuggestions();
       els.adminEditor.hidden = true;
     }
 

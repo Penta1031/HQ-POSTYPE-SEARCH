@@ -674,6 +674,15 @@ async function syncSeriesFilters(row: Record<string, unknown>, matchSeriesName =
   });
 }
 
+async function syncCompletedSeriesStatus(row: Record<string, unknown>) {
+  const seriesName = text(row.series_name);
+  if (!flag(row.is_series) || !seriesName || text(row.serialization_status) !== "완결") return;
+  await rest(`${encodeURIComponent(tableName)}?series_name=eq.${encodeURIComponent(seriesName)}&deleted_at=is.null`, {
+    method: "PATCH",
+    body: JSON.stringify({ serialization_status: "완결" }),
+  });
+}
+
 function mergeSeriesField(rows: Array<Record<string, unknown>>, field: string, limit: number) {
   const values = rows.flatMap((row) => text(row[field]).split(/[,，、\n]/));
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))].slice(0, limit).join(", ");
@@ -1149,6 +1158,7 @@ Deno.serve(async (request) => {
         method: "POST",
         body: JSON.stringify(row),
       });
+      await syncCompletedSeriesStatus(row);
       return json({ ok: true, rows });
     }
 
@@ -1173,6 +1183,7 @@ Deno.serve(async (request) => {
         method: "PATCH",
         body: JSON.stringify(row),
       });
+      await syncCompletedSeriesStatus(row);
       if (flag(payload._applyToSeries)) {
         await syncSeriesFilters(row, text(payload._originalSeriesName));
       }
